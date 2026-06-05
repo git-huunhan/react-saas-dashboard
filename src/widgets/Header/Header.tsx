@@ -1,6 +1,6 @@
 import "./Header.css";
 
-import { useAuth } from "@/features/auth/model/useAuth";
+import { useAuth } from "@/features/auth";
 import Input from "@/shared/ui/Input";
 
 export default function Header() {
