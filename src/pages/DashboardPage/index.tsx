@@ -1,8 +1,13 @@
+import { useState } from "react";
+
 import Button from "@/shared/ui/Button";
 import Card from "@/shared/ui/Card";
 import Input from "@/shared/ui/Input";
+import Modal from "@/shared/ui/Modal";
 
 export default function DashboardPage() {
+  const [open, setOpen] = useState(false);
+
   return (
     <>
       <Card>
@@ -38,6 +43,16 @@ export default function DashboardPage() {
           <Button>Save</Button>
         </Card.Body>
       </Card>
+
+      <Button onClick={() => setOpen(true)}>Open Modal</Button>
+
+      <Modal open={open} onClose={() => setOpen(false)}>
+        <h2>Create User</h2>
+
+        <Input label="Name" placeholder="Enter name" />
+
+        <Button>Save</Button>
+      </Modal>
     </>
   );
 }
