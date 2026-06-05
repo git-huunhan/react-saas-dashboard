@@ -1,0 +1,21 @@
+.card {
+  border: 1px solid #ddd;
+  border-radius: var(--radius-md);
+
+  padding: var(--spacing-lg);
+
+  background: white;
+}
+
+.card-header {
+  margin-bottom: var(--spacing-md);
+
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
