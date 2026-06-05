@@ -1,6 +1,6 @@
-import Button from "../../shared/ui/Button";
-import Card from "../../shared/ui/Card";
-import Input from "../../shared/ui/Input";
+import Button from "@/shared/ui/Button";
+import Card from "@/shared/ui/Card";
+import Input from "@/shared/ui/Input";
 
 export default function DashboardPage() {
   return (
