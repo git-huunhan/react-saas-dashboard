@@ -1,0 +1,27 @@
+.header {
+  height: 64px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 var(--spacing-lg);
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.header__left {
+  flex: 1;
+}
+
+.header__center {
+  flex: 2;
+  max-width: 400px;
+}
+
+.header__right {
+  flex: 1;
+
+  display: flex;
+  justify-content: flex-end;
+}

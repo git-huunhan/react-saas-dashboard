@@ -1,24 +1,22 @@
 import { Outlet } from "react-router-dom";
-import Sidebar from "./Sidebar";
+
+import Header from "@/widgets/Header";
+import Sidebar from "@/widgets/Sidebar";
+
+import "./Layout.css";
 
 export default function Layout() {
   return (
-    <div
-      style={{
-        display: "flex",
-        minHeight: "100vh",
-      }}
-    >
-      <Sidebar />
+    <div className="layout">
+      <Header />
 
-      <main
-        style={{
-          flex: 1,
-          padding: "24px",
-        }}
-      >
-        <Outlet />
-      </main>
+      <div className="layout__body">
+        <Sidebar />
+
+        <main className="layout__content">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
