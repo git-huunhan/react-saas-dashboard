@@ -1,8 +1,11 @@
 import "./Header.css";
 
+import { useAuth } from "@/features/auth/model/useAuth";
 import Input from "@/shared/ui/Input";
 
 export default function Header() {
+  const { user, login, logout } = useAuth();
+
   return (
     <header className="header">
       <div className="header__left">
@@ -14,7 +17,13 @@ export default function Header() {
       </div>
 
       <div className="header__right">
-        <span>Stephen</span>
+        <div className="header__right">
+          {user ? (
+            <button onClick={logout}>Logout</button>
+          ) : (
+            <button onClick={login}>Login</button>
+          )}
+        </div>
       </div>
     </header>
   );
