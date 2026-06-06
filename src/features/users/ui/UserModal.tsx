@@ -1,21 +1,44 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import type { CreateUserDto, User } from "@/features/users";
 import { Button } from "@/shared/ui/Button";
 import { Input } from "@/shared/ui/Input";
 import { Modal } from "@/shared/ui/Modal";
-import type { CreateUserDto } from "@/features/users";
 
 interface UserModalProps {
   open: boolean;
   onClose: () => void;
 
+  user?: User | null;
+
   onSubmit: (user: CreateUserDto) => void;
 }
 
-export function UserModal({ open, onClose, onSubmit }: UserModalProps) {
+export function UserModal({ open, onClose, user, onSubmit }: UserModalProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "user">("user");
+
+  useEffect(() => {
+    if (!open) {
+      setName("");
+      setEmail("");
+      setRole("user");
+      return;
+    }
+
+    if (user) {
+      setName(user.name);
+      setEmail(user.email);
+      setRole(user.role);
+    }
+  }, [open, user]);
+
+  const resetForm = () => {
+    setName("");
+    setEmail("");
+    setRole("user");
+  };
 
   const handleSubmit = () => {
     onSubmit({
@@ -24,12 +47,13 @@ export function UserModal({ open, onClose, onSubmit }: UserModalProps) {
       role,
     });
 
+    resetForm();
     onClose();
   };
 
   return (
     <Modal open={open} onClose={onClose}>
-      <h2>Add User</h2>
+      <h2>{user ? "Edit User" : "Add User"}</h2>
 
       <Input
         placeholder="Name"
@@ -54,7 +78,7 @@ export function UserModal({ open, onClose, onSubmit }: UserModalProps) {
         <option value="admin">Admin</option>
       </select>
 
-      <Button onClick={handleSubmit}>Save</Button>
+      <Button onClick={handleSubmit}>{user ? "Update" : "Save"}</Button>
     </Modal>
   );
 }

@@ -2,9 +2,11 @@ import type { User } from "@/features/users";
 
 interface UserTableProps {
   users: User[];
+
+  onEdit: (user: User) => void;
 }
 
-export function UserTable({ users }: UserTableProps) {
+export function UserTable({ users, onEdit }: UserTableProps) {
   return (
     <table>
       <thead>
@@ -12,6 +14,7 @@ export function UserTable({ users }: UserTableProps) {
           <th>Name</th>
           <th>Email</th>
           <th>Role</th>
+          <th>Actions</th>
         </tr>
       </thead>
 
@@ -21,6 +24,9 @@ export function UserTable({ users }: UserTableProps) {
             <td>{user.name}</td>
             <td>{user.email}</td>
             <td>{user.role}</td>
+            <td>
+              <button onClick={() => onEdit(user)}>Edit</button>
+            </td>
           </tr>
         ))}
       </tbody>

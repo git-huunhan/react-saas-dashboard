@@ -15,8 +15,22 @@ export function useUsers() {
     setUsers((prev) => [...prev, newUser]);
   };
 
+  const updateUser = (id: string, data: CreateUserDto) => {
+    setUsers((prev) =>
+      prev.map((user) =>
+        user.id === id
+          ? {
+              ...user,
+              ...data,
+            }
+          : user,
+      ),
+    );
+  };
+
   return {
     users,
     addUser,
+    updateUser,
   };
 }

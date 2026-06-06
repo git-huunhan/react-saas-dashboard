@@ -1,17 +1,41 @@
 import { useState } from "react";
 
-import { UserModal, UserSearch, UserTable, useUsers } from "@/features/users";
+import {
+  UserModal,
+  UserSearch,
+  UserTable,
+  useUsers,
+  type CreateUserDto,
+  type User,
+} from "@/features/users";
 
 import { Button } from "@/shared/ui/Button";
 
 export default function UsersPage() {
-  const { users, addUser } = useUsers();
+  const { users, addUser, updateUser } = useUsers();
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const filteredUsers = users.filter((user) =>
     user.name.toLowerCase().includes(search.toLowerCase()),
   );
+
+  const handleEdit = (user: User) => {
+    setSelectedUser(user);
+
+    setIsModalOpen(true);
+  };
+
+  const handleSubmitUser = (data: CreateUserDto) => {
+    if (selectedUser) {
+      updateUser(selectedUser.id, data);
+    } else {
+      addUser(data);
+    }
+
+    setSelectedUser(null);
+  };
 
   return (
     <>
@@ -19,12 +43,16 @@ export default function UsersPage() {
 
       <UserSearch value={search} onChange={setSearch} />
 
-      <UserTable users={filteredUsers} />
+      <UserTable users={filteredUsers} onEdit={handleEdit} />
       <Button onClick={() => setIsModalOpen(true)}>Add User</Button>
       <UserModal
         open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={addUser}
+        user={selectedUser}
+        onClose={() => {
+          setSelectedUser(null);
+          setIsModalOpen(false);
+        }}
+        onSubmit={handleSubmitUser}
       />
     </>
   );
