@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-import Button from "@/shared/ui/Button";
-import Input from "@/shared/ui/Input";
-import Modal from "@/shared/ui/Modal";
+import { Button } from "@/shared/ui/Button";
+import { Input } from "@/shared/ui/Input";
+import { Modal } from "@/shared/ui/Modal";
 import type { CreateUserDto } from "@/features/users";
 
 interface UserModalProps {
@@ -12,7 +12,7 @@ interface UserModalProps {
   onSubmit: (user: CreateUserDto) => void;
 }
 
-export default function UserModal({ open, onClose, onSubmit }: UserModalProps) {
+export function UserModal({ open, onClose, onSubmit }: UserModalProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "user">("user");

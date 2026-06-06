@@ -1,9 +1,9 @@
 import "./Header.css";
 
 import { useAuth } from "@/features/auth";
-import Input from "@/shared/ui/Input";
+import { Input } from "@/shared/ui/Input";
 
-export default function Header() {
+export function Header() {
   const { user, login, logout } = useAuth();
 
   return (

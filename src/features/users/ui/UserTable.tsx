@@ -4,7 +4,7 @@ interface UserTableProps {
   users: User[];
 }
 
-export default function UserTable({ users }: UserTableProps) {
+export function UserTable({ users }: UserTableProps) {
   return (
     <table>
       <thead>

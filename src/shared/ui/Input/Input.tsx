@@ -7,7 +7,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
 }
 
-export default function Input({ label, error, id, ...props }: InputProps) {
+export function Input({ label, error, id, ...props }: InputProps) {
   return (
     <div className="input-wrapper">
       {label && (

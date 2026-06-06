@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { UserModal, UserSearch, UserTable, useUsers } from "@/features/users";
 
-import Button from "@/shared/ui/Button";
+import { Button } from "@/shared/ui/Button";
 
 export default function UsersPage() {
   const { users, addUser } = useUsers();

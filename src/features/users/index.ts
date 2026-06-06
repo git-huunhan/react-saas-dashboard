@@ -1,6 +1,6 @@
 export { useUsers } from "./model/useUsers";
-export { default as UserModal } from "./ui/UserModal";
-export { default as UserSearch } from "./ui/UserSearch";
-export { default as UserTable } from "./ui/UserTable";
+export { UserModal } from "./ui/UserModal";
+export { UserSearch } from "./ui/UserSearch";
+export { UserTable } from "./ui/UserTable";
 
 export * from "./model/types";

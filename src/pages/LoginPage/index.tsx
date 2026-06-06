@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 
-import { useAuth } from "@/features/auth/model/useAuth";
+import { useAuth } from "@/features/auth";
 
-import Button from "@/shared/ui/Button/Button";
+import { Button } from "@/shared/ui/Button";
 
 export default function LoginPage() {
   const { login } = useAuth();

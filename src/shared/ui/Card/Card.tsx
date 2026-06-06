@@ -21,4 +21,4 @@ function Body({ children }: CardProps) {
 Card.Header = Header;
 Card.Body = Body;
 
-export default Card;
+export { Card };

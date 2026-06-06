@@ -1,11 +1,11 @@
-import Input from "@/shared/ui/Input/Input";
+import { Input } from "@/shared/ui/Input";
 
 interface UserSearchProps {
   value: string;
   onChange: (value: string) => void;
 }
 
-export default function UserSearch({ value, onChange }: UserSearchProps) {
+export function UserSearch({ value, onChange }: UserSearchProps) {
   return (
     <Input
       placeholder="Search users..."
