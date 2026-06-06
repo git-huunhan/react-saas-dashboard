@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-import Button from "@/shared/ui/Button";
-import Card from "@/shared/ui/Card";
-import Input from "@/shared/ui/Input";
-import Modal from "@/shared/ui/Modal";
+import { Button } from "@/shared/ui/Button";
+import { Card } from "@/shared/ui/Card";
+import { Input } from "@/shared/ui/Input";
+import { Modal } from "@/shared/ui/Modal";
 
 export default function DashboardPage() {
   const [open, setOpen] = useState(false);
