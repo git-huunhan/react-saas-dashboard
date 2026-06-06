@@ -1,32 +1,17 @@
 import { useState } from "react";
 
-import {
-  UserModal,
-  UserSearch,
-  UserTable,
-  type CreateUserDto,
-} from "@/features/users";
-import { mockUsers } from "@/features/users/model/mockUsers";
+import { UserModal, UserSearch, UserTable, useUsers } from "@/features/users";
 
 import Button from "@/shared/ui/Button";
 
 export default function UsersPage() {
-  const [users, setUsers] = useState(mockUsers);
+  const { users, addUser } = useUsers();
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filteredUsers = users.filter((user) =>
     user.name.toLowerCase().includes(search.toLowerCase()),
   );
-
-  const handleAddUser = (data: CreateUserDto) => {
-    const newUser = {
-      id: crypto.randomUUID(),
-      ...data,
-    };
-
-    setUsers((prev) => [...prev, newUser]);
-  };
 
   return (
     <>
@@ -39,7 +24,7 @@ export default function UsersPage() {
       <UserModal
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleAddUser}
+        onSubmit={addUser}
       />
     </>
   );
