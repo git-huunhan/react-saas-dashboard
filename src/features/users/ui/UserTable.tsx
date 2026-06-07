@@ -4,9 +4,10 @@ interface UserTableProps {
   users: User[];
 
   onEdit: (user: User) => void;
+  onDelete: (id: string) => void;
 }
 
-export function UserTable({ users, onEdit }: UserTableProps) {
+export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
   return (
     <table>
       <thead>
@@ -26,6 +27,8 @@ export function UserTable({ users, onEdit }: UserTableProps) {
             <td>{user.role}</td>
             <td>
               <button onClick={() => onEdit(user)}>Edit</button>
+
+              <button onClick={() => onDelete(user.id)}>Delete</button>
             </td>
           </tr>
         ))}

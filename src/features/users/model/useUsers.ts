@@ -28,9 +28,14 @@ export function useUsers() {
     );
   };
 
+  const deleteUser = (id: string) => {
+    setUsers((prev) => prev.filter((user) => user.id !== id));
+  };
+
   return {
     users,
     addUser,
     updateUser,
+    deleteUser,
   };
 }
