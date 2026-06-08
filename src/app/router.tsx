@@ -5,27 +5,24 @@ import LoginPage from "@/pages/LoginPage";
 import UsersPage from "@/pages/UsersPage";
 import { Layout } from "@/widgets/Layout";
 
-import ProtectedRoute from "@/features/auth/ui/ProtectedRoute";
+import { ProtectedRoute } from "@/features/auth";
 
 export const router = createBrowserRouter([
   {
-    element: <Layout />,
+    element: <ProtectedRoute />,
     children: [
       {
-        path: "/",
-        element: (
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/users",
-        element: (
-          <ProtectedRoute>
-            <UsersPage />
-          </ProtectedRoute>
-        ),
+        element: <Layout />,
+        children: [
+          {
+            path: "/",
+            element: <DashboardPage />,
+          },
+          {
+            path: "/users",
+            element: <UsersPage />,
+          },
+        ],
       },
     ],
   },
