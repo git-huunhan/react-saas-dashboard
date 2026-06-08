@@ -1,10 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { mockUsers } from "./mockUsers";
 import type { CreateUserDto, User } from "./types";
 
+import { getUsers } from "@/shared/api/usersApi";
+
 export function useUsers() {
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getUsers()
+      .then(setUsers)
+      .finally(() => setLoading(false));
+  }, []);
 
   const addUser = (data: CreateUserDto) => {
     const newUser: User = {
@@ -34,6 +42,7 @@ export function useUsers() {
 
   return {
     users,
+    loading,
     addUser,
     updateUser,
     deleteUser,

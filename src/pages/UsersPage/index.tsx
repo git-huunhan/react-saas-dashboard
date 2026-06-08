@@ -12,7 +12,7 @@ import {
 import { Button } from "@/shared/ui/Button";
 
 export default function UsersPage() {
-  const { users, addUser, updateUser, deleteUser } = useUsers();
+  const { users, loading, addUser, updateUser, deleteUser } = useUsers();
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -40,6 +40,15 @@ export default function UsersPage() {
   const handleDelete = (id: string) => {
     deleteUser(id);
   };
+
+  if (loading) {
+    return (
+      <>
+        <h1>Users</h1>
+        <p>Loading...</p>
+      </>
+    );
+  }
 
   return (
     <>
