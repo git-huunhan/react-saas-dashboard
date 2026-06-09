@@ -7,14 +7,21 @@ import { Modal } from "@/shared/ui/Modal";
 
 interface UserModalProps {
   open: boolean;
+  isSubmitting: boolean;
   onClose: () => void;
 
   user?: User | null;
 
-  onSubmit: (user: CreateUserDto) => void;
+  onSubmit: (user: CreateUserDto) => Promise<void>;
 }
 
-export function UserModal({ open, onClose, user, onSubmit }: UserModalProps) {
+export function UserModal({
+  open,
+  isSubmitting,
+  onClose,
+  user,
+  onSubmit,
+}: UserModalProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "user">("user");
@@ -40,8 +47,10 @@ export function UserModal({ open, onClose, user, onSubmit }: UserModalProps) {
     setRole("user");
   };
 
-  const handleSubmit = () => {
-    onSubmit({
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+
+    await onSubmit({
       name,
       email,
       role,
@@ -78,7 +87,9 @@ export function UserModal({ open, onClose, user, onSubmit }: UserModalProps) {
         <option value="admin">Admin</option>
       </select>
 
-      <Button onClick={handleSubmit}>{user ? "Update" : "Save"}</Button>
+      <Button disabled={isSubmitting} onClick={handleSubmit}>
+        {isSubmitting ? "Saving..." : user ? "Update" : "Save"}
+      </Button>
     </Modal>
   );
 }

@@ -9,7 +9,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export async function getUsers(): Promise<User[]> {
   await delay(500);
 
-  return usersDb;
+  return usersDb.map((user) => ({ ...user }));
 }
 
 export async function createUser(data: CreateUserDto): Promise<User> {
@@ -22,7 +22,7 @@ export async function createUser(data: CreateUserDto): Promise<User> {
 
   usersDb.push(newUser);
 
-  return newUser;
+  return { ...newUser };
 }
 
 export async function updateUser(
@@ -40,7 +40,7 @@ export async function updateUser(
 
   usersDb[index] = updatedUser;
 
-  return updatedUser;
+  return { ...updatedUser };
 }
 
 export async function deleteUser(id: string): Promise<void> {

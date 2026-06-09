@@ -12,8 +12,15 @@ import {
 import { Button } from "@/shared/ui/Button";
 
 export default function UsersPage() {
-  const { users, loading, addUser, updateUserById, deleteUserById } =
-    useUsers();
+  const {
+    users,
+    loading,
+    error,
+    isSubmitting,
+    addUser,
+    updateUserById,
+    deleteUserById,
+  } = useUsers();
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -28,11 +35,11 @@ export default function UsersPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmitUser = (data: CreateUserDto) => {
+  const handleSubmitUser = async (data: CreateUserDto) => {
     if (selectedUser) {
-      updateUserById(selectedUser.id, data);
+      await updateUserById(selectedUser.id, data);
     } else {
-      addUser(data);
+      await addUser(data);
     }
 
     setSelectedUser(null);
@@ -55,6 +62,8 @@ export default function UsersPage() {
     <>
       <h1>Users</h1>
 
+      {error && <p>{error}</p>}
+
       <UserSearch value={search} onChange={setSearch} />
 
       <UserTable
@@ -65,6 +74,7 @@ export default function UsersPage() {
       <Button onClick={() => setIsModalOpen(true)}>Add User</Button>
       <UserModal
         open={isModalOpen}
+        isSubmitting={isSubmitting}
         user={selectedUser}
         onClose={() => {
           setSelectedUser(null);

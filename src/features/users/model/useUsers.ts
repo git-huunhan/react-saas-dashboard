@@ -12,6 +12,8 @@ import {
 export function useUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     getUsers()
@@ -20,28 +22,59 @@ export function useUsers() {
   }, []);
 
   const addUser = async (data: CreateUserDto) => {
-    const newUser = await createUser(data);
+    try {
+      console.log("ADD USER");
 
-    setUsers((prev) => [...prev, newUser]);
+      setError(null);
+      setIsSubmitting(true);
+
+      const newUser = await createUser(data);
+
+      setUsers((prev) => [...prev, newUser]);
+    } catch {
+      setError("Failed to create user");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const updateUserById = async (id: string, data: CreateUserDto) => {
-    const updatedUser = await updateUser(id, data);
+    try {
+      setError(null);
+      setIsSubmitting(true);
 
-    setUsers((prev) =>
-      prev.map((user) => (user.id === id ? updatedUser : user)),
-    );
+      const updatedUser = await updateUser(id, data);
+
+      setUsers((prev) =>
+        prev.map((user) => (user.id === id ? updatedUser : user)),
+      );
+    } catch {
+      setError("Failed to update user");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const deleteUserById = async (id: string) => {
-    await deleteUser(id);
+    try {
+      setError(null);
+      setIsSubmitting(true);
 
-    setUsers((prev) => prev.filter((user) => user.id !== id));
+      await deleteUser(id);
+
+      setUsers((prev) => prev.filter((user) => user.id !== id));
+    } catch {
+      setError("Failed to delete user");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return {
     users,
     loading,
+    error,
+    isSubmitting,
     addUser,
     updateUserById,
     deleteUserById,
