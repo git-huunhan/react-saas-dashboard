@@ -12,7 +12,8 @@ import {
 import { Button } from "@/shared/ui/Button";
 
 export default function UsersPage() {
-  const { users, loading, addUser, updateUser, deleteUser } = useUsers();
+  const { users, loading, addUser, updateUserById, deleteUserById } =
+    useUsers();
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -29,7 +30,7 @@ export default function UsersPage() {
 
   const handleSubmitUser = (data: CreateUserDto) => {
     if (selectedUser) {
-      updateUser(selectedUser.id, data);
+      updateUserById(selectedUser.id, data);
     } else {
       addUser(data);
     }
@@ -38,7 +39,7 @@ export default function UsersPage() {
   };
 
   const handleDelete = (id: string) => {
-    deleteUser(id);
+    deleteUserById(id);
   };
 
   if (loading) {
