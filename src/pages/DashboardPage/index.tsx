@@ -5,8 +5,14 @@ import { Card } from "@/shared/ui/Card";
 import { Input } from "@/shared/ui/Input";
 import { Modal } from "@/shared/ui/Modal";
 
+import { useDashboardStats } from "@/features/dashboard";
+
 export default function DashboardPage() {
   const [open, setOpen] = useState(false);
+  const { data, isLoading, isError } = useDashboardStats();
+  if (isLoading) return <p>Loading...</p>;
+  if (isError) return <p>Error!</p>;
+  return <pre>{JSON.stringify(data, null, 2)}</pre>;
 
   return (
     <>
