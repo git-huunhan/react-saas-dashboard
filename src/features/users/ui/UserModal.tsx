@@ -26,6 +26,8 @@ export function UserModal({
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "user">("user");
 
+  const isValid = name.trim() !== "" && email.trim() !== "";
+
   useEffect(() => {
     if (!open) {
       setName("");
@@ -69,6 +71,7 @@ export function UserModal({
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
+      {name.trim() === "" && <p>Name is required</p>}
 
       <br />
       <br />
@@ -78,6 +81,10 @@ export function UserModal({
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
+      {email.trim() === "" && <p>Email is required</p>}
+
+      <br />
+      <br />
 
       <select
         value={role}
@@ -87,7 +94,7 @@ export function UserModal({
         <option value="admin">Admin</option>
       </select>
 
-      <Button disabled={isSubmitting} onClick={handleSubmit}>
+      <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
         {isSubmitting ? "Saving..." : user ? "Update" : "Save"}
       </Button>
     </Modal>

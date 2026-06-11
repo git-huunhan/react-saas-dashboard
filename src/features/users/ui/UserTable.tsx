@@ -8,6 +8,10 @@ interface UserTableProps {
 }
 
 export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
+  if (users.length === 0) {
+    return <p>No users found.</p>;
+  }
+
   return (
     <table>
       <thead>

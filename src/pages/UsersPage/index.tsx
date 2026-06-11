@@ -45,8 +45,12 @@ export default function UsersPage() {
     setSelectedUser(null);
   };
 
-  const handleDelete = (id: string) => {
-    deleteUserById(id);
+  const handleDelete = async (id: string) => {
+    const confirmed = window.confirm("Delete this user?");
+
+    if (!confirmed) return;
+
+    await deleteUserById(id);
   };
 
   if (loading) {
