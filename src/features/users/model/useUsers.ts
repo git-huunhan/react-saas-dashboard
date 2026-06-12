@@ -7,7 +7,7 @@ import {
   deleteUser,
   getUsers,
   updateUser,
-} from "@/shared/api/usersApi";
+} from "@/features/users/api/usersApi";
 
 export function useUsers() {
   const [users, setUsers] = useState<User[]>([]);

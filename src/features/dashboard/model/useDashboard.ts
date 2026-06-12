@@ -5,7 +5,7 @@ import {
   getTasksByStatus,
   getTaskTrend,
   getWorkload,
-} from "@/shared/api/dashboardApi";
+} from "@/features/dashboard/api/dashboardApi";
 
 export const dashboardKeys = {
   all: ["dashboard"] as const,
