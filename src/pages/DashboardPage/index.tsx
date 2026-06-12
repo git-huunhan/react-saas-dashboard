@@ -30,23 +30,27 @@ export default function DashboardPage() {
     <div className="dashboard">
       <div className="dashboard__stats">
         <StatsCard
+          isLoading={isStatsLoading}
           title="Total Projects"
           value={isStatsLoading ? "" : formatNumber(statsData!.totalProjects)}
           icon="📁"
         />
         <StatsCard
+          isLoading={isStatsLoading}
           title="Active Tasks"
           value={isStatsLoading ? "" : formatNumber(statsData!.activeTasks)}
           icon="⚡"
           trend={{ value: 12.5, isPositive: true }}
         />
         <StatsCard
+          isLoading={isStatsLoading}
           title="Completed Tasks"
           value={isStatsLoading ? "" : formatNumber(statsData!.completedTasks)}
           icon="✅"
           trend={{ value: 8.2, isPositive: true }}
         />
         <StatsCard
+          isLoading={isStatsLoading}
           title="Overdue Tasks"
           value={isStatsLoading ? "" : formatNumber(statsData!.overdueTasks)}
           icon="⚠️"
