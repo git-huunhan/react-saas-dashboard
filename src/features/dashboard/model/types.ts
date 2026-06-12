@@ -15,3 +15,8 @@ export interface TaskStatusData {
   name: string; // To Do, In Progress, Done
   value: number;
 }
+
+export interface WorkloadData {
+  name: string;
+  tasks: number;
+}

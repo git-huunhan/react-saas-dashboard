@@ -4,6 +4,7 @@ import {
   getDashboardStats,
   getTasksByStatus,
   getTaskTrend,
+  getWorkload,
 } from "@/shared/api/dashboardApi";
 
 export const dashboardKeys = {
@@ -11,6 +12,7 @@ export const dashboardKeys = {
   stats: () => [...dashboardKeys.all, "stats"] as const,
   taskTrend: () => [...dashboardKeys.all, "taskTrend"] as const,
   tasksByStatus: () => [...dashboardKeys.all, "tasksByStatus"] as const,
+  workload: () => [...dashboardKeys.all, "workload"] as const,
 };
 
 export function useDashboardStats() {
@@ -31,5 +33,12 @@ export function useTasksByStatus() {
   return useQuery({
     queryKey: dashboardKeys.tasksByStatus(),
     queryFn: getTasksByStatus,
+  });
+}
+
+export function useWorkload() {
+  return useQuery({
+    queryKey: dashboardKeys.workload(),
+    queryFn: getWorkload,
   });
 }

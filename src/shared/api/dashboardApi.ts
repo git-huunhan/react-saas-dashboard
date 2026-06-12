@@ -2,6 +2,7 @@ import type {
   DashboardStats,
   TaskStatusData,
   TaskTrendPoint,
+  WorkloadData,
 } from "@/features/dashboard";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -36,5 +37,16 @@ export async function getTasksByStatus(): Promise<TaskStatusData[]> {
     { name: "In Progress", value: 30 },
     { name: "In Review", value: 15 },
     { name: "Done", value: 10 },
+  ];
+}
+
+export async function getWorkload(): Promise<WorkloadData[]> {
+  await delay(700);
+  return [
+    { name: "Alex", tasks: 12 },
+    { name: "Sarah", tasks: 8 },
+    { name: "Mike", tasks: 15 },
+    { name: "Emma", tasks: 5 },
+    { name: "John", tasks: 9 },
   ];
 }
