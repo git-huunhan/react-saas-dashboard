@@ -27,3 +27,15 @@
     grid-template-columns: 1fr;
   }
 }
+
+.dashboard__charts {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 1024px) {
+  .dashboard__charts {
+    grid-template-columns: 1fr;
+  }
+}

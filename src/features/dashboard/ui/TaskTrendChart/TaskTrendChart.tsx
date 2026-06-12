@@ -75,7 +75,7 @@ export function TaskTrendChart({ data, isLoading }: TaskTrendChartProps) {
             type="monotone"
             dataKey="created"
             name="Tasks Created"
-            stroke="#6b7280" /* Xám */
+            stroke="#6b7280"
             strokeWidth={2}
             fill="url(#gradCreated)"
             dot={false}
@@ -86,7 +86,7 @@ export function TaskTrendChart({ data, isLoading }: TaskTrendChartProps) {
             type="monotone"
             dataKey="completed"
             name="Tasks Completed"
-            stroke="#10b981" /* Xanh lá */
+            stroke="#10b981"
             strokeWidth={2}
             fill="url(#gradCompleted)"
             dot={false}

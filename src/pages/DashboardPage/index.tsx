@@ -1,8 +1,10 @@
 import {
   StatsCard,
+  TaskStatusChart,
   TaskTrendChart,
   useDashboardStats,
   useTaskTrend,
+  useTasksByStatus,
 } from "@/features/dashboard";
 
 import "./DashboardPage.css";
@@ -13,7 +15,9 @@ export default function DashboardPage() {
     isLoading: isStatsLoading,
     isError: isStatsError,
   } = useDashboardStats();
+
   const { data: trendData, isLoading: isTrendLoading } = useTaskTrend();
+  const { data: statusData, isLoading: isStatusLoading } = useTasksByStatus();
 
   if (isStatsError)
     return <p className="dashboard__error">Failed to load dashboard data.</p>;
@@ -48,7 +52,10 @@ export default function DashboardPage() {
         />
       </div>
 
-      <TaskTrendChart data={trendData ?? []} isLoading={isTrendLoading} />
+      <div className="dashboard__charts">
+        <TaskTrendChart data={trendData ?? []} isLoading={isTrendLoading} />
+        <TaskStatusChart data={statusData ?? []} isLoading={isStatusLoading} />
+      </div>
     </div>
   );
 }

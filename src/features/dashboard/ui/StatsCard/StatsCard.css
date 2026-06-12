@@ -57,7 +57,7 @@
   color: #dc2626;
 }
 
-/* Skeleton — xoá .stats-card--skeleton và @keyframes stats-shimmer cũ */
+/* Skeleton */
 .skeleton {
   display: block;
   border-radius: 6px;
