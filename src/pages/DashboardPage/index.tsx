@@ -1,36 +1,54 @@
-import { useState } from "react";
-
 import { StatsCard, useDashboardStats } from "@/features/dashboard";
 
+import "./DashboardPage.css";
+
 export default function DashboardPage() {
-  const [open, setOpen] = useState(false);
   const { data, isLoading, isError } = useDashboardStats();
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Error!</p>;
+
+  if (isError)
+    return <p className="dashboard__error">Failed to load dashboard data.</p>;
+
+  const formatNumber = (n: number) => n.toLocaleString("en-US");
+  const formatCurrency = (n: number) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }).format(n);
+
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
-        gap: "16px",
-      }}
-    >
-      {/* Test skeleton */}
-      <StatsCard title="" value="" icon="" isLoading />
-      {/* Test data thật */}
-      <StatsCard
-        title="Total Users"
-        value="8,472"
-        icon="👥"
-        trend={{ value: 5.2, isPositive: true }}
-      />
-      <StatsCard
-        title="Revenue"
-        value="$54,320"
-        icon="💰"
-        trend={{ value: 1.3, isPositive: false }}
-      />
-      <StatsCard title="Active Users" value="3,291" icon="⚡" />
+    <div className="dashboard">
+      {/* Stats Grid */}
+      <div className="dashboard__stats">
+        <StatsCard
+          title="Total Users"
+          value={isLoading ? "" : formatNumber(data!.totalUsers)}
+          icon="👥"
+          trend={{ value: 5.2, isPositive: true }}
+          isLoading={isLoading}
+        />
+        <StatsCard
+          title="Active Users"
+          value={isLoading ? "" : formatNumber(data!.activeUsers)}
+          icon="⚡"
+          trend={{ value: 2.1, isPositive: true }}
+          isLoading={isLoading}
+        />
+        <StatsCard
+          title="New This Month"
+          value={isLoading ? "" : formatNumber(data!.newUsersThisMonth)}
+          icon="🆕"
+          trend={{ value: 8.4, isPositive: true }}
+          isLoading={isLoading}
+        />
+        <StatsCard
+          title="Revenue"
+          value={isLoading ? "" : formatCurrency(data!.revenueThisMonth)}
+          icon="💰"
+          trend={{ value: 1.3, isPositive: false }}
+          isLoading={isLoading}
+        />
+      </div>
     </div>
   );
 }
