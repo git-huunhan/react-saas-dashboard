@@ -1,22 +1,17 @@
 export interface DashboardStats {
-  totalUsers: number;
-  activeUsers: number;
-  newUsersThisMonth: number;
-  revenueThisMonth: number;
+  totalProjects: number;
+  activeTasks: number;
+  completedTasks: number;
+  overdueTasks: number;
 }
 
-export interface RevenueChartPoint {
-  month: string;
-  revenue: number;
-  expenses: number;
+export interface TaskTrendPoint {
+  date: string;
+  created: number;
+  completed: number;
 }
 
-export interface UserGrowthPoint {
-  month: string;
-  users: number;
-}
-
-export interface TrafficSource {
-  name: string;
+export interface TaskStatusData {
+  name: string; // To Do, In Progress, Done
   value: number;
 }

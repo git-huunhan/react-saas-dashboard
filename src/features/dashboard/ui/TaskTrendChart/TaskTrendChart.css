@@ -1,0 +1,25 @@
+.chart-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.chart-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 20px 0;
+}
+
+/* Skeleton */
+.skeleton--title {
+  height: 20px;
+  width: 180px;
+  margin-bottom: 20px;
+}
+
+.skeleton--chart {
+  height: 280px;
+  border-radius: 8px;
+}

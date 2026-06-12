@@ -2,17 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 
 import {
   getDashboardStats,
-  getRevenueChart,
-  getTrafficSources,
-  getUserGrowth,
+  getTasksByStatus,
+  getTaskTrend,
 } from "@/shared/api/dashboardApi";
 
 export const dashboardKeys = {
   all: ["dashboard"] as const,
   stats: () => [...dashboardKeys.all, "stats"] as const,
-  revenueChart: () => [...dashboardKeys.all, "revenueChart"] as const,
-  userGrowth: () => [...dashboardKeys.all, "userGrowth"] as const,
-  traffic: () => [...dashboardKeys.all, "traffic"] as const,
+  taskTrend: () => [...dashboardKeys.all, "taskTrend"] as const,
+  tasksByStatus: () => [...dashboardKeys.all, "tasksByStatus"] as const,
 };
 
 export function useDashboardStats() {
@@ -22,23 +20,16 @@ export function useDashboardStats() {
   });
 }
 
-export function useRevenueChart() {
+export function useTaskTrend() {
   return useQuery({
-    queryKey: dashboardKeys.revenueChart(),
-    queryFn: getRevenueChart,
+    queryKey: dashboardKeys.taskTrend(),
+    queryFn: getTaskTrend,
   });
 }
 
-export function useUserGrowth() {
+export function useTasksByStatus() {
   return useQuery({
-    queryKey: dashboardKeys.userGrowth(),
-    queryFn: getUserGrowth,
-  });
-}
-
-export function useTrafficSources() {
-  return useQuery({
-    queryKey: dashboardKeys.traffic(),
-    queryFn: getTrafficSources,
+    queryKey: dashboardKeys.tasksByStatus(),
+    queryFn: getTasksByStatus,
   });
 }

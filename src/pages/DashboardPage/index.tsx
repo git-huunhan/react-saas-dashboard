@@ -1,54 +1,54 @@
-import { StatsCard, useDashboardStats } from "@/features/dashboard";
+import {
+  StatsCard,
+  TaskTrendChart,
+  useDashboardStats,
+  useTaskTrend,
+} from "@/features/dashboard";
 
 import "./DashboardPage.css";
 
 export default function DashboardPage() {
-  const { data, isLoading, isError } = useDashboardStats();
+  const {
+    data: statsData,
+    isLoading: isStatsLoading,
+    isError: isStatsError,
+  } = useDashboardStats();
+  const { data: trendData, isLoading: isTrendLoading } = useTaskTrend();
 
-  if (isError)
+  if (isStatsError)
     return <p className="dashboard__error">Failed to load dashboard data.</p>;
 
   const formatNumber = (n: number) => n.toLocaleString("en-US");
-  const formatCurrency = (n: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(n);
 
   return (
     <div className="dashboard">
-      {/* Stats Grid */}
       <div className="dashboard__stats">
         <StatsCard
-          title="Total Users"
-          value={isLoading ? "" : formatNumber(data!.totalUsers)}
-          icon="👥"
-          trend={{ value: 5.2, isPositive: true }}
-          isLoading={isLoading}
+          title="Total Projects"
+          value={isStatsLoading ? "" : formatNumber(statsData!.totalProjects)}
+          icon="📁"
         />
         <StatsCard
-          title="Active Users"
-          value={isLoading ? "" : formatNumber(data!.activeUsers)}
+          title="Active Tasks"
+          value={isStatsLoading ? "" : formatNumber(statsData!.activeTasks)}
           icon="⚡"
-          trend={{ value: 2.1, isPositive: true }}
-          isLoading={isLoading}
+          trend={{ value: 12.5, isPositive: true }}
         />
         <StatsCard
-          title="New This Month"
-          value={isLoading ? "" : formatNumber(data!.newUsersThisMonth)}
-          icon="🆕"
-          trend={{ value: 8.4, isPositive: true }}
-          isLoading={isLoading}
+          title="Completed Tasks"
+          value={isStatsLoading ? "" : formatNumber(statsData!.completedTasks)}
+          icon="✅"
+          trend={{ value: 8.2, isPositive: true }}
         />
         <StatsCard
-          title="Revenue"
-          value={isLoading ? "" : formatCurrency(data!.revenueThisMonth)}
-          icon="💰"
-          trend={{ value: 1.3, isPositive: false }}
-          isLoading={isLoading}
+          title="Overdue Tasks"
+          value={isStatsLoading ? "" : formatNumber(statsData!.overdueTasks)}
+          icon="⚠️"
+          trend={{ value: 2.4, isPositive: false }}
         />
       </div>
+
+      <TaskTrendChart data={trendData ?? []} isLoading={isTrendLoading} />
     </div>
   );
 }
