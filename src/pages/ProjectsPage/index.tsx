@@ -1,17 +1,28 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import {
   ProjectForm,
   useCreateProject,
   useProjects,
 } from "@/features/projects";
 import { useUrlParams } from "@/shared/hooks/useUrlParams";
-import { Badge } from "@/shared/ui/Badge";
-import { Pagination } from "@/shared/ui/Pagination";
-import { Modal } from "@/shared/ui/Modal";
-
-import "./ProjectsPage.css";
 
 export default function ProjectsPage() {
   const { getParam, setParams } = useUrlParams();
@@ -75,47 +86,52 @@ export default function ProjectsPage() {
   };
 
   if (isError)
-    return <div className="projects-page__error">Failed to load projects.</div>;
+    return <div className="text-red-500 py-4">Failed to load projects.</div>;
 
   return (
-    <div className="projects-page">
-      <div className="projects-page__header">
-        <h1 className="projects-page__title">Projects</h1>
-        <button
-          className="btn btn--primary"
-          onClick={() => setIsModalOpen(true)}
-        >
-          New Project
-        </button>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+          Projects
+        </h1>
+        <Button onClick={() => setIsModalOpen(true)}>Create Project</Button>
       </div>
 
-      <div className="projects-page__filters">
+      <div className="flex gap-4 items-center">
         <select
-          className="filter-select"
           value={status}
           onChange={handleFilterChange}
+          className="flex h-10 w-[180px] items-center justify-between rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:ring-offset-2"
         >
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
+          <option value="all">All Statuses</option>
           <option value="planning">Planning</option>
+          <option value="active">Active</option>
           <option value="completed">Completed</option>
         </select>
       </div>
 
-      <div className="table-container">
-        <table
-          className={`data-table ${isPlaceholderData ? "is-fetching" : ""}`}
-        >
-          <thead>
+      <div className="rounded-md border bg-white overflow-hidden">
+        <table className="w-full text-sm text-left">
+          <thead className="bg-zinc-50 border-b">
             <tr>
-              <th>Name</th>
-              <th>Key</th>
-              <th>Status</th>
-              <th>Timeline</th>
-              <th>Members</th>
+              <th className="h-12 px-4 align-middle font-medium text-zinc-500">
+                Name
+              </th>
+              <th className="h-12 px-4 align-middle font-medium text-zinc-500">
+                Key
+              </th>
+              <th className="h-12 px-4 align-middle font-medium text-zinc-500">
+                Status
+              </th>
+              <th className="h-12 px-4 align-middle font-medium text-zinc-500">
+                Timeline
+              </th>
+              <th className="h-12 px-4 align-middle font-medium text-zinc-500">
+                Team
+              </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-zinc-200">
             {isLoading ? (
               <tr>
                 <td colSpan={5} className="text-center py-4">
@@ -130,29 +146,40 @@ export default function ProjectsPage() {
               </tr>
             ) : (
               data?.data.map((project) => (
-                <tr key={project.id}>
-                  <td>
+                <tr
+                  key={project.id}
+                  className="hover:bg-zinc-50/50 transition-colors"
+                >
+                  <td className="p-4 align-middle">
                     <Link
                       to={`/projects/${project.id}`}
-                      className="project-link"
+                      className="font-medium text-blue-600 hover:underline"
                     >
                       {project.name}
                     </Link>
                   </td>
-                  <td>
-                    <span className="project-key">{project.key}</span>
+                  <td className="p-4 align-middle">
+                    <span className="text-zinc-500 font-mono text-xs">
+                      {project.key}
+                    </span>
                   </td>
-                  <td>
-                    <Badge variant={getStatusVariant(project.status)}>
+                  <td className="p-4 align-middle">
+                    <Badge
+                      variant={
+                        project.status === "active" ? "default" : "secondary"
+                      }
+                    >
                       {project.status}
                     </Badge>
                   </td>
-                  <td>
-                    <span className="project-date">
-                      {project.startDate} - {project.endDate}
+                  <td className="p-4 align-middle">
+                    <span className="text-zinc-500">
+                      {project.startDate} &rarr; {project.endDate}
                     </span>
                   </td>
-                  <td>{project.memberIds.length} members</td>
+                  <td className="p-4 align-middle text-zinc-500">
+                    {project.memberIds.length} members
+                  </td>
                 </tr>
               ))
             )}
@@ -161,21 +188,57 @@ export default function ProjectsPage() {
       </div>
 
       {data && data.totalPages > 1 && (
-        <Pagination
-          currentPage={page}
-          totalPages={data.totalPages}
-          onPageChange={handlePageChange}
-        />
+        <Pagination className="mt-4">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (page > 1) handlePageChange(page - 1);
+                }}
+              />
+            </PaginationItem>
+
+            {Array.from({ length: data.totalPages }).map((_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  href="#"
+                  isActive={page === i + 1}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePageChange(i + 1);
+                  }}
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (page < data.totalPages) handlePageChange(page + 1);
+                }}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       )}
 
-      <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <h2>Create New Project</h2>
-
-        <ProjectForm
-          onSubmit={handleCreateProject}
-          isLoading={createMutation.isPending}
-        />
-      </Modal>
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create New Project</DialogTitle>
+          </DialogHeader>
+          <ProjectForm
+            onSubmit={handleCreateProject}
+            isLoading={createMutation.isPending}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
