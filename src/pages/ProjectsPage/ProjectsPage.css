@@ -58,7 +58,7 @@
 }
 
 .data-table.is-fetching {
-  opacity: 0.6; /* Hiệu ứng mờ đi một chút khi chuyển trang (nhờ keepPreviousData) */
+  opacity: 0.6;
 }
 
 .data-table th,
