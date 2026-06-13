@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 
 import { useProject } from "@/features/projects";
+import { KanbanBoard } from "@/features/tasks";
 import { Badge } from "@/shared/ui/Badge";
 import { Tabs } from "@/shared/ui/Tabs";
 
@@ -69,12 +70,7 @@ export default function ProjectDetailPage() {
           </Tabs.Panel>
 
           <Tabs.Panel value="tasks">
-            <div className="pdp__card">
-              <h3>Tasks</h3>
-              <p className="text-gray">
-                Task management will be implemented in Phase 5.
-              </p>
-            </div>
+            <KanbanBoard projectId={project.id} />
           </Tabs.Panel>
 
           <Tabs.Panel value="settings">
