@@ -10,8 +10,6 @@ import {
 
 import type { WorkloadData } from "@/features/dashboard";
 
-import "./WorkloadChart.css";
-
 interface WorkloadChartProps {
   data: WorkloadData[];
   isLoading?: boolean;
@@ -20,18 +18,20 @@ interface WorkloadChartProps {
 export function WorkloadChart({ data, isLoading }: WorkloadChartProps) {
   if (isLoading) {
     return (
-      <div className="chart-card">
-        <div className="skeleton skeleton--title" style={{ width: "160px" }} />
-        <div className="skeleton skeleton--chart" />
+      <div className="rounded-xl border bg-card text-card-foreground shadow bg-white p-6 h-[400px] flex flex-col">
+        <div className="h-6 w-40 animate-pulse rounded bg-gray-200 mb-4" />
+        <div className="flex-1 animate-pulse rounded bg-gray-100" />
       </div>
     );
   }
 
   return (
-    <div className="chart-card">
-      <h3 className="chart-card__title">Workload by Assignee</h3>
+    <div className="rounded-xl border bg-card text-card-foreground shadow bg-white p-6 h-[400px] flex flex-col">
+      <h3 className="text-lg font-semibold leading-none tracking-tight mb-4">
+        Team Workload
+      </h3>
 
-      <ResponsiveContainer width="100%" height={280}>
+      <ResponsiveContainer width="100%" height={320}>
         <BarChart
           data={data}
           margin={{ top: 10, right: 10, left: -20, bottom: 0 }}

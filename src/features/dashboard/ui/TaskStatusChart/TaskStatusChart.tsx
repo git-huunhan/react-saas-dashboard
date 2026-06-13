@@ -9,8 +9,6 @@ import {
 
 import type { TaskStatusData } from "@/features/dashboard";
 
-import "./TaskStatusChart.css";
-
 const COLORS = {
   "To Do": "#9ca3af",
   "In Progress": "#3b82f6",
@@ -37,8 +35,10 @@ export function TaskStatusChart({ data, isLoading }: TaskStatusChartProps) {
   }
 
   return (
-    <div className="chart-card">
-      <h3 className="chart-card__title">Tasks by Status</h3>
+    <div className="rounded-xl border bg-card text-card-foreground shadow bg-white p-6 h-[360px] flex flex-col">
+      <h3 className="text-lg font-semibold leading-none tracking-tight mb-4">
+        Tasks by Status
+      </h3>
 
       <ResponsiveContainer width="100%" height={280}>
         <PieChart>

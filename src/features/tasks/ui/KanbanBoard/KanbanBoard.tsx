@@ -9,8 +9,6 @@ import {
 import type { TaskStatus } from "../../model/types";
 import { BoardColumn } from "../BoardColumn/BoardColumn";
 
-import "./KanbanBoard.css";
-
 interface KanbanBoardProps {
   projectId: string;
 }
@@ -35,11 +33,18 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     updateStatus.mutate({ taskId: draggableId, status: newStatus });
   };
 
-  if (isLoading) return <div className="kanban-loading">Loading board...</div>;
+  if (isLoading)
+    return (
+      <div className="flex gap-4 animate-pulse">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-64 w-[280px] rounded-xl bg-zinc-100" />
+        ))}
+      </div>
+    );
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="kanban-board">
+      <div className="flex gap-4 overflow-x-auto pb-4">
         {KANBAN_COLUMNS.map((col) => {
           const columnTasks = tasks.filter((t) => t.status === col.id);
           return (

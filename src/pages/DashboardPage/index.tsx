@@ -9,8 +9,6 @@ import {
   useWorkload,
 } from "@/features/dashboard";
 
-import "./DashboardPage.css";
-
 export default function DashboardPage() {
   const {
     data: statsData,
@@ -27,8 +25,8 @@ export default function DashboardPage() {
   const formatNumber = (n: number) => n.toLocaleString("en-US");
 
   return (
-    <div className="dashboard">
-      <div className="dashboard__stats">
+    <div className="flex flex-col gap-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           isLoading={isStatsLoading}
           title="Total Projects"
@@ -58,15 +56,24 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="dashboard__charts">
-        <TaskTrendChart data={trendData ?? []} isLoading={isTrendLoading} />
-        <TaskStatusChart data={statusData ?? []} isLoading={isStatusLoading} />
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <div className="col-span-4">
+          <TaskTrendChart data={trendData ?? []} isLoading={isTrendLoading} />
+        </div>
+        <div className="col-span-3">
+          <TaskStatusChart
+            data={statusData ?? []}
+            isLoading={isStatusLoading}
+          />
+        </div>
       </div>
-      <div className="dashboard__charts-secondary">
-        <WorkloadChart
-          data={workloadData ?? []}
-          isLoading={isWorkloadLoading}
-        />
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <div className="col-span-7">
+          <WorkloadChart
+            data={workloadData ?? []}
+            isLoading={isWorkloadLoading}
+          />
+        </div>
       </div>
     </div>
   );

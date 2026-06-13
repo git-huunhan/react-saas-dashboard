@@ -2,17 +2,15 @@ import { Draggable } from "@hello-pangea/dnd";
 
 import type { Task } from "../../model/types";
 
-import "./TaskCard.css";
-
 interface TaskCardProps {
   task: Task;
   index: number;
 }
 
-const PRIORITY_CLASS: Record<string, string> = {
-  low: "task-card__priority--low",
-  medium: "task-card__priority--medium",
-  high: "task-card__priority--high",
+const PRIORITY_STYLES: Record<string, string> = {
+  low: "bg-blue-100 text-blue-700",
+  medium: "bg-yellow-100 text-yellow-700",
+  high: "bg-red-100 text-red-700",
 };
 
 const PRIORITY_LABEL: Record<string, string> = {
@@ -26,22 +24,26 @@ export function TaskCard({ task, index }: TaskCardProps) {
     <Draggable draggableId={task.id} index={index}>
       {(provided, snapshot) => (
         <div
-          className={`task-card ${snapshot.isDragging ? "task-card--dragging" : ""}`}
+          className={`rounded-lg border bg-white p-3 shadow-sm cursor-grab active:cursor-grabbing transition-shadow ${
+            snapshot.isDragging ? "shadow-lg rotate-1" : "hover:shadow-md"
+          }`}
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
         >
-          <p className="task-card__title">{task.title}</p>
+          <p className="text-sm font-medium text-zinc-800 mb-3 leading-snug">
+            {task.title}
+          </p>
 
-          <div className="task-card__footer">
+          <div className="flex items-center justify-between">
             <span
-              className={`task-card__priority ${PRIORITY_CLASS[task.priority]}`}
+              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${PRIORITY_STYLES[task.priority]}`}
             >
               {PRIORITY_LABEL[task.priority]}
             </span>
 
             {task.assigneeId && (
-              <div className="task-card__avatar">
+              <div className="h-6 w-6 rounded-full bg-zinc-200 flex items-center justify-center text-xs font-medium text-zinc-600">
                 {task.assigneeId.replace("user-", "U")}
               </div>
             )}

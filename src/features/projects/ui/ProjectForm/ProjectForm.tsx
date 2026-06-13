@@ -3,8 +3,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 import { useUsers } from "@/features/users";
-
-import "./ProjectForm.css";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const projectSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
@@ -63,55 +64,70 @@ export function ProjectForm({
   };
 
   return (
-    <form className="project-form" onSubmit={handleSubmit(onSubmit)}>
-      <div className="form-row">
-        <div className="form-group">
-          <label>Project Name *</label>
-          <input {...register("name")} placeholder="e.g. Redesign Website" />
+    <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-zinc-700">
+            Project Name *
+          </label>
+          <Input {...register("name")} placeholder="e.g. Redesign Website" />
           {errors.name && (
-            <span className="error-text">{errors.name.message}</span>
+            <span className="text-xs text-red-500">{errors.name.message}</span>
           )}
         </div>
-        <div className="form-group">
-          <label>Project Key *</label>
-          <input
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-zinc-700">
+            Project Key *
+          </label>
+          <Input
             {...register("key")}
             placeholder="e.g. RED"
             style={{ textTransform: "uppercase" }}
           />
           {errors.key && (
-            <span className="error-text">{errors.key.message}</span>
+            <span className="text-xs text-red-500">{errors.key.message}</span>
           )}
         </div>
       </div>
 
-      <div className="form-group">
-        <label>Description</label>
-        <textarea
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-zinc-700">Description</label>
+        <Textarea
           {...register("description")}
           rows={3}
           placeholder="Project details..."
         />
       </div>
 
-      <div className="form-row">
-        <div className="form-group">
-          <label>Start Date *</label>
-          <input type="date" {...register("startDate")} />
+      <div className="grid grid-cols-3 gap-4">
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-zinc-700">
+            Start Date *
+          </label>
+          <Input type="date" {...register("startDate")} />
           {errors.startDate && (
-            <span className="error-text">{errors.startDate.message}</span>
+            <span className="text-xs text-red-500">
+              {errors.startDate.message}
+            </span>
           )}
         </div>
-        <div className="form-group">
-          <label>End Date *</label>
-          <input type="date" {...register("endDate")} />
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-zinc-700">
+            End Date *
+          </label>
+          <Input type="date" {...register("endDate")} />
           {errors.endDate && (
-            <span className="error-text">{errors.endDate.message}</span>
+            <span className="text-xs text-red-500">
+              {errors.endDate.message}
+            </span>
           )}
         </div>
-        <div className="form-group">
-          <label>Status *</label>
-          <select {...register("status")}>
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-zinc-700">Status *</label>
+          <select
+            {...register("status")}
+            className="flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950"
+          >
             <option value="planning">Planning</option>
             <option value="active">Active</option>
             <option value="completed">Completed</option>
@@ -119,35 +135,40 @@ export function ProjectForm({
         </div>
       </div>
 
-      <div className="form-group">
-        <label>Team Members *</label>
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-zinc-700">
+          Team Members *
+        </label>
         {usersLoading ? (
-          <p>Loading users...</p>
+          <p className="text-sm text-zinc-500">Loading users...</p>
         ) : (
-          <div className="member-selection">
+          <div className="grid grid-cols-2 gap-2 rounded-md border border-zinc-200 p-3">
             {users.map((user) => (
-              <label key={user.id} className="member-checkbox">
+              <label
+                key={user.id}
+                className="flex items-center gap-2 cursor-pointer text-sm"
+              >
                 <input
                   type="checkbox"
                   checked={selectedMembers.includes(user.id)}
                   onChange={() => toggleMember(user.id)}
+                  className="rounded border-zinc-300"
                 />
-                {user.name}{" "}
-                <span style={{ color: "#6b7280" }}>({user.role})</span>
+                {user.name} <span className="text-zinc-400">({user.role})</span>
               </label>
             ))}
           </div>
         )}
         {errors.memberIds && (
-          <span className="error-text">{errors.memberIds.message}</span>
+          <span className="text-xs text-red-500">
+            {errors.memberIds.message}
+          </span>
         )}
       </div>
 
-      <div className="form-actions">
-        <button type="submit" className="btn btn--primary" disabled={isLoading}>
-          {isLoading ? "Saving..." : "Save Project"}
-        </button>
-      </div>
+      <Button type="submit" disabled={isLoading} className="mt-2">
+        {isLoading ? "Saving..." : "Save Project"}
+      </Button>
     </form>
   );
 }

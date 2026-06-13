@@ -11,8 +11,6 @@ import {
 
 import type { TaskTrendPoint } from "@/features/dashboard";
 
-import "./TaskTrendChart.css";
-
 interface TaskTrendChartProps {
   data: TaskTrendPoint[];
   isLoading?: boolean;
@@ -29,8 +27,10 @@ export function TaskTrendChart({ data, isLoading }: TaskTrendChartProps) {
   }
 
   return (
-    <div className="chart-card">
-      <h3 className="chart-card__title">Tasks Created vs Completed</h3>
+    <div className="rounded-xl border bg-card text-card-foreground shadow bg-white p-6 h-[360px] flex flex-col">
+      <h3 className="text-lg font-semibold leading-none tracking-tight mb-4">
+        Tasks Created vs Completed
+      </h3>
 
       <ResponsiveContainer width="100%" height={280}>
         <AreaChart data={data}>
