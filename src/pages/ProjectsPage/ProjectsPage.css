@@ -1,0 +1,117 @@
+.projects-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.projects-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.projects-page__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.projects-page__error {
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.projects-page__filters {
+  display: flex;
+  gap: 16px;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: white;
+  font-size: 0.875rem;
+  color: #374151;
+  outline: none;
+  cursor: pointer;
+}
+
+.filter-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.table-container {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  transition: opacity 0.2s;
+}
+
+.data-table.is-fetching {
+  opacity: 0.6; /* Hiệu ứng mờ đi một chút khi chuyển trang (nhờ keepPreviousData) */
+}
+
+.data-table th,
+.data-table td {
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.data-table th {
+  background-color: #f9fafb;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #6b7280;
+  letter-spacing: 0.05em;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.project-link {
+  font-weight: 500;
+  color: #111827;
+  text-decoration: none;
+}
+
+.project-link:hover {
+  color: #3b82f6;
+}
+
+.project-key {
+  font-family: monospace;
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #4b5563;
+  font-size: 0.8rem;
+}
+
+.project-date {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.text-center {
+  text-align: center;
+}
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}

@@ -20,6 +20,10 @@ export function Sidebar() {
           <li>
             <Link to="/users">Users</Link>
           </li>
+
+          <li>
+            <Link to="/projects">Projects</Link>
+          </li>
         </ul>
       </nav>
     </aside>
