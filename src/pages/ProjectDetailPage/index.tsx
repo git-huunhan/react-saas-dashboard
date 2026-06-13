@@ -10,23 +10,42 @@ export default function ProjectDetailPage() {
   const { data: project, isLoading, isError } = useProject(id || "");
 
   if (isLoading)
-    return <div className="pdp-loading">Loading project details...</div>;
+    return (
+      <div className="p-10 text-center text-zinc-500">
+        Loading project details...
+      </div>
+    );
   if (isError || !project)
-    return <div className="pdp-error">Project not found</div>;
+    return (
+      <div className="p-10 text-center text-red-500">Project not found</div>
+    );
 
   return (
-    <div className="pdp">
-      <Link to="/projects" className="pdp__back">
+    <div className="flex flex-col gap-6">
+      <Link
+        to="/projects"
+        className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors w-fit"
+      >
         &larr; Back to Projects
       </Link>
 
-      <div className="pdp__header">
-        <div className="pdp__title-wrapper">
-          <span className="pdp__key">{project.key}</span>
-          <h1 className="pdp__title">{project.name}</h1>
-          <Badge variant="default">{project.status}</Badge>
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <span className="font-mono bg-zinc-100 text-zinc-600 px-2 py-1 rounded-md text-sm">
+            {project.key}
+          </span>
+          <h1 className="text-2xl font-bold text-zinc-900 m-0">
+            {project.name}
+          </h1>
+          <Badge
+            variant={project.status === "active" ? "default" : "secondary"}
+          >
+            {project.status}
+          </Badge>
         </div>
-        <button className="btn btn--primary">Edit Project</button>
+        <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 shadow hover:bg-zinc-900/90 h-9 px-4 py-2">
+          Edit Project
+        </button>
       </div>
 
       <div className="mt-6">

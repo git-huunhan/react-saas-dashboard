@@ -9,7 +9,7 @@ import {
   type User,
 } from "@/features/users";
 
-import { Button } from "@/shared/ui/Button";
+import { Button } from "@/components/ui/button";
 
 export default function UsersPage() {
   const {
@@ -63,19 +63,25 @@ export default function UsersPage() {
   }
 
   return (
-    <>
-      <h1>Users</h1>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+          Users
+        </h1>
+        <Button onClick={() => setIsModalOpen(true)}>Add User</Button>
+      </div>
 
-      {error && <p>{error}</p>}
+      {error && <p className="text-red-500">{error}</p>}
 
       <UserSearch value={search} onChange={setSearch} />
 
-      <UserTable
-        users={filteredUsers}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
-      <Button onClick={() => setIsModalOpen(true)}>Add User</Button>
+      <div className="rounded-md border bg-white overflow-hidden">
+        <UserTable
+          users={filteredUsers}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      </div>
       <UserModal
         open={isModalOpen}
         isSubmitting={isSubmitting}
@@ -86,6 +92,6 @@ export default function UsersPage() {
         }}
         onSubmit={handleSubmitUser}
       />
-    </>
+    </div>
   );
 }
