@@ -133,11 +133,29 @@ export default function ProjectsPage() {
           </thead>
           <tbody className="divide-y divide-zinc-200">
             {isLoading ? (
-              <tr>
-                <td colSpan={5} className="text-center py-4">
-                  Loading...
-                </td>
-              </tr>
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i}>
+                  <td className="p-4 align-middle">
+                    <div className="h-5 w-48 bg-zinc-100 animate-pulse rounded" />
+                  </td>
+                  <td className="p-4 align-middle">
+                    <div className="h-4 w-12 bg-zinc-100 animate-pulse rounded" />
+                  </td>
+                  <td className="p-4 align-middle">
+                    <div className="h-6 w-20 bg-zinc-100 animate-pulse rounded-full" />
+                  </td>
+                  <td className="p-4 align-middle">
+                    <div className="h-4 w-32 bg-zinc-100 animate-pulse rounded" />
+                  </td>
+                  <td className="p-4 align-middle">
+                    <div className="flex -space-x-2">
+                      <div className="h-8 w-8 rounded-full bg-zinc-200 animate-pulse border-2 border-white" />
+                      <div className="h-8 w-8 rounded-full bg-zinc-200 animate-pulse border-2 border-white" />
+                      <div className="h-8 w-8 rounded-full bg-zinc-200 animate-pulse border-2 border-white" />
+                    </div>
+                  </td>
+                </tr>
+              ))
             ) : data?.data.length === 0 ? (
               <tr>
                 <td colSpan={5} className="text-center py-4">
@@ -164,13 +182,21 @@ export default function ProjectsPage() {
                     </span>
                   </td>
                   <td className="p-4 align-middle">
-                    <Badge
-                      variant={
-                        project.status === "active" ? "default" : "secondary"
-                      }
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        project.status === "active"
+                          ? "bg-blue-100 text-blue-700"
+                          : project.status === "completed"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-yellow-100 text-yellow-700"
+                      }`}
                     >
-                      {project.status}
-                    </Badge>
+                      {project.status === "active"
+                        ? "Active"
+                        : project.status === "completed"
+                          ? "Completed"
+                          : "Planning"}
+                    </span>
                   </td>
                   <td className="p-4 align-middle">
                     <span className="text-zinc-500">

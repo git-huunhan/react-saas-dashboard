@@ -24,12 +24,9 @@ interface TaskStatusChartProps {
 export function TaskStatusChart({ data, isLoading }: TaskStatusChartProps) {
   if (isLoading) {
     return (
-      <div className="chart-card">
-        <div className="skeleton skeleton--title" style={{ width: "120px" }} />
-        <div
-          className="skeleton skeleton--chart"
-          style={{ borderRadius: "50%" }}
-        />
+      <div className="rounded-xl border bg-card text-card-foreground shadow bg-white p-6 h-[360px] flex flex-col">
+        <div className="h-6 w-32 animate-pulse rounded bg-zinc-200 mb-4" />
+        <div className="flex-1 animate-pulse rounded-full bg-zinc-100 mx-auto w-full max-w-[200px] mt-4 mb-8" />
       </div>
     );
   }

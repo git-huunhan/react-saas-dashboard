@@ -44,7 +44,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 md:-mx-8 md:px-8">
         {KANBAN_COLUMNS.map((col) => {
           const columnTasks = tasks.filter((t) => t.status === col.id);
           return (

@@ -19,9 +19,9 @@ interface TaskTrendChartProps {
 export function TaskTrendChart({ data, isLoading }: TaskTrendChartProps) {
   if (isLoading) {
     return (
-      <div className="chart-card">
-        <div className="skeleton skeleton--title" />
-        <div className="skeleton skeleton--chart" />
+      <div className="rounded-xl border bg-card text-card-foreground shadow bg-white p-6 h-[360px] flex flex-col">
+        <div className="h-6 w-48 animate-pulse rounded bg-zinc-200 mb-4" />
+        <div className="flex-1 animate-pulse rounded bg-zinc-100" />
       </div>
     );
   }

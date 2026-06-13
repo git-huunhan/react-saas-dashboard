@@ -55,10 +55,18 @@ export default function UsersPage() {
 
   if (loading) {
     return (
-      <>
-        <h1>Users</h1>
-        <p>Loading...</p>
-      </>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+            Users
+          </h1>
+          <div className="h-9 w-24 bg-zinc-200 animate-pulse rounded-md" />
+        </div>
+        <div className="h-9 w-full max-w-sm bg-zinc-200 animate-pulse rounded-md" />
+        <div className="rounded-md border bg-white overflow-hidden">
+          <div className="h-[400px] w-full bg-zinc-100 animate-pulse" />
+        </div>
+      </div>
     );
   }
 
