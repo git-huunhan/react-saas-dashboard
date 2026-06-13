@@ -1,4 +1,5 @@
 import type { PaginatedProjects, Project } from "../model/types";
+import type { ProjectFormData } from "../ui/ProjectForm/ProjectForm";
 
 let projectsDb: Project[] = Array.from({ length: 24 }).map((_, i) => ({
   id: `proj-${i + 1}`,
@@ -41,4 +42,17 @@ export async function getProjectById(id: string): Promise<Project> {
   const project = projectsDb.find((p) => p.id === id);
   if (!project) throw new Error("Project not found");
   return { ...project };
+}
+
+export async function createProject(data: ProjectFormData): Promise<Project> {
+  await delay(600);
+
+  const newProject: Project = {
+    ...data,
+    description: data.description || "",
+    id: `proj-${Date.now()}`,
+  };
+
+  projectsDb = [newProject, ...projectsDb];
+  return newProject;
 }

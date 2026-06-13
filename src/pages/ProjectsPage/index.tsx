@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { useProjects } from "@/features/projects";
+import {
+  ProjectForm,
+  useCreateProject,
+  useProjects,
+} from "@/features/projects";
 import { useUrlParams } from "@/shared/hooks/useUrlParams";
 import { Badge } from "@/shared/ui/Badge";
 import { Pagination } from "@/shared/ui/Pagination";
+import { Modal } from "@/shared/ui/Modal";
 
 import "./ProjectsPage.css";
 
@@ -16,6 +21,9 @@ export default function ProjectsPage() {
 
   const [page, setPage] = useState(initialPage);
   const [status, setStatus] = useState(initialStatus);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const createMutation = useCreateProject();
 
   useEffect(() => {
     setPage(Number(getParam("page", "1")));
@@ -56,6 +64,16 @@ export default function ProjectsPage() {
     }
   };
 
+  const handleCreateProject = (data: any) => {
+    createMutation.mutate(data, {
+      onSuccess: () => {
+        setIsModalOpen(false);
+        setPage(1);
+        setParams({ page: "1" });
+      },
+    });
+  };
+
   if (isError)
     return <div className="projects-page__error">Failed to load projects.</div>;
 
@@ -63,7 +81,12 @@ export default function ProjectsPage() {
     <div className="projects-page">
       <div className="projects-page__header">
         <h1 className="projects-page__title">Projects</h1>
-        <button className="btn btn--primary">New Project</button>
+        <button
+          className="btn btn--primary"
+          onClick={() => setIsModalOpen(true)}
+        >
+          New Project
+        </button>
       </div>
 
       <div className="projects-page__filters">
@@ -144,6 +167,15 @@ export default function ProjectsPage() {
           onPageChange={handlePageChange}
         />
       )}
+
+      <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <h2>Create New Project</h2>
+
+        <ProjectForm
+          onSubmit={handleCreateProject}
+          isLoading={createMutation.isPending}
+        />
+      </Modal>
     </div>
   );
 }

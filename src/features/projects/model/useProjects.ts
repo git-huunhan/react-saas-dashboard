@@ -1,6 +1,11 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 
-import { getProjectById, getProjects } from "../api/projectsApi";
+import { getProjectById, getProjects, createProject } from "../api/projectsApi";
 
 export const projectsKeys = {
   all: ["projects"] as const,
@@ -28,5 +33,15 @@ export function useProject(id: string) {
     queryKey: projectsKeys.detail(id),
     queryFn: () => getProjectById(id),
     enabled: !!id,
+  });
+}
+
+export function useCreateProject() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createProject,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: projectsKeys.lists() });
+    },
   });
 }

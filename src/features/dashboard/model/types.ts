@@ -12,7 +12,7 @@ export interface TaskTrendPoint {
 }
 
 export interface TaskStatusData {
-  name: string; // To Do, In Progress, Done
+  name: string;
   value: number;
 }
 
