@@ -111,22 +111,22 @@ export default function ProjectsPage() {
       </div>
 
       <div className="rounded-md border bg-white overflow-hidden">
-        <table className="w-full text-sm text-left">
+        <table className="w-full text-sm text-left table-fixed">
           <thead className="bg-zinc-50 border-b">
             <tr>
-              <th className="h-12 px-4 align-middle font-medium text-zinc-500">
+              <th className="h-12 px-4 align-middle font-medium text-zinc-500 w-[30%]">
                 Name
               </th>
-              <th className="h-12 px-4 align-middle font-medium text-zinc-500">
+              <th className="h-12 px-4 align-middle font-medium text-zinc-500 w-[15%]">
                 Key
               </th>
-              <th className="h-12 px-4 align-middle font-medium text-zinc-500">
+              <th className="h-12 px-4 align-middle font-medium text-zinc-500 w-[15%]">
                 Status
               </th>
-              <th className="h-12 px-4 align-middle font-medium text-zinc-500">
+              <th className="h-12 px-4 align-middle font-medium text-zinc-500 w-[25%]">
                 Timeline
               </th>
-              <th className="h-12 px-4 align-middle font-medium text-zinc-500">
+              <th className="h-12 px-4 align-middle font-medium text-zinc-500 w-[15%]">
                 Team
               </th>
             </tr>
