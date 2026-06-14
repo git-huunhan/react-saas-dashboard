@@ -10,10 +10,10 @@ import {
 import type { TaskStatusData } from "@/features/dashboard";
 
 const COLORS = {
-  "To Do": "#9ca3af",
-  "In Progress": "#3b82f6",
-  "In Review": "#f59e0b",
-  Done: "#10b981",
+  "To Do": "#64748b", // slate-500    — neutral, not started
+  "In Progress": "#06b6d4", // cyan-500     — active, moving
+  "In Review": "#0d9488", // teal-600     — almost done
+  Done: "#10b981", // emerald-500  — primary, completed ✓
 };
 
 interface TaskStatusChartProps {
@@ -24,15 +24,21 @@ interface TaskStatusChartProps {
 export function TaskStatusChart({ data, isLoading }: TaskStatusChartProps) {
   if (isLoading) {
     return (
-      <div className="rounded-xl border bg-card text-card-foreground shadow bg-white p-6 h-[360px] flex flex-col">
-        <div className="h-6 w-32 animate-pulse rounded bg-zinc-200 mb-4" />
-        <div className="flex-1 animate-pulse rounded-full bg-zinc-100 mx-auto w-full max-w-[200px] mt-4 mb-8" />
+      <div className="rounded-xl border bg-card text-card-foreground shadow p-6 h-[360px] flex flex-col">
+        <div className="h-6 w-32 animate-pulse rounded bg-muted mb-4" />
+        <div className="flex-1 flex items-center justify-center">
+          {/* Donut ring skeleton */}
+          <div className="relative h-[200px] w-[200px]">
+            <div className="h-full w-full animate-pulse rounded-full bg-muted" />
+            <div className="absolute inset-[30px] rounded-full bg-card" />
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow bg-white p-6 h-[360px] flex flex-col">
+    <div className="rounded-xl border bg-card text-card-foreground shadow p-6 h-[360px] flex flex-col">
       <h3 className="text-lg font-semibold leading-none tracking-tight mb-4">
         Tasks by Status
       </h3>
@@ -57,10 +63,11 @@ export function TaskStatusChart({ data, isLoading }: TaskStatusChartProps) {
           </Pie>
           <Tooltip
             contentStyle={{
-              background: "#fff",
-              border: "1px solid #e5e7eb",
+              background: "var(--card)",
+              border: "1px solid var(--border)",
               borderRadius: "8px",
               fontSize: "13px",
+              color: "var(--card-foreground)",
             }}
           />
           <Legend wrapperStyle={{ fontSize: "13px" }} />

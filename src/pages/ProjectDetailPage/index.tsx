@@ -24,17 +24,17 @@ export default function ProjectDetailPage() {
     <div className="flex flex-col gap-6">
       <Link
         to="/projects"
-        className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors w-fit"
+        className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-fit"
       >
         &larr; Back to Projects
       </Link>
 
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <span className="font-mono bg-zinc-100 text-zinc-600 px-2 py-1 rounded-md text-sm">
+          <span className="font-mono bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm">
             {project.key}
           </span>
-          <h1 className="text-2xl font-bold text-zinc-900 m-0">
+          <h1 className="text-2xl font-bold text-foreground m-0">
             {project.name}
           </h1>
           <Badge
@@ -43,7 +43,7 @@ export default function ProjectDetailPage() {
             {project.status}
           </Badge>
         </div>
-        <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 shadow hover:bg-zinc-900/90 h-9 px-4 py-2">
+        <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2">
           Edit Project
         </button>
       </div>
@@ -57,13 +57,15 @@ export default function ProjectDetailPage() {
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
-            <div className="bg-white p-6 rounded-lg border shadow-sm">
+            <div className="bg-card text-card-foreground p-6 rounded-lg border shadow-sm">
               <h3 className="text-lg font-semibold mb-2">Description</h3>
-              <p className="text-zinc-600 mb-6">{project.description}</p>
+              <p className="text-muted-foreground mb-6">
+                {project.description}
+              </p>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-zinc-500">
+                  <span className="text-sm font-medium text-muted-foreground">
                     Timeline
                   </span>
                   <span className="text-sm">
@@ -71,7 +73,7 @@ export default function ProjectDetailPage() {
                   </span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-zinc-500">
+                  <span className="text-sm font-medium text-muted-foreground">
                     Team Size
                   </span>
                   <span className="text-sm">
@@ -87,11 +89,11 @@ export default function ProjectDetailPage() {
           </TabsContent>
 
           <TabsContent value="settings" className="mt-6">
-            <div className="bg-white p-6 rounded-lg border shadow-sm">
-              <h3 className="text-lg font-semibold mb-2 text-red-600">
+            <div className="bg-card text-card-foreground p-6 rounded-lg border shadow-sm">
+              <h3 className="text-lg font-semibold mb-2 text-destructive">
                 Danger Zone
               </h3>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-muted-foreground">
                 Configuration options go here.
               </p>
             </div>

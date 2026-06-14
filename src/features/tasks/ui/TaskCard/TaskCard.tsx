@@ -8,9 +8,10 @@ interface TaskCardProps {
 }
 
 const PRIORITY_STYLES: Record<string, string> = {
-  low: "bg-blue-100 text-blue-700",
-  medium: "bg-yellow-100 text-yellow-700",
-  high: "bg-red-100 text-red-700",
+  low: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+  medium:
+    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
+  high: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
 };
 
 const PRIORITY_LABEL: Record<string, string> = {
@@ -24,14 +25,14 @@ export function TaskCard({ task, index }: TaskCardProps) {
     <Draggable draggableId={task.id} index={index}>
       {(provided, snapshot) => (
         <div
-          className={`rounded-lg border bg-white p-3 shadow-sm cursor-grab active:cursor-grabbing transition-shadow ${
+          className={`rounded-lg border bg-card text-card-foreground p-3 shadow-sm cursor-grab active:cursor-grabbing transition-shadow ${
             snapshot.isDragging ? "shadow-lg rotate-1" : "hover:shadow-md"
           }`}
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
         >
-          <p className="text-sm font-medium text-zinc-800 mb-3 leading-snug">
+          <p className="text-sm font-medium text-foreground mb-3 leading-snug">
             {task.title}
           </p>
 
@@ -43,7 +44,7 @@ export function TaskCard({ task, index }: TaskCardProps) {
             </span>
 
             {task.assigneeId && (
-              <div className="h-6 w-6 rounded-full bg-zinc-200 flex items-center justify-center text-xs font-medium text-zinc-600">
+              <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
                 {task.assigneeId.replace("user-", "U")}
               </div>
             )}

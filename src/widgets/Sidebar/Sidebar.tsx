@@ -1,7 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/features/auth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { LogOut, ChevronUp } from "lucide-react";
 
 export function Sidebar() {
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   const links = [
     { to: "/", label: "Dashboard" },
@@ -10,14 +20,19 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 border-r bg-zinc-50 p-4 flex flex-col min-h-screen">
-      <div className="mb-8 px-4">
-        <h2 className="text-xl font-bold tracking-tight text-zinc-900">
+    <aside className="w-64 border-r bg-background flex flex-col h-full">
+      {/* Logo */}
+      <div className="px-6 py-5 border-b border-border">
+        <h2 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
+          <span className="h-7 w-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
+            S
+          </span>
           SaaS Dashboard
         </h2>
       </div>
 
-      <nav className="flex-1 space-y-1">
+      {/* Nav */}
+      <nav className="flex-1 p-3 space-y-0.5">
         {links.map((link) => {
           const isActive =
             location.pathname === link.to ||
@@ -27,10 +42,10 @@ export function Sidebar() {
             <Link
               key={link.to}
               to={link.to}
-              className={`flex items-center rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
+              className={`flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-zinc-200 text-zinc-900"
-                  : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               }`}
             >
               {link.label}
@@ -38,6 +53,46 @@ export function Sidebar() {
           );
         })}
       </nav>
+
+      {/* User profile at bottom */}
+      <div className="p-3 border-t border-border">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="w-full flex items-center gap-3 rounded-md px-3 py-2.5 text-sm hover:bg-accent transition-colors group">
+              <Avatar className="h-8 w-8 border-2 border-primary/30 shrink-0">
+                <AvatarImage
+                  src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}&backgroundColor=10b981&textColor=ffffff&backgroundType=solid`}
+                  alt={user?.name}
+                />
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                  {user?.name?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 text-left min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {user?.name}
+                </p>
+                <p className="text-xs text-muted-foreground capitalize">
+                  {user?.role}
+                </p>
+              </div>
+              <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="start" className="w-56 mb-1">
+            <div className="px-2 py-1.5 text-xs text-muted-foreground">
+              {user?.email ?? user?.name}
+            </div>
+            <DropdownMenuItem
+              onClick={logout}
+              className="text-destructive cursor-pointer font-medium gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Log out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </aside>
   );
 }

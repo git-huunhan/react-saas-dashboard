@@ -8,7 +8,7 @@ import {
   useTasksByStatus,
   useWorkload,
 } from "@/features/dashboard";
-import { FolderKanban, Zap, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Folder, Zap, CheckCircle2, AlertTriangle } from "lucide-react";
 
 export default function DashboardPage() {
   const {
@@ -32,7 +32,7 @@ export default function DashboardPage() {
           isLoading={isStatsLoading}
           title="Total Projects"
           value={isStatsLoading ? "" : formatNumber(statsData!.totalProjects)}
-          icon={<FolderKanban className="h-5 w-5 text-zinc-500" />}
+          icon={<Folder className="h-5 w-5 text-indigo-500" />}
         />
         <StatsCard
           isLoading={isStatsLoading}

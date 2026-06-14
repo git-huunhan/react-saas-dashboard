@@ -10,38 +10,42 @@ interface UserTableProps {
 
 export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
   if (users.length === 0) {
-    return <p className="text-center py-8 text-zinc-500">No users found.</p>;
+    return (
+      <p className="text-center py-8 text-muted-foreground">No users found.</p>
+    );
   }
 
   return (
     <table className="w-full text-sm text-left">
-      <thead className="bg-zinc-50 border-b border-zinc-200">
+      <thead className="bg-muted border-b border-border">
         <tr>
-          <th className="h-12 px-4 align-middle font-medium text-zinc-500">
+          <th className="h-12 px-4 align-middle font-medium text-muted-foreground">
             Name
           </th>
-          <th className="h-12 px-4 align-middle font-medium text-zinc-500">
+          <th className="h-12 px-4 align-middle font-medium text-muted-foreground">
             Email
           </th>
-          <th className="h-12 px-4 align-middle font-medium text-zinc-500">
+          <th className="h-12 px-4 align-middle font-medium text-muted-foreground">
             Role
           </th>
-          <th className="h-12 px-4 align-middle font-medium text-zinc-500 text-right">
+          <th className="h-12 px-4 align-middle font-medium text-muted-foreground text-right">
             Actions
           </th>
         </tr>
       </thead>
 
-      <tbody className="divide-y divide-zinc-200">
+      <tbody className="divide-y divide-border">
         {users.map((user) => (
-          <tr key={user.id} className="hover:bg-zinc-50/50 transition-colors">
-            <td className="p-4 align-middle font-medium text-zinc-900">
+          <tr key={user.id} className="hover:bg-muted/50 transition-colors">
+            <td className="p-4 align-middle font-medium text-foreground">
               {user.name}
             </td>
-            <td className="p-4 align-middle text-zinc-500">{user.email}</td>
+            <td className="p-4 align-middle text-muted-foreground">
+              {user.email}
+            </td>
             <td className="p-4 align-middle">
               <span
-                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors ${user.role === "admin" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}`}
+                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors ${user.role === "admin" ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300" : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"}`}
               >
                 {user.role}
               </span>

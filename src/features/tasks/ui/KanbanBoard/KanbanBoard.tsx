@@ -37,7 +37,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     return (
       <div className="flex gap-4 animate-pulse">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-64 w-[280px] rounded-xl bg-zinc-100" />
+          <div key={i} className="h-64 w-[280px] rounded-xl bg-muted" />
         ))}
       </div>
     );

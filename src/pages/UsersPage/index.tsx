@@ -57,14 +57,14 @@ export default function UsersPage() {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
             Users
           </h1>
-          <div className="h-9 w-24 bg-zinc-200 animate-pulse rounded-md" />
+          <div className="h-9 w-24 bg-muted animate-pulse rounded-md" />
         </div>
-        <div className="h-9 w-full max-w-sm bg-zinc-200 animate-pulse rounded-md" />
-        <div className="rounded-md border bg-white overflow-hidden">
-          <div className="h-[400px] w-full bg-zinc-100 animate-pulse" />
+        <div className="h-9 w-full max-w-sm bg-muted animate-pulse rounded-md" />
+        <div className="rounded-md border bg-card overflow-hidden">
+          <div className="h-[400px] w-full bg-muted animate-pulse" />
         </div>
       </div>
     );
@@ -73,17 +73,17 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Users
         </h1>
         <Button onClick={() => setIsModalOpen(true)}>Add User</Button>
       </div>
 
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-destructive">{error}</p>}
 
       <UserSearch value={search} onChange={setSearch} />
 
-      <div className="rounded-md border bg-white overflow-hidden">
+      <div className="rounded-md border bg-card text-card-foreground overflow-hidden">
         <UserTable
           users={filteredUsers}
           onEdit={handleEdit}

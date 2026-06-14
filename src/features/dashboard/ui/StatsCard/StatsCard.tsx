@@ -20,33 +20,33 @@ export function StatsCard({
 }: StatsCardProps) {
   if (isLoading) {
     return (
-      <div className="rounded-xl border bg-card text-card-foreground shadow bg-white p-6 flex flex-col gap-2">
+      <div className="rounded-xl border bg-card text-card-foreground shadow p-6 flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="h-5 w-24 bg-zinc-100 animate-pulse rounded" />
-          <span className="h-5 w-5 bg-zinc-100 animate-pulse rounded" />
+          <span className="h-5 w-24 bg-muted animate-pulse rounded" />
+          <span className="h-5 w-5 bg-muted animate-pulse rounded" />
         </div>
-        <div className="text-2xl font-bold text-zinc-900 mt-2">
-          <span className="animate-pulse bg-zinc-200 h-8 w-16 rounded block" />
+        <div className="text-2xl font-bold text-foreground mt-2">
+          <span className="animate-pulse bg-muted h-8 w-16 rounded block" />
         </div>
         {trend && (
-          <div className="h-4 w-32 bg-zinc-100 animate-pulse rounded mt-1" />
+          <div className="h-4 w-32 bg-muted animate-pulse rounded mt-1" />
         )}
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow bg-white p-6 flex flex-col gap-2">
+    <div className="rounded-xl border bg-card text-card-foreground shadow p-6 flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-zinc-500 tracking-tight">
+        <span className="text-sm font-medium text-muted-foreground tracking-tight">
           {title}
         </span>
-        <span className="text-zinc-500">{icon}</span>
+        <span className="text-muted-foreground">{icon}</span>
       </div>
 
-      <div className="text-2xl font-bold text-zinc-900 mt-2">
+      <div className="text-2xl font-bold text-foreground mt-2">
         {isLoading ? (
-          <span className="animate-pulse bg-zinc-200 h-8 w-16 rounded block" />
+          <span className="animate-pulse bg-muted h-8 w-16 rounded block" />
         ) : (
           value
         )}
@@ -57,7 +57,9 @@ export function StatsCard({
           className={`flex items-center text-xs font-medium mt-1 ${trend.isPositive ? "text-green-600" : "text-red-600"}`}
         >
           {trend.isPositive ? "↑" : "↓"} {Math.abs(trend.value)}%
-          <span className="text-zinc-500 font-normal ml-1">vs last month</span>
+          <span className="text-muted-foreground font-normal ml-1">
+            vs last month
+          </span>
         </div>
       )}
     </div>

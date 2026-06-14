@@ -9,6 +9,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface UserModalProps {
   open: boolean;
@@ -97,14 +104,18 @@ export function UserModal({
             )}
           </div>
 
-          <select
+          <Select
             value={role}
-            onChange={(e) => setRole(e.target.value as "admin" | "user")}
-            className="flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
+            onValueChange={(val) => setRole(val as "admin" | "user")}
           >
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select role" />
+            </SelectTrigger>
+            <SelectContent className="w-full">
+              <SelectItem value="user">User</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <Button

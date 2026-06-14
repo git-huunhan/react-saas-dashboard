@@ -6,6 +6,13 @@ import { useUsers } from "@/features/users";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const projectSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
@@ -67,7 +74,7 @@ export function ProjectForm({
     <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-zinc-700">
+          <label className="text-sm font-medium text-foreground">
             Project Name *
           </label>
           <Input {...register("name")} placeholder="e.g. Redesign Website" />
@@ -76,7 +83,7 @@ export function ProjectForm({
           )}
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-zinc-700">
+          <label className="text-sm font-medium text-foreground">
             Project Key *
           </label>
           <Input
@@ -91,7 +98,9 @@ export function ProjectForm({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-zinc-700">Description</label>
+        <label className="text-sm font-medium text-foreground">
+          Description
+        </label>
         <Textarea
           {...register("description")}
           rows={3}
@@ -101,7 +110,7 @@ export function ProjectForm({
 
       <div className="grid grid-cols-3 gap-4">
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-zinc-700">
+          <label className="text-sm font-medium text-foreground">
             Start Date *
           </label>
           <Input type="date" {...register("startDate")} />
@@ -112,7 +121,7 @@ export function ProjectForm({
           )}
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-zinc-700">
+          <label className="text-sm font-medium text-foreground">
             End Date *
           </label>
           <Input type="date" {...register("endDate")} />
@@ -123,26 +132,37 @@ export function ProjectForm({
           )}
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-zinc-700">Status *</label>
-          <select
-            {...register("status")}
-            className="flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950"
+          <label className="text-sm font-medium text-foreground">
+            Status *
+          </label>
+          <Select
+            defaultValue={initialData?.status || "planning"}
+            onValueChange={(val) =>
+              setValue("status", val as "planning" | "active" | "completed", {
+                shouldValidate: true,
+              })
+            }
           >
-            <option value="planning">Planning</option>
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent className="w-full">
+              <SelectItem value="planning">Planning</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-zinc-700">
+        <label className="text-sm font-medium text-foreground">
           Team Members *
         </label>
         {usersLoading ? (
-          <p className="text-sm text-zinc-500">Loading users...</p>
+          <p className="text-sm text-muted-foreground">Loading users...</p>
         ) : (
-          <div className="grid grid-cols-2 gap-2 rounded-md border border-zinc-200 p-3">
+          <div className="grid grid-cols-2 gap-2 rounded-md border border-border p-3">
             {users.map((user) => (
               <label
                 key={user.id}
@@ -152,9 +172,10 @@ export function ProjectForm({
                   type="checkbox"
                   checked={selectedMembers.includes(user.id)}
                   onChange={() => toggleMember(user.id)}
-                  className="rounded border-zinc-300"
+                  className="rounded border-border"
                 />
-                {user.name} <span className="text-zinc-400">({user.role})</span>
+                {user.name}{" "}
+                <span className="text-muted-foreground">({user.role})</span>
               </label>
             ))}
           </div>

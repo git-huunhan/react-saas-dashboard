@@ -16,7 +16,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = () => {
     const user = {
       id: "1",
-      name: "Nhan",
+      name: "Admin Pro",
       role: "admin" as const,
     };
 

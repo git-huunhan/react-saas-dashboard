@@ -18,6 +18,13 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   ProjectForm,
   useCreateProject,
   useProjects,
@@ -47,8 +54,7 @@ export default function ProjectsPage() {
     status,
   );
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newStatus = e.target.value;
+  const handleFilterChange = (newStatus: string) => {
     setStatus(newStatus);
     setPage(1);
     setParams({ status: newStatus !== "all" ? newStatus : "", page: "1" });
@@ -91,67 +97,68 @@ export default function ProjectsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Projects
         </h1>
         <Button onClick={() => setIsModalOpen(true)}>Create Project</Button>
       </div>
 
       <div className="flex gap-4 items-center">
-        <select
-          value={status}
-          onChange={handleFilterChange}
-          className="flex h-10 w-[180px] items-center justify-between rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:ring-offset-2"
-        >
-          <option value="all">All Statuses</option>
-          <option value="planning">Planning</option>
-          <option value="active">Active</option>
-          <option value="completed">Completed</option>
-        </select>
+        <Select value={status} onValueChange={handleFilterChange}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="All Statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="planning">Planning</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="rounded-md border bg-white overflow-hidden">
+      <div className="rounded-md border bg-card text-card-foreground overflow-hidden">
         <table className="w-full text-sm text-left table-fixed">
-          <thead className="bg-zinc-50 border-b">
+          <thead className="bg-muted border-b">
             <tr>
-              <th className="h-12 px-4 align-middle font-medium text-zinc-500 w-[30%]">
+              <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[30%]">
                 Name
               </th>
-              <th className="h-12 px-4 align-middle font-medium text-zinc-500 w-[15%]">
+              <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[15%]">
                 Key
               </th>
-              <th className="h-12 px-4 align-middle font-medium text-zinc-500 w-[15%]">
+              <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[15%]">
                 Status
               </th>
-              <th className="h-12 px-4 align-middle font-medium text-zinc-500 w-[25%]">
+              <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[25%]">
                 Timeline
               </th>
-              <th className="h-12 px-4 align-middle font-medium text-zinc-500 w-[15%]">
+              <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[15%]">
                 Team
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-200">
+          <tbody className="divide-y divide-border">
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i}>
                   <td className="p-4 align-middle">
-                    <div className="h-5 w-48 bg-zinc-100 animate-pulse rounded" />
+                    <div className="h-5 w-48 bg-muted animate-pulse rounded" />
                   </td>
                   <td className="p-4 align-middle">
-                    <div className="h-4 w-12 bg-zinc-100 animate-pulse rounded" />
+                    <div className="h-4 w-12 bg-muted animate-pulse rounded" />
                   </td>
                   <td className="p-4 align-middle">
-                    <div className="h-6 w-20 bg-zinc-100 animate-pulse rounded-full" />
+                    <div className="h-6 w-20 bg-muted animate-pulse rounded-full" />
                   </td>
                   <td className="p-4 align-middle">
-                    <div className="h-4 w-32 bg-zinc-100 animate-pulse rounded" />
+                    <div className="h-4 w-32 bg-muted animate-pulse rounded" />
                   </td>
                   <td className="p-4 align-middle">
                     <div className="flex -space-x-2">
-                      <div className="h-8 w-8 rounded-full bg-zinc-200 animate-pulse border-2 border-white" />
-                      <div className="h-8 w-8 rounded-full bg-zinc-200 animate-pulse border-2 border-white" />
-                      <div className="h-8 w-8 rounded-full bg-zinc-200 animate-pulse border-2 border-white" />
+                      <div className="h-8 w-8 rounded-full bg-muted animate-pulse border-2 border-background" />
+                      <div className="h-8 w-8 rounded-full bg-muted animate-pulse border-2 border-background" />
+                      <div className="h-8 w-8 rounded-full bg-muted animate-pulse border-2 border-background" />
                     </div>
                   </td>
                 </tr>
@@ -166,18 +173,18 @@ export default function ProjectsPage() {
               data?.data.map((project) => (
                 <tr
                   key={project.id}
-                  className="hover:bg-zinc-50/50 transition-colors"
+                  className="hover:bg-muted/50 transition-colors"
                 >
                   <td className="p-4 align-middle">
                     <Link
                       to={`/projects/${project.id}`}
-                      className="font-medium text-blue-600 hover:underline"
+                      className="font-medium text-primary hover:underline"
                     >
                       {project.name}
                     </Link>
                   </td>
                   <td className="p-4 align-middle">
-                    <span className="text-zinc-500 font-mono text-xs">
+                    <span className="text-muted-foreground font-mono text-xs">
                       {project.key}
                     </span>
                   </td>
@@ -185,10 +192,10 @@ export default function ProjectsPage() {
                     <span
                       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         project.status === "active"
-                          ? "bg-blue-100 text-blue-700"
+                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
                           : project.status === "completed"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-yellow-100 text-yellow-700"
+                            ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                            : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
                       }`}
                     >
                       {project.status === "active"
@@ -199,11 +206,11 @@ export default function ProjectsPage() {
                     </span>
                   </td>
                   <td className="p-4 align-middle">
-                    <span className="text-zinc-500">
+                    <span className="text-muted-foreground">
                       {project.startDate} &rarr; {project.endDate}
                     </span>
                   </td>
-                  <td className="p-4 align-middle text-zinc-500">
+                  <td className="p-4 align-middle text-muted-foreground">
                     {project.memberIds.length} members
                   </td>
                 </tr>
