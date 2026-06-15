@@ -92,7 +92,7 @@
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.24 0 0);
   --popover-foreground: oklch(0.985 0 0);
   /* Emerald 400 #34d399 - slightly lighter for dark bg contrast */
   --primary: oklch(0.765 0.177 162);
@@ -106,8 +106,8 @@
   --accent: oklch(0.28 0.06 162);
   --accent-foreground: oklch(0.9 0.05 162);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --border: oklch(1 0 0 / 18%);
+  --input: oklch(1 0 0 / 18%);
   /* Emerald focus ring */
   --ring: oklch(0.765 0.177 162);
   --chart-1: oklch(0.87 0 0);
@@ -180,4 +180,13 @@
 
 .dark ::-webkit-scrollbar-thumb:hover {
   background: oklch(0.6 0 0 / 80%);
+}
+
+.dark [data-radix-popper-content-wrapper] > div,
+.dark [role="dialog"] > div[class*="bg-background"],
+.dark [role="dialog"] > div[class*="bg-popover"],
+.dark [data-slot="select-content"] {
+  box-shadow:
+    0 10px 30px -10px rgba(0, 0, 0, 0.8),
+    0 0 1px 1px var(--border);
 }

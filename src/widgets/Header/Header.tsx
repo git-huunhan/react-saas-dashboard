@@ -1,4 +1,5 @@
 import { ModeToggle } from "@/components/mode-toggle";
+import { NotificationDropdown } from "./NotificationDropdown";
 
 export function Header() {
   return (
@@ -6,7 +7,10 @@ export function Header() {
       <div className="text-base font-semibold text-foreground">
         Dashboard Overview
       </div>
-      <ModeToggle />
+      <div>
+        <NotificationDropdown />
+        <ModeToggle />
+      </div>
     </header>
   );
 }
