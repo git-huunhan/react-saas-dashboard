@@ -5,6 +5,7 @@ import type { Task } from "../../model/types";
 interface TaskCardProps {
   task: Task;
   index: number;
+  onClick?: () => void;
 }
 
 const PRIORITY_STYLES: Record<string, string> = {
@@ -20,17 +21,19 @@ const PRIORITY_LABEL: Record<string, string> = {
   high: "High",
 };
 
-export function TaskCard({ task, index }: TaskCardProps) {
+export function TaskCard({ task, index, onClick }: TaskCardProps) {
   return (
     <Draggable draggableId={task.id} index={index}>
       {(provided, snapshot) => (
         <div
+          onClick={onClick}
           className={`rounded-lg border bg-card text-card-foreground p-3 shadow-sm cursor-grab active:cursor-grabbing transition-shadow ${
             snapshot.isDragging ? "shadow-lg rotate-1" : "hover:shadow-md"
           }`}
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
+          style={provided.draggableProps.style as React.CSSProperties}
         >
           <p className="text-sm font-medium text-foreground mb-3 leading-snug">
             {task.title}

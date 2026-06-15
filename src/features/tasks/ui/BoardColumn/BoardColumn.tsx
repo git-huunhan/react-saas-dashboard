@@ -7,6 +7,7 @@ interface BoardColumnProps {
   columnId: TaskStatus;
   title: string;
   tasks: Task[];
+  onTaskClick?: (task: Task) => void;
 }
 
 const COLUMN_HEADER_STYLES: Record<string, string> = {
@@ -16,7 +17,12 @@ const COLUMN_HEADER_STYLES: Record<string, string> = {
   done: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
 };
 
-export function BoardColumn({ columnId, title, tasks }: BoardColumnProps) {
+export function BoardColumn({
+  columnId,
+  title,
+  tasks,
+  onTaskClick,
+}: BoardColumnProps) {
   return (
     <div className="flex flex-col rounded-xl border bg-muted/50 min-w-[280px] w-[280px]">
       <div className="flex items-center justify-between px-4 py-3 border-b">
@@ -42,7 +48,12 @@ export function BoardColumn({ columnId, title, tasks }: BoardColumnProps) {
             {...provided.droppableProps}
           >
             {tasks.map((task, index) => (
-              <TaskCard key={task.id} task={task} index={index} />
+              <TaskCard
+                key={task.id}
+                task={task}
+                index={index}
+                onClick={() => onTaskClick?.(task)}
+              />
             ))}
             {provided.placeholder}
           </div>
