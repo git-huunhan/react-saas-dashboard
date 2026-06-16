@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 
 import DashboardPage from "@/pages/DashboardPage";
 import LoginPage from "@/pages/LoginPage";
+import ProfilePage from "@/pages/ProfilePage";
 import ProjectDetailPage from "@/pages/ProjectDetailPage";
 import ProjectsPage from "@/pages/ProjectsPage";
 import UsersPage from "@/pages/UsersPage";
@@ -32,6 +33,10 @@ export const router = createBrowserRouter([
           {
             path: "/projects/:id",
             element: <ProjectDetailPage />,
+          },
+          {
+            path: "/profile",
+            element: <ProfilePage />,
           },
         ],
       },

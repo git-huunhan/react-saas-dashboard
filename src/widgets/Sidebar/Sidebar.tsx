@@ -1,5 +1,3 @@
-import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "@/features/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -7,10 +5,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, ChevronUp } from "lucide-react";
+import { useAuth } from "@/features/auth";
+import { ChevronUp, LogOut, User } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 export function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   const links = [
@@ -81,8 +82,12 @@ export function Sidebar() {
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" className="w-56 mb-1">
             <div className="px-2 py-1.5 text-xs text-muted-foreground">
-              {user?.email ?? user?.name}
+              {user?.name}
             </div>
+            <DropdownMenuItem onClick={() => navigate("/profile")}>
+              <User className="h-4 w-4" />
+              Profile & Settings
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={logout}
               className="text-destructive cursor-pointer font-medium gap-2"
