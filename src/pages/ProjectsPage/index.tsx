@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,6 +29,7 @@ import {
   useProjects,
 } from "@/features/projects";
 import { useUrlParams } from "@/shared/hooks/useUrlParams";
+import { RoleGuard } from "@/features/auth";
 
 export default function ProjectsPage() {
   const { getParam, setParams } = useUrlParams();
@@ -100,7 +100,9 @@ export default function ProjectsPage() {
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Projects
         </h1>
-        <Button onClick={() => setIsModalOpen(true)}>Create Project</Button>
+        <RoleGuard allowedRoles={["admin"]}>
+          <Button onClick={() => setIsModalOpen(true)}>Create Project</Button>
+        </RoleGuard>
       </div>
 
       <div className="flex gap-4 items-center">

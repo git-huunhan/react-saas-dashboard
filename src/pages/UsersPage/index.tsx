@@ -11,6 +11,8 @@ import {
 
 import { Button } from "@/components/ui/button";
 
+import { RoleGuard } from "@/features/auth";
+
 export default function UsersPage() {
   const {
     users,
@@ -76,7 +78,9 @@ export default function UsersPage() {
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Users
         </h1>
-        <Button onClick={() => setIsModalOpen(true)}>Add User</Button>
+        <RoleGuard allowedRoles={["admin"]}>
+          <Button onClick={() => setIsModalOpen(true)}>Add User</Button>
+        </RoleGuard>
       </div>
 
       {error && <p className="text-destructive">{error}</p>}
