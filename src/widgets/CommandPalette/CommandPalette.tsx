@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LayoutDashboard, Users, FolderKanban, CheckSquare } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  FolderKanban,
+  CheckSquare,
+} from "lucide-react";
 
 import {
   Command,
@@ -49,7 +54,9 @@ export function CommandPalette() {
               <Users className="mr-2 h-4 w-4" />
               Users
             </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => navigate("/projects"))}>
+            <CommandItem
+              onSelect={() => runCommand(() => navigate("/projects"))}
+            >
               <FolderKanban className="mr-2 h-4 w-4" />
               Projects
             </CommandItem>
@@ -58,7 +65,9 @@ export function CommandPalette() {
           <CommandSeparator />
 
           <CommandGroup heading="Quick Actions">
-            <CommandItem onSelect={() => runCommand(() => navigate("/projects"))}>
+            <CommandItem
+              onSelect={() => runCommand(() => navigate("/projects"))}
+            >
               <CheckSquare className="mr-2 h-4 w-4" />
               View All Tasks (Kanban)
             </CommandItem>

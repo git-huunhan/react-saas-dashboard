@@ -4,7 +4,7 @@ import { NotificationDropdown } from "./NotificationDropdown";
 export function Header() {
   const openSearch = () =>
     document.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true })
+      new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }),
     );
 
   return (
