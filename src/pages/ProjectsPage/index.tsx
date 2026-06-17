@@ -23,13 +23,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RoleGuard } from "@/features/auth";
 import {
   ProjectForm,
   useCreateProject,
   useProjects,
 } from "@/features/projects";
 import { useUrlParams } from "@/shared/hooks/useUrlParams";
-import { RoleGuard } from "@/features/auth";
+import { toast } from "sonner";
 
 export default function ProjectsPage() {
   const { getParam, setParams } = useUrlParams();
@@ -87,6 +88,10 @@ export default function ProjectsPage() {
         setIsModalOpen(false);
         setPage(1);
         setParams({ page: "1" });
+        toast.success("Project created successfully");
+      },
+      onError: () => {
+        toast.error("Failed to create project");
       },
     });
   };

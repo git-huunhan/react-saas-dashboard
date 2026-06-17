@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 
 import { RoleGuard } from "@/features/auth";
 
+import { toast } from "sonner";
+
 export default function UsersPage() {
   const {
     users,
@@ -40,8 +42,10 @@ export default function UsersPage() {
   const handleSubmitUser = async (data: CreateUserDto) => {
     if (selectedUser) {
       await updateUserById(selectedUser.id, data);
+      toast.success("User updated successfully");
     } else {
       await addUser(data);
+      toast.success("User created successfully");
     }
 
     setSelectedUser(null);
@@ -53,6 +57,7 @@ export default function UsersPage() {
     if (!confirmed) return;
 
     await deleteUserById(id);
+    toast.success("User deleted");
   };
 
   if (loading) {
