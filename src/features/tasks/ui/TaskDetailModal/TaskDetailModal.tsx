@@ -29,12 +29,16 @@ interface TaskDetailModalProps {
   task: Task | null;
   isOpen: boolean;
   onClose: () => void;
+  onEdit?: (task: Task) => void;
+  onDelete?: (task: Task) => void;
 }
 
 export function TaskDetailModal({
   task,
   isOpen,
   onClose,
+  onEdit,
+  onDelete,
 }: TaskDetailModalProps) {
   const { users } = useUsers();
   const [comment, setComment] = useState("");
@@ -43,7 +47,6 @@ export function TaskDetailModal({
 
   const assignee = users.find((u) => u.id === task.assigneeId);
 
-  // Mock data cho subtasks và comments (vì chưa có trong Task model)
   const subtasks = [
     { id: 1, title: "Design mockup in Figma", completed: true },
     { id: 2, title: "Review with product team", completed: false },
@@ -65,12 +68,18 @@ export function TaskDetailModal({
         <ScrollArea className="max-h-[85vh]">
           <div className="p-6">
             {/* Header & Badges */}
-            <div className="flex items-start justify-between mb-4">
-              <DialogHeader>
-                <DialogTitle className="text-xl font-bold leading-tight">
-                  {task.title}
-                </DialogTitle>
-                <div className="flex items-center gap-2 mt-3">
+            <div className="mb-4">
+              <div className="pr-8">
+                <DialogHeader>
+                  <DialogTitle className="text-xl font-bold leading-tight">
+                    {task.title}
+                  </DialogTitle>
+                </DialogHeader>
+              </div>
+
+              <div className="flex items-center justify-between mt-3">
+                {/* Left: badges + date */}
+                <div className="flex items-center gap-2 flex-wrap">
                   <Badge
                     variant="outline"
                     className="text-xs uppercase bg-muted/50"
@@ -89,12 +98,41 @@ export function TaskDetailModal({
                   >
                     {task.priority}
                   </Badge>
-                  <div className="flex items-center text-xs text-muted-foreground ml-2">
+                  <div className="flex items-center text-xs text-muted-foreground">
                     <Clock className="mr-1 h-3 w-3" />
                     {format(new Date(task.createdAt), "MMM d, yyyy")}
                   </div>
                 </div>
-              </DialogHeader>
+
+                {/* Right: action buttons */}
+                {(onEdit || onDelete) && (
+                  <div className="flex gap-1.5 shrink-0">
+                    {onEdit && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2.5 text-xs"
+                        onClick={() => {
+                          onClose();
+                          onEdit(task);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                    )}
+                    {onDelete && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2.5 text-xs text-destructive hover:text-destructive hover:border-destructive/50"
+                        onClick={() => onDelete(task)}
+                      >
+                        Delete
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Assignee */}
@@ -160,7 +198,6 @@ export function TaskDetailModal({
 
             <Separator className="my-6" />
 
-            {/* Comments Section */}
             <div>
               <div className="flex items-center gap-2 font-semibold mb-4 text-foreground">
                 <MessageSquare className="h-4 w-4 text-muted-foreground" />

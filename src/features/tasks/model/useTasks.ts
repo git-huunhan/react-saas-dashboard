@@ -1,6 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getTasksByProjectId, updateTaskStatus } from "../api/tasksApi";
+import {
+  createTask,
+  deleteTask,
+  getTasksByProjectId,
+  updateTask,
+  updateTaskStatus,
+} from "../api/tasksApi";
 import type { Task, TaskStatus } from "./types";
 
 export const tasksKeys = {
@@ -54,6 +60,52 @@ export function useUpdateTaskStatus() {
           queryKey: tasksKeys.byProject(updatedTask.projectId),
         });
       }
+    },
+  });
+}
+
+export function useCreateTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createTask,
+    onSuccess: (newTask) => {
+      queryClient.invalidateQueries({
+        queryKey: tasksKeys.byProject(newTask.projectId),
+      });
+    },
+  });
+}
+export function useUpdateTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      taskId,
+      data,
+    }: {
+      taskId: string;
+      data: Partial<Omit<Task, "id" | "createdAt" | "projectId">>;
+    }) => updateTask(taskId, data),
+    onSuccess: (updatedTask) => {
+      queryClient.invalidateQueries({
+        queryKey: tasksKeys.byProject(updatedTask.projectId),
+      });
+    },
+  });
+}
+export function useDeleteTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      taskId,
+      projectId,
+    }: {
+      taskId: string;
+      projectId: string;
+    }) => deleteTask(taskId),
+    onSuccess: (_data, { projectId }) => {
+      queryClient.invalidateQueries({
+        queryKey: tasksKeys.byProject(projectId),
+      });
     },
   });
 }

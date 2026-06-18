@@ -55,3 +55,19 @@ export async function createTask(
   tasksDb = [newTask, ...tasksDb];
   return newTask;
 }
+
+export async function updateTask(
+  taskId: string,
+  data: Partial<Omit<Task, "id" | "createdAt" | "projectId">>,
+): Promise<Task> {
+  await delay(300);
+  const task = tasksDb.find((t) => t.id === taskId);
+  if (!task) throw new Error("Task not found");
+  Object.assign(task, data);
+  return { ...task };
+}
+
+export async function deleteTask(taskId: string): Promise<void> {
+  await delay(300);
+  tasksDb = tasksDb.filter((t) => t.id !== taskId);
+}
