@@ -12,6 +12,7 @@ import {
   getProjects,
   updateProject,
 } from "../api/projectsApi";
+import type { Project } from "./types";
 
 export const projectsKeys = {
   all: ["projects"] as const,
