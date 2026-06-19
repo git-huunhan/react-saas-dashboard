@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,9 +37,13 @@ import { RoleGuard } from "@/features/auth";
 import {
   ProjectForm,
   useCreateProject,
+  useDeleteProject,
   useProjects,
+  useUpdateProject,
+  type Project,
 } from "@/features/projects";
 import { useUrlParams } from "@/shared/hooks/useUrlParams";
+import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ProjectsPage() {
@@ -43,6 +57,13 @@ export default function ProjectsPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const createMutation = useCreateProject();
+
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(
+    null,
+  );
+  const updateMutation = useUpdateProject();
+  const deleteMutation = useDeleteProject();
 
   useEffect(() => {
     setPage(Number(getParam("page", "1")));
@@ -96,6 +117,31 @@ export default function ProjectsPage() {
     });
   };
 
+  const handleEditProject = (data: any) => {
+    if (!editingProject) return;
+    updateMutation.mutate(
+      { id: editingProject.id, data },
+      {
+        onSuccess: () => {
+          setEditingProject(null);
+          toast.success("Project updated");
+        },
+        onError: () => toast.error("Failed to update project"),
+      },
+    );
+  };
+
+  const handleDeleteProject = () => {
+    if (!deletingProjectId) return;
+    deleteMutation.mutate(deletingProjectId, {
+      onSuccess: () => {
+        setDeletingProjectId(null);
+        toast.success("Project deleted");
+      },
+      onError: () => toast.error("Failed to delete project"),
+    });
+  };
+
   if (isError)
     return <div className="text-red-500 py-4">Failed to load projects.</div>;
 
@@ -137,11 +183,14 @@ export default function ProjectsPage() {
               <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[15%]">
                 Status
               </th>
-              <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[25%]">
+              <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[22%]">
                 Timeline
               </th>
-              <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[15%]">
+              <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[13%]">
                 Team
+              </th>
+              <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[10%]">
+                Actions
               </th>
             </tr>
           </thead>
@@ -220,6 +269,28 @@ export default function ProjectsPage() {
                   <td className="p-4 align-middle text-muted-foreground">
                     {project.memberIds.length} members
                   </td>
+                  <td className="p-4 align-middle">
+                    <div className="flex items-center gap-1">
+                      <RoleGuard allowedRoles={["admin"]}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                          onClick={() => setEditingProject(project)}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={() => setDeletingProjectId(project.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </RoleGuard>
+                    </div>
+                  </td>
                 </tr>
               ))
             )}
@@ -279,6 +350,47 @@ export default function ProjectsPage() {
           />
         </DialogContent>
       </Dialog>
+
+      <Dialog
+        open={!!editingProject}
+        onOpenChange={() => setEditingProject(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Project</DialogTitle>
+          </DialogHeader>
+          <ProjectForm
+            initialData={editingProject ?? undefined}
+            onSubmit={handleEditProject}
+            isLoading={updateMutation.isPending}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={!!deletingProjectId}
+        onOpenChange={() => setDeletingProjectId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. All tasks in this project will also
+              be affected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDeleteProject}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

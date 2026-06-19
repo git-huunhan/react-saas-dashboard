@@ -1,11 +1,17 @@
 import {
   keepPreviousData,
-  useQuery,
   useMutation,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 
-import { getProjectById, getProjects, createProject } from "../api/projectsApi";
+import {
+  createProject,
+  deleteProject,
+  getProjectById,
+  getProjects,
+  updateProject,
+} from "../api/projectsApi";
 
 export const projectsKeys = {
   all: ["projects"] as const,
@@ -42,6 +48,32 @@ export function useCreateProject() {
     mutationFn: createProject,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: projectsKeys.lists() });
+    },
+  });
+}
+
+export function useUpdateProject() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<Omit<Project, "id" | "createdAt">>;
+    }) => updateProject(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: projectsKeys.all });
+    },
+  });
+}
+
+export function useDeleteProject() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteProject(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: projectsKeys.all });
     },
   });
 }

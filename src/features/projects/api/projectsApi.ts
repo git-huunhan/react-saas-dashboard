@@ -56,3 +56,19 @@ export async function createProject(data: ProjectFormData): Promise<Project> {
   projectsDb = [newProject, ...projectsDb];
   return newProject;
 }
+
+export async function updateProject(
+  id: string,
+  data: Partial<Omit<Project, "id" | "createdAt">>,
+): Promise<Project> {
+  await delay(400);
+  const project = projectsDb.find((p) => p.id === id);
+  if (!project) throw new Error("Project not found");
+  Object.assign(project, data);
+  return { ...project };
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  await delay(400);
+  projectsDb = projectsDb.filter((p) => p.id !== id);
+}
