@@ -8,7 +8,10 @@ export interface User {
 
 export interface AuthContextValue {
   user: User | null;
-  login: () => void;
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
 }
 
