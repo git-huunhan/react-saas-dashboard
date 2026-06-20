@@ -9,12 +9,6 @@ interface UserTableProps {
 }
 
 export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
-  if (users.length === 0) {
-    return (
-      <p className="text-center py-8 text-muted-foreground">No users found.</p>
-    );
-  }
-
   return (
     <table className="w-full text-sm text-left">
       <thead className="bg-muted border-b border-border">

@@ -10,10 +10,13 @@ import {
 } from "@/features/users";
 
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 
 import { RoleGuard } from "@/features/auth";
 
 import { toast } from "sonner";
+
+import { Users } from "lucide-react";
 
 export default function UsersPage() {
   const {
@@ -98,6 +101,26 @@ export default function UsersPage() {
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
+        {filteredUsers.length === 0 && (
+          <EmptyState
+            icon={Users}
+            title={search ? "No users match your search" : "No users yet"}
+            description={
+              search
+                ? `No results for "${search}". Try a different name.`
+                : "Add the first team member to get started."
+            }
+            action={
+              !search && (
+                <RoleGuard allowedRoles={["admin"]}>
+                  <Button size="sm" onClick={() => setIsModalOpen(true)}>
+                    Add User
+                  </Button>
+                </RoleGuard>
+              )
+            }
+          />
+        )}
       </div>
       <UserModal
         open={isModalOpen}

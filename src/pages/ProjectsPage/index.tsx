@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Pagination,
   PaginationContent,
@@ -43,7 +44,7 @@ import {
   type Project,
 } from "@/features/projects";
 import { useUrlParams } from "@/shared/hooks/useUrlParams";
-import { Pencil, Trash2 } from "lucide-react";
+import { FolderKanban, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ProjectsPage() {
@@ -221,8 +222,23 @@ export default function ProjectsPage() {
               ))
             ) : data?.data.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-4">
-                  No projects found.
+                <td colSpan={6} className="py-0">
+                  <EmptyState
+                    icon={FolderKanban}
+                    title="No projects found"
+                    description={
+                      status !== "all"
+                        ? `No projects with status "${status}". Try changing the filter.`
+                        : "Get started by creating your first project."
+                    }
+                    action={
+                      <RoleGuard allowedRoles={["admin"]}>
+                        <Button size="sm" onClick={() => setIsModalOpen(true)}>
+                          Create Project
+                        </Button>
+                      </RoleGuard>
+                    }
+                  />
                 </td>
               </tr>
             ) : (
