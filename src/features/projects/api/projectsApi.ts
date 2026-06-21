@@ -44,6 +44,11 @@ export async function getProjectById(id: string): Promise<Project> {
   return { ...project };
 }
 
+export function getProjectKeySync(id: string): string {
+  const project = projectsDb.find((p) => p.id === id);
+  return project ? project.key : "TASK";
+}
+
 export async function createProject(data: ProjectFormData): Promise<Project> {
   await delay(600);
 

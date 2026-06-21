@@ -3,11 +3,17 @@ export type TaskPriority = "low" | "medium" | "high";
 
 export interface Task {
   id: string;
+  code: string;
   projectId: string;
   title: string;
   description?: string;
   status: TaskStatus;
   priority: TaskPriority;
+  assignee?: {
+    id: string;
+    name: string;
+    avatarUrl: string;
+  };
   assigneeId?: string;
   createdAt: string;
 }

@@ -1,31 +1,36 @@
 import type { Task, TaskStatus } from "../model/types";
+import { getProjectKeySync } from "../../projects/api/projectsApi";
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 const PRIORITIES = ["low", "medium", "high"] as const;
 const STATUSES: TaskStatus[] = ["todo", "in-progress", "review", "done"];
 
-let tasksDb: Task[] = Array.from({ length: 60 }).map((_, i) => ({
-  id: `task-${i + 1}`,
-  projectId: `proj-${(i % 24) + 1}`,
-  title: [
-    "Design homepage mockup",
-    "Set up CI/CD pipeline",
-    "Write unit tests",
-    "Fix authentication bug",
-    "Implement dark mode",
-    "Review pull requests",
-    "Update API documentation",
-    "Optimize database queries",
-    "Deploy to staging",
-    "User research interviews",
-  ][i % 10],
-  description: `Description for task ${i + 1}`,
-  status: STATUSES[i % 4],
-  priority: PRIORITIES[i % 3],
-  assigneeId: `user-${(i % 3) + 1}`,
-  createdAt: new Date(Date.now() - i * 86400000).toISOString().split("T")[0],
-}));
+let tasksDb: Task[] = Array.from({ length: 60 }).map((_, i) => {
+  const projectId = `proj-${(i % 24) + 1}`;
+  return {
+    id: `task-${i + 1}`,
+    code: `${getProjectKeySync(projectId)}-${i + 101}`,
+    projectId,
+    title: [
+      "Design homepage mockup",
+      "Set up CI/CD pipeline",
+      "Write unit tests",
+      "Fix authentication bug",
+      "Implement dark mode",
+      "Review pull requests",
+      "Update API documentation",
+      "Optimize database queries",
+      "Deploy to staging",
+      "User research interviews",
+    ][i % 10],
+    description: `Description for task ${i + 1}`,
+    status: STATUSES[i % 4],
+    priority: PRIORITIES[i % 3],
+    assigneeId: `user-${(i % 3) + 1}`,
+    createdAt: new Date(Date.now() - i * 86400000).toISOString().split("T")[0],
+  };
+});
 
 export async function getTasksByProjectId(projectId: string): Promise<Task[]> {
   await delay(500);
@@ -44,12 +49,13 @@ export async function updateTaskStatus(
 }
 
 export async function createTask(
-  data: Omit<Task, "id" | "createdAt">,
+  data: Omit<Task, "id" | "createdAt" | "code" | "assignee">,
 ): Promise<Task> {
   await delay(500);
   const newTask: Task = {
     ...data,
     id: `task-${Date.now()}`,
+    code: `${getProjectKeySync(data.projectId)}-${Math.floor(Math.random() * 900) + 100}`,
     createdAt: new Date().toISOString().split("T")[0],
   };
   tasksDb = [newTask, ...tasksDb];
@@ -58,7 +64,9 @@ export async function createTask(
 
 export async function updateTask(
   taskId: string,
-  data: Partial<Omit<Task, "id" | "createdAt" | "projectId">>,
+  data: Partial<
+    Omit<Task, "id" | "createdAt" | "projectId" | "code" | "assignee">
+  >,
 ): Promise<Task> {
   await delay(300);
   const task = tasksDb.find((t) => t.id === taskId);
