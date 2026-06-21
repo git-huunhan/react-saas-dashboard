@@ -1,11 +1,13 @@
-import { Draggable } from "@hello-pangea/dnd";
-
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import type { Task } from "../../model/types";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface TaskCardProps {
   task: Task;
-  index: number;
-  onClick?: () => void;
+  onClick: (task: Task) => void;
+  isOverlay?: boolean;
 }
 
 const PRIORITY_STYLES: Record<string, string> = {
@@ -21,39 +23,107 @@ const PRIORITY_LABEL: Record<string, string> = {
   high: "High",
 };
 
-export function TaskCard({ task, index, onClick }: TaskCardProps) {
-  return (
-    <Draggable draggableId={task.id} index={index}>
-      {(provided, snapshot) => (
-        <div
-          onClick={onClick}
-          className={`rounded-lg border bg-card text-card-foreground p-3 shadow-sm cursor-grab active:cursor-grabbing transition-shadow ${
-            snapshot.isDragging ? "shadow-lg rotate-1" : "hover:shadow-md"
-          }`}
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-          style={provided.draggableProps.style as React.CSSProperties}
-        >
-          <p className="text-sm font-medium text-foreground mb-3 leading-snug">
-            {task.title}
-          </p>
+export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
+  const {
+    setNodeRef,
+    attributes,
+    listeners,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: task.id,
+    data: {
+      type: "Task",
+      task,
+    },
+  });
 
-          <div className="flex items-center justify-between">
-            <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${PRIORITY_STYLES[task.priority]}`}
-            >
-              {PRIORITY_LABEL[task.priority]}
-            </span>
+  const style = {
+    transition,
+    transform: CSS.Transform.toString(transform),
+  };
 
-            {task.assigneeId && (
-              <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
-                {task.assigneeId.replace("user-", "U")}
-              </div>
-            )}
-          </div>
+  if (isOverlay) {
+    return (
+      <div className="rounded-lg border bg-card text-card-foreground p-3 mb-3 cursor-grabbing shadow-2xl scale-105">
+        <p className="text-sm font-medium leading-tight mb-4">{task.title}</p>
+        <div className="flex items-center justify-between mt-auto">
+          <Badge
+            variant="secondary"
+            className={`${PRIORITY_STYLES[task.priority]} border-0`}
+          >
+            {PRIORITY_LABEL[task.priority]}
+          </Badge>
+          {task.assignee && (
+            <Avatar className="h-6 w-6">
+              <AvatarImage src={task.assignee.avatarUrl} />
+              <AvatarFallback className="text-[10px]">
+                {task.assignee.name.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+          )}
         </div>
-      )}
-    </Draggable>
+      </div>
+    );
+  }
+
+  if (isDragging) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="rounded-lg border border-dashed border-primary bg-primary/5 p-3 mb-3"
+      >
+        <p className="text-sm font-medium leading-tight mb-4 opacity-0">
+          {task.title}
+        </p>
+        <div className="flex items-center justify-between mt-auto opacity-0">
+          <Badge
+            variant="secondary"
+            className={`${PRIORITY_STYLES[task.priority]} border-0`}
+          >
+            {PRIORITY_LABEL[task.priority]}
+          </Badge>
+          {task.assignee && (
+            <Avatar className="h-6 w-6">
+              <AvatarImage src={task.assignee.avatarUrl} />
+              <AvatarFallback className="text-[10px]">
+                {task.assignee.name.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={() => onClick(task)}
+      className="rounded-lg border bg-card text-card-foreground p-3 mb-3 cursor-grab hover:shadow-md shadow-sm transition-shadow transition-colors duration-200"
+    >
+      <p className="text-sm font-medium leading-tight mb-4">{task.title}</p>
+      <div className="flex items-center justify-between mt-auto">
+        <Badge
+          variant="secondary"
+          className={`${PRIORITY_STYLES[task.priority]} border-0`}
+        >
+          {PRIORITY_LABEL[task.priority]}
+        </Badge>
+        {task.assignee && (
+          <Avatar className="h-6 w-6">
+            <AvatarImage src={task.assignee.avatarUrl} />
+            <AvatarFallback className="text-[10px]">
+              {task.assignee.name.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+        )}
+      </div>
+    </div>
   );
 }
