@@ -225,7 +225,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
           className="flex flex-col flex-1 min-h-0 overflow-x-auto overflow-y-hidden px-6 pb-6 md:px-8 md:pb-8 items-start relative custom-scrollbar"
           ref={scrollContainerRef}
         >
-          <div className="flex h-full min-h-0">
+          <div className="flex h-fit max-h-full min-h-0">
             {KANBAN_COLUMNS.map((col, index) => {
               const columnTasks = localTasks.filter((t) => t.status === col.id);
               return (
