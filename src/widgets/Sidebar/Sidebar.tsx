@@ -1,3 +1,4 @@
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -8,20 +9,21 @@ import {
 import { useAuth } from "@/features/auth";
 import { ChevronUp, LogOut, User } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useSidebar } from "./useSidebar";
 
-export function Sidebar() {
+const links = [
+  { to: "/", label: "Dashboard" },
+  { to: "/users", label: "Users" },
+  { to: "/projects", label: "Projects" },
+];
+
+function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const links = [
-    { to: "/", label: "Dashboard" },
-    { to: "/users", label: "Users" },
-    { to: "/projects", label: "Projects" },
-  ];
-
   return (
-    <aside className="w-64 border-r bg-background flex flex-col h-full">
+    <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="px-6 py-5 border-b border-border">
         <h2 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
@@ -38,11 +40,11 @@ export function Sidebar() {
           const isActive =
             location.pathname === link.to ||
             (link.to !== "/" && location.pathname.startsWith(link.to));
-
           return (
             <Link
               key={link.to}
               to={link.to}
+              onClick={onNavClick}
               className={`flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-primary/10 text-primary"
@@ -55,7 +57,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* User profile at bottom */}
+      {/* User profile */}
       <div className="p-3 border-t border-border">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -84,7 +86,12 @@ export function Sidebar() {
             <div className="px-2 py-1.5 text-xs text-muted-foreground">
               {user?.name}
             </div>
-            <DropdownMenuItem onClick={() => navigate("/profile")}>
+            <DropdownMenuItem
+              onClick={() => {
+                navigate("/profile");
+                onNavClick?.();
+              }}
+            >
               <User className="h-4 w-4" />
               Profile & Settings
             </DropdownMenuItem>
@@ -98,6 +105,26 @@ export function Sidebar() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </aside>
+    </div>
+  );
+}
+
+export function Sidebar() {
+  const { isOpen, close } = useSidebar();
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex w-64 border-r bg-background flex-col h-full shrink-0">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile sheet */}
+      <Sheet open={isOpen} onOpenChange={close}>
+        <SheetContent side="left" className="w-64 p-0">
+          <SidebarContent onNavClick={close} />
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }

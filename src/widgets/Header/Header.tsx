@@ -1,4 +1,6 @@
 import { ModeToggle } from "@/components/mode-toggle";
+import { useSidebar } from "@/widgets/Sidebar/useSidebar";
+import { Menu } from "lucide-react";
 import { NotificationDropdown } from "./NotificationDropdown";
 
 export function Header() {
@@ -7,8 +9,17 @@ export function Header() {
       new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }),
     );
 
+  const { toggle } = useSidebar();
+
   return (
     <header className="flex h-14 items-center justify-between border-b bg-background px-6 shrink-0">
+      <button
+        onClick={toggle}
+        className="md:hidden h-8 w-8 flex items-center justify-center rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors mr-2"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
       <div className="text-base font-semibold text-foreground">
         Dashboard Overview
       </div>
