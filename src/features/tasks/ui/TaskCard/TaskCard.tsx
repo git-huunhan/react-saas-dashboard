@@ -9,36 +9,7 @@ interface TaskCardProps {
   onClick: (task: Task) => void;
   isOverlay?: boolean;
 }
-
-function PriorityIcon({ priority }: { priority: string }) {
-  if (priority === "high") {
-    return (
-      <div className="flex items-end gap-[2px] h-3">
-        <div className="w-[3px] h-1.5 bg-red-500 rounded-[1px]" />
-        <div className="w-[3px] h-2.5 bg-red-500 rounded-[1px]" />
-        <div className="w-[3px] h-3.5 bg-red-500 rounded-[1px]" />
-      </div>
-    );
-  }
-  if (priority === "medium") {
-    return (
-      <div className="flex items-end gap-[2px] h-3">
-        <div className="w-[3px] h-1.5 bg-yellow-500 rounded-[1px]" />
-        <div className="w-[3px] h-2.5 bg-yellow-500 rounded-[1px]" />
-        <div className="w-[3px] h-3.5 bg-muted-foreground/40 rounded-[1px]" />
-      </div>
-    );
-  }
-  // Low
-  return (
-    <div className="flex items-end gap-[2px] h-3">
-      <div className="w-[3px] h-1.5 bg-blue-500 rounded-[1px]" />
-      <div className="w-[3px] h-2.5 bg-muted-foreground/40 rounded-[1px]" />
-      <div className="w-[3px] h-3.5 bg-muted-foreground/40 rounded-[1px]" />
-    </div>
-  );
-}
-
+import { PriorityIcon } from "../PriorityIcon";
 export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
   const {
     setNodeRef,
