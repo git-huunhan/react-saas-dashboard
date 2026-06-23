@@ -7,14 +7,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/features/auth";
-import { ChevronUp, LogOut, User } from "lucide-react";
+import {
+  ChevronUp,
+  FolderKanban,
+  LayoutDashboard,
+  LogOut,
+  User,
+  Users2,
+} from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSidebar } from "./useSidebar";
 
 const links = [
-  { to: "/", label: "Dashboard" },
-  { to: "/users", label: "Users" },
-  { to: "/projects", label: "Projects" },
+  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/users", label: "Users", icon: Users2 },
+  { to: "/projects", label: "Projects", icon: FolderKanban },
 ];
 
 function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
@@ -40,17 +47,19 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
           const isActive =
             location.pathname === link.to ||
             (link.to !== "/" && location.pathname.startsWith(link.to));
+          const Icon = link.icon;
           return (
             <Link
               key={link.to}
               to={link.to}
               onClick={onNavClick}
-              className={`flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               }`}
             >
+              <Icon className="h-4 w-4 shrink-0" />
               {link.label}
             </Link>
           );
