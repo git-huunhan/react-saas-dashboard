@@ -30,7 +30,7 @@ let tasksDb: Task[] = Array.from({ length: 60 }).map((_, i) => {
       "User research interviews",
     ][i % 10],
     description: `Description for task ${i + 1}`,
-    type: (i === 1 || i === 5) ? "epic" : (i % 4 === 0) ? "bug" : "task",
+    type: i === 1 || i === 5 ? "epic" : i % 4 === 0 ? "bug" : "task",
     status: STATUSES[i % 4],
     priority: PRIORITIES[i % 3],
     assigneeId,
@@ -67,6 +67,14 @@ export async function createTask(
     ...data,
     id: `task-${Date.now()}`,
     code: `${getProjectKeySync(data.projectId)}-${Math.floor(Math.random() * 900) + 100}`,
+    reporterId: "user-1",
+    reporter: mockUsers[0]
+      ? {
+          id: mockUsers[0].id,
+          name: mockUsers[0].name,
+          avatarUrl: mockUsers[0].avatarUrl || "",
+        }
+      : undefined,
     createdAt: new Date().toISOString().split("T")[0],
   };
   tasksDb = [newTask, ...tasksDb];
@@ -92,6 +100,21 @@ export async function updateTask(
       const user = mockUsers.find((u) => u.id === data.assigneeId);
       if (user) {
         task.assignee = {
+          id: user.id,
+          name: user.name,
+          avatarUrl: user.avatarUrl || "",
+        };
+      }
+    }
+  }
+
+  if (data.reporterId !== undefined) {
+    if (data.reporterId === null) {
+      task.reporter = undefined;
+    } else {
+      const user = mockUsers.find((u) => u.id === data.reporterId);
+      if (user) {
+        task.reporter = {
           id: user.id,
           name: user.name,
           avatarUrl: user.avatarUrl || "",

@@ -2,7 +2,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Task } from "../../model/types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { MessageSquare, Paperclip, Bug, Crown, ClipboardList } from "lucide-react";
+import {
+  MessageSquare,
+  Paperclip,
+  Bug,
+  Crown,
+  ClipboardList,
+} from "lucide-react";
 
 interface TaskCardProps {
   task: Task;

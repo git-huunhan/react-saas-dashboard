@@ -16,6 +16,12 @@ export interface Task {
     avatarUrl: string;
   };
   assigneeId?: string;
+  reporterId?: string;
+  reporter?: {
+    id: string;
+    name: string;
+    avatarUrl: string;
+  };
   labels?: string[];
   dueDate?: string;
   createdAt: string;

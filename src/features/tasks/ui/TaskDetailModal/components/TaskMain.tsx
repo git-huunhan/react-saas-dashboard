@@ -258,15 +258,23 @@ export function TaskMain({ task, handleUpdate }: TaskMainProps) {
                 </h3>
               </div>
               <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                >
                   <MoreHorizontal className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                >
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
             </div>
-            
+
             <div className="flex items-center justify-end text-xs text-muted-foreground mb-1 font-medium">
               0% Done
             </div>
@@ -281,11 +289,13 @@ export function TaskMain({ task, handleUpdate }: TaskMainProps) {
                 <div>Assignee</div>
                 <div>Status</div>
               </div>
-              
+
               <div className="grid grid-cols-[1fr_120px_140px_100px] p-2 items-center hover:bg-muted/20 transition-colors border-border/50 group">
                 <div className="flex items-center gap-2 pl-2">
                   <ClipboardList className="w-4 h-4 text-primary shrink-0" />
-                  <span className="font-semibold text-primary hover:underline cursor-pointer">PRJ1-102</span>
+                  <span className="font-semibold text-primary hover:underline cursor-pointer">
+                    PRJ1-102
+                  </span>
                   <span className="truncate">User Authentication API</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -294,7 +304,19 @@ export function TaskMain({ task, handleUpdate }: TaskMainProps) {
                 </div>
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <div className="h-5 w-5 rounded-full border border-dashed border-muted-foreground/40 flex items-center justify-center bg-muted/20 shrink-0">
-                    <svg className="w-3 h-3 text-muted-foreground/60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    <svg
+                      className="w-3 h-3 text-muted-foreground/60"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
                   </div>
                   Unassigned
                 </div>
@@ -307,7 +329,9 @@ export function TaskMain({ task, handleUpdate }: TaskMainProps) {
               <div className="grid grid-cols-[1fr_120px_140px_100px] p-2 items-center hover:bg-muted/20 transition-colors border-t border-border/50 group">
                 <div className="flex items-center gap-2 pl-2">
                   <ClipboardList className="w-4 h-4 text-primary shrink-0" />
-                  <span className="font-semibold text-primary hover:underline cursor-pointer">PRJ1-103</span>
+                  <span className="font-semibold text-primary hover:underline cursor-pointer">
+                    PRJ1-103
+                  </span>
                   <span className="truncate">Login UI implementation</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -316,7 +340,19 @@ export function TaskMain({ task, handleUpdate }: TaskMainProps) {
                 </div>
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <div className="h-5 w-5 rounded-full border border-dashed border-muted-foreground/40 flex items-center justify-center bg-muted/20 shrink-0">
-                    <svg className="w-3 h-3 text-muted-foreground/60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    <svg
+                      className="w-3 h-3 text-muted-foreground/60"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
                   </div>
                   Unassigned
                 </div>
@@ -334,7 +370,7 @@ export function TaskMain({ task, handleUpdate }: TaskMainProps) {
             <h3 className="text-[15px] font-semibold text-foreground mb-3">
               Linked work items
             </h3>
-            
+
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <Select defaultValue="blocked_by">
@@ -348,19 +384,35 @@ export function TaskMain({ task, handleUpdate }: TaskMainProps) {
                   </SelectContent>
                 </Select>
 
-                <input 
-                  type="text" 
-                  placeholder="Type, search or paste URL" 
+                <input
+                  type="text"
+                  placeholder="Type, search or paste URL"
                   className="flex-1 h-9 px-3 bg-transparent border border-border/50 rounded-md text-[13px] outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-foreground placeholder:text-muted-foreground"
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground text-[13px] font-medium">
-                  <Plus className="w-3.5 h-3.5 mr-1.5" /> Create linked work item
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-muted-foreground hover:text-foreground text-[13px] font-medium"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1.5" /> Create linked work
+                  item
                 </Button>
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" className="h-8 text-[13px] font-medium">Cancel</Button>
-                  <Button size="sm" className="h-8 bg-muted text-muted-foreground hover:bg-muted/80 cursor-not-allowed shadow-none text-[13px] font-medium">Link</Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 text-[13px] font-medium"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="h-8 bg-muted text-muted-foreground hover:bg-muted/80 cursor-not-allowed shadow-none text-[13px] font-medium"
+                  >
+                    Link
+                  </Button>
                 </div>
               </div>
             </div>

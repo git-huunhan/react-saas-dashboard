@@ -26,11 +26,18 @@ export function TaskDetailModal({
   if (!task) return null;
 
   const handleUpdate = (
-    field: "title" | "description" | "status" | "priority",
-    value: string,
+    field:
+      | "title"
+      | "description"
+      | "status"
+      | "priority"
+      | "assigneeId"
+      | "labels"
+      | "dueDate"
+      | "reporterId",
+    value: any,
   ) => {
     if (!task) return;
-
     if ((task as any)[field] === value) return;
     updateTask.mutate({
       taskId: task.id,
