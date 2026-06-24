@@ -7,6 +7,7 @@ export interface Task {
   projectId: string;
   title: string;
   description?: string;
+  type?: "task" | "epic" | "bug";
   status: TaskStatus;
   priority: TaskPriority;
   assignee?: {
@@ -15,6 +16,8 @@ export interface Task {
     avatarUrl: string;
   };
   assigneeId?: string;
+  labels?: string[];
+  dueDate?: string;
   createdAt: string;
 }
 

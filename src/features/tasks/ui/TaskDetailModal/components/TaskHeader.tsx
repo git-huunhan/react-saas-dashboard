@@ -1,4 +1,5 @@
 import {
+  Bug,
   ClipboardList,
   Crown,
   Eye,
@@ -29,13 +30,23 @@ export function TaskHeader({ task, onClose, onDelete }: TaskHeaderProps) {
   return (
     <div className="flex items-center justify-between px-6 py-4 shrink-0 border-b border-border/40 bg-card z-20">
       <div className="flex items-center gap-2.5 text-sm text-muted-foreground font-medium">
-        <span className="hover:underline cursor-pointer transition-colors hover:text-foreground flex items-center gap-1.5">
-          <Crown className="w-4 h-4 text-purple-500" />
-          PRJ1-99
-        </span>
-        <span className="opacity-50">/</span>
+        {task.type !== "epic" && (
+          <>
+            <span className="hover:underline cursor-pointer transition-colors hover:text-foreground flex items-center gap-1.5">
+              <Crown className="w-4 h-4 text-purple-500" />
+              PRJ1-99
+            </span>
+            <span className="opacity-50">/</span>
+          </>
+        )}
         <span className="text-foreground hover:underline cursor-pointer flex items-center gap-1.5">
-          <ClipboardList className="w-4 h-4 text-yellow-500" />
+          {task.type === "epic" ? (
+            <Crown className="w-4 h-4 text-purple-500" />
+          ) : task.type === "bug" ? (
+            <Bug className="w-4 h-4 text-red-500" />
+          ) : (
+            <ClipboardList className="w-4 h-4 text-primary" />
+          )}
           {task.code || `TASK-${task.id.slice(-3)}`}
         </span>
       </div>

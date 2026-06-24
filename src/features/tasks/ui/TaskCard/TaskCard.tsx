@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Task } from "../../model/types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { MessageSquare, Paperclip } from "lucide-react";
+import { MessageSquare, Paperclip, Bug, Crown, ClipboardList } from "lucide-react";
 
 interface TaskCardProps {
   task: Task;
@@ -34,7 +34,14 @@ export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
   const CardContent = () => (
     <>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          {task.type === "epic" ? (
+            <Crown className="w-3.5 h-3.5 text-purple-500" />
+          ) : task.type === "bug" ? (
+            <Bug className="w-3.5 h-3.5 text-red-500" />
+          ) : (
+            <ClipboardList className="w-3.5 h-3.5 text-primary" />
+          )}
           {task.code || `TASK-${task.id.slice(-3)}`}
         </span>
       </div>
@@ -47,13 +54,13 @@ export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
           <PriorityIcon priority={task.priority} />
 
           {/* Mock indicators for attachments/comments - calculated deterministically from task.id to avoid flickering on re-render */}
-          <div className="flex items-center gap-2 text-muted-foreground text-[11px] font-medium">
+          <div className="flex items-center gap-3 text-muted-foreground text-xs font-medium">
             <div className="flex items-center gap-1">
-              <Paperclip className="w-3 h-3" />
+              <Paperclip className="w-3.5 h-3.5" />
               <span>{task.id.length % 4}</span>
             </div>
             <div className="flex items-center gap-1">
-              <MessageSquare className="w-3 h-3" />
+              <MessageSquare className="w-3.5 h-3.5" />
               <span>{(task.id.charCodeAt(task.id.length - 1) || 0) % 6}</span>
             </div>
           </div>
