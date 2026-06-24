@@ -47,7 +47,7 @@ export function TaskActivity() {
             <span className="text-muted-foreground hover:text-foreground cursor-pointer pb-2 transition-colors">
               All
             </span>
-            <span className="text-foreground border-b-2 border-primary pb-2 -mb-[1px]">
+            <span className="text-foreground border-b-2 border-primary pb-2 -mb-px">
               Comments
             </span>
             <span className="text-muted-foreground hover:text-foreground cursor-pointer pb-2 transition-colors">
@@ -67,7 +67,7 @@ export function TaskActivity() {
             <div className="flex-1 border border-border/60 rounded-xl overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20 transition-all shadow-sm">
               <Textarea
                 placeholder="Add a comment..."
-                className="border-0 focus-visible:ring-0 min-h-[70px] resize-none bg-card text-[14px] p-3"
+                className="border-0 focus-visible:ring-0 min-h-[70px] resize-none bg-card text-sm p-3"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
               />
@@ -106,14 +106,14 @@ export function TaskActivity() {
                     <span className="text-sm font-semibold text-foreground hover:underline cursor-pointer">
                       {c.author}
                     </span>
-                    <span className="text-[12px] text-muted-foreground font-medium">
+                    <span className="text-xs text-muted-foreground font-medium">
                       {c.time}
                     </span>
                   </div>
-                  <p className="text-[14px] text-foreground/90 leading-relaxed">
+                  <p className="text-sm text-foreground/90 leading-relaxed">
                     {c.text}
                   </p>
-                  <div className="flex items-center gap-3 mt-2 text-[12px] font-semibold text-muted-foreground">
+                  <div className="flex items-center gap-3 mt-2 text-xs font-semibold text-muted-foreground">
                     <span className="hover:text-foreground cursor-pointer transition-colors">
                       Reply
                     </span>

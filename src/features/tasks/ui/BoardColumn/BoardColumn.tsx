@@ -39,7 +39,7 @@ export function BoardColumn({
   });
 
   return (
-    <div className="flex flex-col rounded-xl border bg-muted/50 min-w-[280px] w-[280px] shrink-0 group mr-6 last:mr-0 pb-2">
+    <div className="flex flex-col rounded-xl border bg-muted/50 min-w-70 w-70 shrink-0 group mr-6 last:mr-0 pb-2">
       <div className="flex items-center justify-between px-4 py-3 border-b">
         <span className="text-sm font-semibold text-foreground">{title}</span>
         <span

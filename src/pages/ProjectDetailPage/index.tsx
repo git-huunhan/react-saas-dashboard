@@ -168,7 +168,7 @@ export default function ProjectDetailPage() {
               <Input
                 type="search"
                 placeholder="Search w..."
-                className="w-[180px] pl-8 h-8 bg-transparent text-sm border-muted hover:border-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/30 transition-colors"
+                className="w-45 pl-8 h-8 bg-transparent text-sm border-muted hover:border-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/30 transition-colors"
               />
             </div>
             <div className="flex -space-x-2">

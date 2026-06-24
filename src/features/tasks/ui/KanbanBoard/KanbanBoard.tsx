@@ -203,7 +203,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="flex flex-col rounded-xl border bg-muted/50 min-w-[280px] w-[280px] h-[350px]"
+                className="flex flex-col rounded-xl border bg-muted/50 min-w-70 w-70 h-[350px]"
               />
             ))}
             <div className="w-1 shrink-0" />

@@ -100,7 +100,7 @@ export function TaskHeader({ task, onClose, onDelete }: TaskHeaderProps) {
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-        <div className="w-[1px] h-4 bg-border/60 mx-1"></div>
+        <div className="w-px h-4 bg-border/60 mx-1"></div>
         <Button
           variant="outline"
           size="icon"

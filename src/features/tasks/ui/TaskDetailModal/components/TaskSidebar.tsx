@@ -142,7 +142,7 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
               {/* PARENT TASK */}
               {task.type !== "epic" && (
                 <div className="flex flex-col gap-1.5">
-                  <span className="text-[12px] font-semibold text-muted-foreground">
+                  <span className="text-xs font-semibold text-muted-foreground">
                     Parent task
                   </span>
                   <div className="-ml-2 w-[calc(100%+8px)]">
@@ -160,7 +160,7 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
                           </div>
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[240px] p-0" align="start">
+                      <PopoverContent className="w-60 p-0" align="start">
                         <Command>
                           <CommandInput placeholder="Search tasks..." />
                           <CommandList>
@@ -173,7 +173,7 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
                                 <Crown className="w-4 h-4 text-purple-500 shrink-0" />
                                 <div className="flex flex-col">
                                   <span className="font-medium">PRJ1-99</span>
-                                  <span className="text-xs text-muted-foreground truncate max-w-[180px]">
+                                  <span className="text-xs text-muted-foreground truncate max-w-45">
                                     Core Infrastructure Setup
                                   </span>
                                 </div>
@@ -195,7 +195,7 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
 
               {/* ASSIGNEE */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-[12px] font-semibold text-muted-foreground">
+                <span className="text-xs font-semibold text-muted-foreground">
                   Assignee
                 </span>
                 <div className="flex flex-col items-start gap-1 -ml-2 w-[calc(100%+8px)]">
@@ -229,7 +229,7 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
                         )}
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[280px] p-0" align="start">
+                    <PopoverContent className="w-70 p-0" align="start">
                       <Command>
                         <CommandInput placeholder="Search user..." />
                         <CommandList>
@@ -295,7 +295,7 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
 
               {/* PRIORITY */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-[12px] font-semibold text-muted-foreground">
+                <span className="text-xs font-semibold text-muted-foreground">
                   Priority
                 </span>
                 <div className="-ml-2 w-[calc(100%+8px)]">
@@ -336,7 +336,7 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
 
               {/* LABELS */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-[12px] font-semibold text-muted-foreground">
+                <span className="text-xs font-semibold text-muted-foreground">
                   Labels
                 </span>
                 <div className="-ml-2 w-[calc(100%+8px)]">
@@ -354,7 +354,7 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
                         )}
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[240px] p-0" align="start">
+                    <PopoverContent className="w-60 p-0" align="start">
                       <Command>
                         <CommandInput placeholder="Search labels..." />
                         <CommandList>
@@ -397,7 +397,7 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
 
               {/* DUE DATE */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-[12px] font-semibold text-muted-foreground">
+                <span className="text-xs font-semibold text-muted-foreground">
                   Due date
                 </span>
                 <div className="-ml-2 w-[calc(100%+8px)] relative group">
@@ -413,7 +413,7 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
 
               {/* REPORTER */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-[12px] font-semibold text-muted-foreground">
+                <span className="text-xs font-semibold text-muted-foreground">
                   Reporter
                 </span>
                 <div className="flex flex-col items-start gap-1 -ml-2 w-[calc(100%+8px)]">
@@ -447,7 +447,7 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
                         )}
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[240px] p-0" align="start">
+                    <PopoverContent className="w-60 p-0" align="start">
                       <Command>
                         <CommandInput placeholder="Search reporter..." />
                         <CommandList>

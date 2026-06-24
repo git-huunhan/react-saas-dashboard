@@ -143,7 +143,7 @@ export function TaskMain({ task, handleUpdate }: TaskMainProps) {
                   <div
                     contentEditable={isEditingDesc}
                     suppressContentEditableWarning
-                    className={`text-[14px] px-2 py-3 -ml-2 rounded-md cursor-text border whitespace-pre-wrap leading-normal outline-none min-h-[60px] transition-colors ${isEditingDesc ? "bg-background border-primary/50 ring-1 ring-primary/50 text-foreground shadow-sm min-h-[120px]" : "text-foreground/80 hover:bg-muted/30 border-transparent hover:border-border/50"}`}
+                    className={`text-sm px-2 py-3 -ml-2 rounded-md cursor-text border whitespace-pre-wrap leading-normal outline-none min-h-15 transition-colors ${isEditingDesc ? "bg-background border-primary/50 ring-1 ring-primary/50 text-foreground shadow-sm min-h-30" : "text-foreground/80 hover:bg-muted/30 border-transparent hover:border-border/50"}`}
                     onClick={(e) => {
                       if (!isEditingDesc) {
                         setEditDesc(task.description || "");
@@ -374,7 +374,7 @@ export function TaskMain({ task, handleUpdate }: TaskMainProps) {
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <Select defaultValue="blocked_by">
-                  <SelectTrigger className="w-[160px] h-9 text-[13px] bg-transparent border-border/50 focus:ring-1 focus:ring-primary/50 shadow-none">
+                  <SelectTrigger className="w-40 h-9 text-[13px] bg-transparent border-border/50 focus:ring-1 focus:ring-primary/50 shadow-none">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

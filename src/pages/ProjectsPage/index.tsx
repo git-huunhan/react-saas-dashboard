@@ -160,7 +160,7 @@ export default function ProjectsPage() {
 
         <div className="flex gap-4 items-center">
           <Select value={status} onValueChange={handleFilterChange}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-45">
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
             <SelectContent>
