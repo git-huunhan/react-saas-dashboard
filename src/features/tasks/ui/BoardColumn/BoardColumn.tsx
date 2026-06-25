@@ -16,10 +16,10 @@ interface BoardColumnProps {
 }
 
 const COLUMN_HEADER_STYLES: Record<string, string> = {
-  "To Do": "text-slate-500",
-  "In Progress": "text-blue-500",
-  Review: "text-orange-500",
-  Done: "text-green-500",
+  "To Do": "bg-slate-500/15 text-slate-400 border-slate-500/30",
+  "In Progress": "bg-blue-500/15 text-blue-400 border-blue-500/30",
+  Review: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
+  Done: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
 };
 
 export function BoardColumn({
@@ -43,7 +43,7 @@ export function BoardColumn({
       <div className="flex items-center justify-between px-4 py-3 border-b">
         <span className="text-sm font-semibold text-foreground">{title}</span>
         <span
-          className={`flex items-center justify-center rounded-full bg-background px-2 py-0.5 text-xs font-medium border ${COLUMN_HEADER_STYLES[title]}`}
+          className={`flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${COLUMN_HEADER_STYLES[title]}`}
         >
           {tasks.length}
         </span>

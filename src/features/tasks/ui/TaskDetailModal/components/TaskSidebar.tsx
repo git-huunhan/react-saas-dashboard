@@ -4,6 +4,7 @@ import {
   Crown,
   Tag,
   User as UserIcon,
+  X,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -400,14 +401,28 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
                 <span className="text-xs font-semibold text-muted-foreground">
                   Due date
                 </span>
-                <div className="-ml-2 w-[calc(100%+8px)] relative group">
+                <div className="-ml-2 w-[calc(100%+8px)] relative group flex items-center">
                   <input
                     type="date"
-                    className="w-full h-8 px-2 bg-transparent hover:bg-muted/50 focus:bg-muted/50 focus:ring-1 focus:ring-primary/50 rounded outline-none text-foreground cursor-pointer text-[13px] font-medium transition-colors [color-scheme:light_dark] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                    className="w-full h-8 pl-2 pr-14 bg-transparent hover:bg-muted/50 focus:bg-muted/50 focus:ring-1 focus:ring-primary/50 rounded outline-none text-foreground cursor-pointer text-[13px] font-medium transition-colors [color-scheme:light_dark] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-[calc(100%-28px)] [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                     value={task.dueDate || ""}
                     onChange={(e) => handleUpdate("dueDate", e.target.value)}
                   />
-                  <CalendarIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none transition-colors" />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
+                    <CalendarIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                    {task.dueDate && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleUpdate("dueDate", "");
+                        }}
+                        className="pointer-events-auto flex items-center justify-center rounded-full bg-muted-foreground/20 hover:bg-muted-foreground/40 p-0.5 transition-colors cursor-pointer w-4 h-4"
+                      >
+                        <X className="w-3 h-3 text-muted-foreground hover:text-foreground" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
