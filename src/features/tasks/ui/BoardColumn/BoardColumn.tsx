@@ -15,13 +15,6 @@ interface BoardColumnProps {
   onCreateTask?: () => void;
 }
 
-const COLUMN_HEADER_STYLES: Record<string, string> = {
-  "To Do": "bg-slate-500/15 text-slate-400 border-slate-500/30",
-  "In Progress": "bg-blue-500/15 text-blue-400 border-blue-500/30",
-  Review: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
-  Done: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-};
-
 export function BoardColumn({
   columnId,
   title,
@@ -42,9 +35,7 @@ export function BoardColumn({
     <div className="flex flex-col rounded-xl border bg-muted/50 min-w-70 w-70 shrink-0 group mr-6 last:mr-0 pb-2">
       <div className="flex items-center justify-between px-4 py-3 border-b">
         <span className="text-sm font-semibold text-foreground">{title}</span>
-        <span
-          className={`flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${COLUMN_HEADER_STYLES[title]}`}
-        >
+        <span className="flex items-center justify-center h-5 min-w-6 px-1.5 rounded-md text-xs font-medium border tabular-nums bg-muted text-muted-foreground border-border/60">
           {tasks.length}
         </span>
       </div>

@@ -10,7 +10,7 @@ import {
 import type { TaskStatusData } from "@/features/dashboard";
 
 const COLORS = {
-  "To Do": "#64748b", // slate-500    — neutral, not started
+  "To Do": "#8b5cf6", // violet-500  — planned, queued
   "In Progress": "#06b6d4", // cyan-500     — active, moving
   "In Review": "#0d9488", // teal-600     — almost done
   Done: "#10b981", // emerald-500  — primary, completed ✓
