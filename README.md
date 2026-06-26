@@ -20,20 +20,20 @@
 
 ## 🛠 Tech Stack
 
-| Category | Technology |
-|---|---|
-| **Framework** | React 19 + Vite 8 |
-| **Language** | TypeScript 6 (strict mode) |
-| **Styling** | Tailwind CSS v4 |
-| **UI Components** | shadcn/ui + Radix UI primitives |
-| **State Management** | Zustand |
-| **Server State** | TanStack Query (React Query v5) |
-| **Routing** | React Router v7 |
-| **Forms & Validation** | React Hook Form + Zod |
-| **Drag & Drop** | dnd-kit |
-| **Charts** | Recharts |
-| **HTTP Client** | Axios |
-| **Code Quality** | ESLint + Prettier |
+| Category               | Technology                      |
+| ---------------------- | ------------------------------- |
+| **Framework**          | React 19 + Vite 8               |
+| **Language**           | TypeScript 6 (strict mode)      |
+| **Styling**            | Tailwind CSS v4                 |
+| **UI Components**      | shadcn/ui + Radix UI primitives |
+| **State Management**   | Zustand                         |
+| **Server State**       | TanStack Query (React Query v5) |
+| **Routing**            | React Router v7                 |
+| **Forms & Validation** | React Hook Form + Zod           |
+| **Drag & Drop**        | dnd-kit                         |
+| **Charts**             | Recharts                        |
+| **HTTP Client**        | Axios                           |
+| **Code Quality**       | ESLint + Prettier               |
 
 ---
 
@@ -112,15 +112,19 @@ npm run lint      # Run ESLint
 ## 📐 Key Design Decisions
 
 ### Feature-Sliced Design
+
 Chosen over a traditional layered structure to enforce clear boundaries between business domains, prevent cross-feature coupling, and improve long-term maintainability as the project grows to include a backend and admin panel.
 
 ### TanStack Query for Server State
+
 Separates server state (async, remote) from client state (UI, local). Provides caching, background refetching, and loading/error states out of the box — avoiding prop drilling or Redux boilerplate for data fetching.
 
 ### Zustand for Client State
+
 Lightweight and boilerplate-free. Used for UI state (sidebar collapse, command palette open state) that needs to be shared across the component tree without the overhead of Redux.
 
 ### shadcn/ui + Radix UI
+
 Accessible, unstyled primitives with full control over styling. Components are copied into the codebase rather than imported as a black-box library, allowing full customization without fighting a design system.
 
 ---
@@ -139,4 +143,4 @@ This is the frontend (`velora-web`) of a planned multi-repo project:
 
 Built by **Huu Nhan** as a personal project to demonstrate production-level frontend architecture, modern React patterns, and UI engineering skills.
 
-- GitHub: [@huunhan](https://github.com/git-huunhan)
+- GitHub: [@git-huunhan](https://github.com/git-huunhan)
