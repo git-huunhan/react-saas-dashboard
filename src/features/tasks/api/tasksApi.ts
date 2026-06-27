@@ -1,7 +1,7 @@
 import { getProjectKeySync } from "../../projects/api/projectsApi";
 import type { Task, TaskStatus } from "../model/types";
-
 import { mockUsers } from "../../users/model/mockUsers";
+import { logActivity } from "./commentsApi";
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -55,6 +55,20 @@ export async function updateTaskStatus(
   await delay(300);
   const task = tasksDb.find((t) => t.id === taskId);
   if (!task) throw new Error("Task not found");
+
+  const STATUS_LABELS: Record<TaskStatus, string> = {
+    todo: "To Do",
+    "in-progress": "In Progress",
+    review: "Review",
+    done: "Done",
+  };
+  logActivity(
+    taskId,
+    "status",
+    STATUS_LABELS[task.status],
+    STATUS_LABELS[status],
+  );
+
   task.status = status;
   return { ...task };
 }
@@ -90,6 +104,66 @@ export async function updateTask(
   await delay(300);
   const task = tasksDb.find((t) => t.id === taskId);
   if (!task) throw new Error("Task not found");
+
+  const STATUS_LABELS: Record<TaskStatus, string> = {
+    todo: "To Do",
+    "in-progress": "In Progress",
+    review: "Review",
+    done: "Done",
+  };
+
+  // Log changes before applying
+  if (data.status && data.status !== task.status) {
+    logActivity(
+      taskId,
+      "status",
+      STATUS_LABELS[task.status],
+      STATUS_LABELS[data.status],
+    );
+  }
+  if (data.priority && data.priority !== task.priority) {
+    const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+    logActivity(taskId, "priority", cap(task.priority), cap(data.priority));
+  }
+  if (data.assigneeId !== undefined && data.assigneeId !== task.assigneeId) {
+    const oldUser = task.assignee?.name ?? "Unassigned";
+    const oldAvatar = task.assignee?.avatarUrl;
+    const newUserObj =
+      data.assigneeId === null
+        ? null
+        : mockUsers.find((u) => u.id === data.assigneeId);
+    const newUser = newUserObj?.name ?? "Unassigned";
+    const newAvatar = newUserObj?.avatarUrl;
+    logActivity(taskId, "assignee", oldUser, newUser, oldAvatar, newAvatar);
+  }
+  if (data.dueDate !== undefined && data.dueDate !== task.dueDate) {
+    logActivity(taskId, "due date", task.dueDate ?? "—", data.dueDate || "—");
+  }
+  if (data.reporterId !== undefined && data.reporterId !== task.reporterId) {
+    const oldReporter = task.reporter?.name ?? "Unassigned";
+    const oldAvatar = task.reporter?.avatarUrl;
+    const newReporterObj =
+      data.reporterId === null
+        ? null
+        : mockUsers.find((u) => u.id === data.reporterId);
+    const newReporter = newReporterObj?.name ?? "Unassigned";
+    const newAvatar = newReporterObj?.avatarUrl;
+    logActivity(
+      taskId,
+      "reporter",
+      oldReporter,
+      newReporter,
+      oldAvatar,
+      newAvatar,
+    );
+  }
+  if (data.labels !== undefined) {
+    const oldLabels = (task.labels ?? []).join(", ") || "None";
+    const newLabels = (data.labels as string[]).join(", ") || "None";
+    if (oldLabels !== newLabels) {
+      logActivity(taskId, "labels", oldLabels, newLabels);
+    }
+  }
 
   Object.assign(task, data);
 

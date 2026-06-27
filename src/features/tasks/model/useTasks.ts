@@ -8,6 +8,7 @@ import {
   updateTaskStatus,
 } from "../api/tasksApi";
 import type { Task, TaskStatus } from "./types";
+import { commentKeys } from "./useComments";
 
 export const tasksKeys = {
   all: ["tasks"] as const,
@@ -54,12 +55,14 @@ export function useUpdateTaskStatus() {
       }
     },
 
-    onSettled: (updatedTask) => {
+    onSettled: (updatedTask, _err, { taskId }) => {
       if (updatedTask) {
         queryClient.invalidateQueries({
           queryKey: tasksKeys.byProject(updatedTask.projectId),
         });
       }
+      // Refresh history tab
+      queryClient.invalidateQueries({ queryKey: commentKeys.activity(taskId) });
     },
   });
 }
@@ -85,10 +88,12 @@ export function useUpdateTask() {
       taskId: string;
       data: Partial<Omit<Task, "id" | "createdAt" | "projectId">>;
     }) => updateTask(taskId, data),
-    onSuccess: (updatedTask) => {
+    onSuccess: (updatedTask, { taskId }) => {
       queryClient.invalidateQueries({
         queryKey: tasksKeys.byProject(updatedTask.projectId),
       });
+      // Refresh history tab
+      queryClient.invalidateQueries({ queryKey: commentKeys.activity(taskId) });
     },
   });
 }

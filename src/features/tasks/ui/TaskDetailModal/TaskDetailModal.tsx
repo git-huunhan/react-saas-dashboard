@@ -38,7 +38,9 @@ export function TaskDetailModal({
     value: any,
   ) => {
     if (!task) return;
-    if ((task as any)[field] === value) return;
+    // Skip array fields from equality check (reference comparison always fails)
+    const isArrayField = Array.isArray(value);
+    if (!isArrayField && (task as any)[field] === value) return;
     updateTask.mutate({
       taskId: task.id,
       data: { [field]: value },

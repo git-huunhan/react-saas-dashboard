@@ -31,8 +31,12 @@ import {
 } from "@/components/ui/select";
 
 import { useUsers } from "@/features/users";
+import { mockUsers } from "@/features/users/model/mockUsers";
 import type { Task, TaskStatus } from "../../../model/types";
 import { PriorityIcon } from "../../PriorityIcon";
+
+const CURRENT_USER = mockUsers[0]; // In real app: from auth context
+const CURRENT_USER_ID = CURRENT_USER.id;
 
 interface TaskSidebarProps {
   task: Task;
@@ -53,8 +57,16 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
   const [isAssigneeOpen, setIsAssigneeOpen] = useState(false);
   const [isParentSelectOpen, setIsParentSelectOpen] = useState(false);
   const [isReporterOpen, setIsReporterOpen] = useState(false);
+  const [isLabelsOpen, setIsLabelsOpen] = useState(false);
 
   const { users } = useUsers();
+
+  // Use current user as reporter fallback when no reporter is set
+  const reporterDisplay = task.reporter ?? {
+    id: CURRENT_USER_ID,
+    name: CURRENT_USER.name,
+    avatarUrl: CURRENT_USER.avatarUrl ?? "",
+  };
 
   return (
     <div className="w-1/3 shrink-0 bg-muted/10 flex flex-col overflow-hidden relative border-l border-transparent z-10 shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.03)] dark:shadow-none">
@@ -279,14 +291,12 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
                     </PopoverContent>
                   </Popover>
 
-                  {task.assignee?.id !== "user-1" && (
+                  {task.assignee?.id !== CURRENT_USER_ID && (
                     <button
                       className="text-[13px] text-primary hover:underline font-medium px-2 mt-0.5 transition-colors"
-                      onClick={() => {
-                        if (users.length > 0) {
-                          handleUpdate("assigneeId", users[0].id);
-                        }
-                      }}
+                      onClick={() =>
+                        handleUpdate("assigneeId", CURRENT_USER_ID)
+                      }
                     >
                       Assign to me
                     </button>
@@ -341,7 +351,7 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
                   Labels
                 </span>
                 <div className="-ml-2 w-[calc(100%+8px)]">
-                  <Popover>
+                  <Popover open={isLabelsOpen} onOpenChange={setIsLabelsOpen}>
                     <PopoverTrigger asChild>
                       <button className="w-full h-8 px-2 flex items-center justify-between bg-transparent hover:bg-muted/50 focus:ring-1 focus:ring-primary/50 text-[13px] font-medium rounded transition-colors text-left">
                         {task.labels && task.labels.length > 0 ? (
@@ -438,28 +448,24 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
                   >
                     <PopoverTrigger asChild>
                       <button className="w-full h-8 px-2 flex items-center gap-2 bg-transparent hover:bg-muted/50 focus:ring-1 focus:ring-primary/50 rounded cursor-pointer transition-colors outline-none text-left">
-                        {task.reporter ? (
+                        {reporterDisplay ? (
                           <>
                             <Avatar className="h-6 w-6 border border-border/50 shrink-0">
-                              <AvatarImage src={task.reporter.avatarUrl} />
+                              <AvatarImage src={reporterDisplay.avatarUrl} />
                               <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
-                                {task.reporter.name.charAt(0)}
+                                {reporterDisplay.name.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
                             <span className="text-foreground font-medium text-[13px] truncate">
-                              {task.reporter.name}
+                              {reporterDisplay.name}
+                              {!task.reporter && (
+                                <span className="text-muted-foreground font-normal ml-1">
+                                  (you)
+                                </span>
+                              )}
                             </span>
                           </>
-                        ) : (
-                          <>
-                            <div className="h-6 w-6 rounded-full border border-dashed border-muted-foreground/40 flex items-center justify-center bg-muted/20 shrink-0">
-                              <UserIcon className="w-3.5 h-3.5 text-muted-foreground/60" />
-                            </div>
-                            <span className="text-foreground font-medium text-[13px]">
-                              System
-                            </span>
-                          </>
-                        )}
+                        ) : null}
                       </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-60 p-0" align="start">

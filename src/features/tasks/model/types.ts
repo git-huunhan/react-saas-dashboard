@@ -38,3 +38,35 @@ export const KANBAN_COLUMNS: KanbanColumn[] = [
   { id: "review", title: "Review" },
   { id: "done", title: "Done" },
 ];
+
+export interface Comment {
+  id: string;
+  taskId: string;
+  authorId: string;
+  author: {
+    id: string;
+    name: string;
+    avatarUrl: string;
+  };
+  body: string;
+  createdAt: string;
+  updatedAt?: string;
+  isEdited?: boolean;
+}
+
+export interface ActivityEntry {
+  id: string;
+  taskId: string;
+  actorId: string;
+  actor: {
+    id: string;
+    name: string;
+    avatarUrl: string;
+  };
+  field: string;
+  from: string;
+  to: string;
+  fromAvatar?: string;
+  toAvatar?: string;
+  createdAt: string;
+}

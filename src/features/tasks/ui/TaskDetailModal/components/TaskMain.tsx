@@ -419,7 +419,7 @@ export function TaskMain({ task, handleUpdate }: TaskMainProps) {
           </div>
 
           {/* Activity Section */}
-          <TaskActivity />
+          <TaskActivity taskId={task.id} />
         </div>
       </div>
     </div>
