@@ -272,6 +272,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
           setEditingTask(task);
         }}
         onDelete={handleDelete}
+        onOpenTask={setSelectedTask}
       />
 
       {/* Create modal */}

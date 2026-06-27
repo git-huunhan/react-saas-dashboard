@@ -7,6 +7,7 @@ import {
   MessageSquare,
   Pencil,
   Trash2,
+  ArrowDownWideNarrow,
 } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -378,13 +379,19 @@ interface TaskActivityProps {
 export function TaskActivity({ taskId }: TaskActivityProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("comments");
+  const [isAscending, setIsAscending] = useState(false);
   const [comment, setComment] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { comments, isLoading: loadingComments } = useComments(taskId);
-  const { entries, isLoading: loadingActivity } = useActivity(taskId);
+  const { comments: rawComments, isLoading: loadingComments } =
+    useComments(taskId);
+  const { activity: rawEntries, isLoading: loadingActivity } =
+    useActivity(taskId);
   const { mutate: postComment, isPending: isPosting } =
     useCreateComment(taskId);
+
+  const comments = isAscending ? [...rawComments].reverse() : rawComments;
+  const entries = isAscending ? [...rawEntries].reverse() : rawEntries;
 
   const handleSubmit = () => {
     const body = comment.trim();
@@ -397,11 +404,12 @@ export function TaskActivity({ taskId }: TaskActivityProps) {
     ...entries
       .filter((e) => e.field !== "comment")
       .map((e) => ({ type: "activity" as const, item: e })),
-  ].sort(
-    (a, b) =>
+  ].sort((a, b) => {
+    const diff =
       new Date(b.item.createdAt).getTime() -
-      new Date(a.item.createdAt).getTime(),
-  );
+      new Date(a.item.createdAt).getTime();
+    return isAscending ? -diff : diff;
+  });
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "all", label: "All" },
@@ -425,31 +433,43 @@ export function TaskActivity({ taskId }: TaskActivityProps) {
             Activity
           </h3>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span className="font-medium">Sort by:</span>
-          <span className="font-semibold text-foreground cursor-pointer hover:underline">
-            Newest first
-          </span>
-        </div>
       </div>
 
       {isOpen && (
         <>
-          {/* Tabs */}
-          <div className="flex items-center gap-5 border-b border-border/50 mb-6 text-sm font-semibold">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`pb-2 -mb-px transition-colors cursor-pointer ${
-                  activeTab === tab.id
-                    ? "text-foreground border-b-2 border-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+          {/* Tabs and Sort */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex bg-muted/20 p-0.5 rounded-md border border-border/50 text-[13px] font-medium text-muted-foreground">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-3 py-1.5 rounded-sm transition-colors ${
+                    activeTab === tab.id
+                      ? "bg-primary/20 text-primary font-semibold"
+                      : "hover:text-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              title="Reverse sort direction"
+              onClick={() => setIsAscending(!isAscending)}
+              className={`h-8 w-8 text-muted-foreground transition-colors border ${
+                isAscending
+                  ? "bg-primary/20 border-primary/50 text-primary"
+                  : "bg-muted/20 border-border/50 hover:text-foreground hover:bg-muted/50"
+              }`}
+            >
+              <ArrowDownWideNarrow
+                className={`w-4 h-4 transition-transform ${isAscending ? "rotate-180" : ""}`}
+              />
+            </Button>
           </div>
 
           {/* Comment input — visible on All and Comments tabs */}
@@ -500,7 +520,7 @@ export function TaskActivity({ taskId }: TaskActivityProps) {
           )}
 
           {/* Content */}
-          <div className="relative flex flex-col gap-6 ml-1 before:absolute before:inset-y-0 before:left-[15.5px] before:w-px before:bg-border/60 before:-z-10">
+          <div className="relative flex flex-col gap-6 before:absolute before:inset-y-0 before:left-[15.5px] before:w-px before:bg-border/60 before:-z-10">
             {/* ALL TAB */}
             {activeTab === "all" &&
               (loadingComments || loadingActivity ? (
@@ -586,7 +606,7 @@ function EmptyState({ icon, label }: { icon: React.ReactNode; label: string }) {
 
 function ActivitySkeleton() {
   return (
-    <div className="relative flex flex-col gap-6 ml-1 before:absolute before:inset-y-0 before:left-[15.5px] before:w-px before:bg-border/60 before:-z-10">
+    <div className="relative flex flex-col gap-6 before:absolute before:inset-y-0 before:left-[15.5px] before:w-px before:bg-border/60 before:-z-10">
       {[1, 2].map((i) => (
         <div key={i} className="flex gap-4">
           <div className="w-8 h-8 rounded-full bg-muted animate-pulse shrink-0 ring-4 ring-background relative z-10" />

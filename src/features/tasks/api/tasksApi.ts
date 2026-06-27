@@ -39,6 +39,7 @@ let tasksDb: Task[] = Array.from({ length: 60 }).map((_, i) => {
       : undefined,
     labels: i % 2 === 0 ? ["Frontend"] : [],
     dueDate: new Date(Date.now() + i * 86400000).toISOString().split("T")[0],
+    parentId: i > 5 && i % 3 === 0 ? "task-2" : undefined, // task-2 is an epic (i=1)
     createdAt: new Date(Date.now() - i * 86400000).toISOString().split("T")[0],
   };
 });

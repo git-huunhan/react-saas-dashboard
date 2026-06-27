@@ -32,6 +32,7 @@ import {
 
 import { useUsers } from "@/features/users";
 import { mockUsers } from "@/features/users/model/mockUsers";
+import { useTasksByProject } from "@/features/tasks/model/useTasks";
 import type { Task, TaskStatus } from "../../../model/types";
 import { PriorityIcon } from "../../PriorityIcon";
 
@@ -47,12 +48,18 @@ interface TaskSidebarProps {
       | "assigneeId"
       | "labels"
       | "dueDate"
-      | "reporterId",
+      | "reporterId"
+      | "parentId",
     value: any,
   ) => void;
+  onOpenTask?: (task: Task) => void;
 }
 
-export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
+export function TaskSidebar({
+  task,
+  handleUpdate,
+  onOpenTask,
+}: TaskSidebarProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(true);
   const [isAssigneeOpen, setIsAssigneeOpen] = useState(false);
   const [isParentSelectOpen, setIsParentSelectOpen] = useState(false);
@@ -67,6 +74,13 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
     name: CURRENT_USER.name,
     avatarUrl: CURRENT_USER.avatarUrl ?? "",
   };
+
+  const { data: tasks = [] } = useTasksByProject(task.projectId);
+  const parentTask = tasks.find((t) => t.id === task.parentId);
+  const subtasks = tasks.filter((t) => t.parentId === task.id);
+  const potentialParents = tasks.filter(
+    (t) => t.id !== task.id && t.type !== "task" && t.id !== task.parentId,
+  );
 
   return (
     <div className="w-1/3 shrink-0 bg-muted/10 flex flex-col overflow-hidden relative border-l border-transparent z-10 shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.03)] dark:shadow-none">
@@ -165,12 +179,27 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
                     >
                       <PopoverTrigger asChild>
                         <button className="w-full h-8 px-2 flex items-center justify-between bg-transparent hover:bg-muted/50 focus:ring-1 focus:ring-primary/50 text-[13px] font-medium rounded transition-colors text-left group">
-                          <div className="flex items-center gap-2 truncate">
-                            <Crown className="w-4 h-4 text-purple-500 shrink-0" />
-                            <span className="truncate">
-                              PRJ1-99: Core Infrastructure Setup
+                          {parentTask ? (
+                            <div
+                              className="flex items-center gap-2 truncate"
+                              onClick={(e) => {
+                                if (onOpenTask) {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  onOpenTask(parentTask);
+                                }
+                              }}
+                            >
+                              <Crown className="w-4 h-4 text-purple-500 shrink-0" />
+                              <span className="truncate hover:underline">
+                                {parentTask.code}: {parentTask.title}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">
+                              Select parent...
                             </span>
-                          </div>
+                          )}
                         </button>
                       </PopoverTrigger>
                       <PopoverContent className="w-60 p-0" align="start">
@@ -179,24 +208,38 @@ export function TaskSidebar({ task, handleUpdate }: TaskSidebarProps) {
                           <CommandList>
                             <CommandEmpty>No tasks found.</CommandEmpty>
                             <CommandGroup>
-                              <CommandItem
-                                onSelect={() => setIsParentSelectOpen(false)}
-                                className="cursor-pointer flex items-center gap-2"
-                              >
-                                <Crown className="w-4 h-4 text-purple-500 shrink-0" />
-                                <div className="flex flex-col">
-                                  <span className="font-medium">PRJ1-99</span>
-                                  <span className="text-xs text-muted-foreground truncate max-w-45">
-                                    Core Infrastructure Setup
-                                  </span>
-                                </div>
-                              </CommandItem>
-                              <CommandItem
-                                onSelect={() => setIsParentSelectOpen(false)}
-                                className="cursor-pointer text-muted-foreground flex items-center gap-2 mt-1"
-                              >
-                                None
-                              </CommandItem>
+                              {potentialParents.map((pt) => (
+                                <CommandItem
+                                  key={pt.id}
+                                  onSelect={() => {
+                                    handleUpdate("parentId", pt.id);
+                                    setIsParentSelectOpen(false);
+                                  }}
+                                  className="cursor-pointer flex items-center gap-2"
+                                >
+                                  <Crown className="w-4 h-4 text-purple-500 shrink-0" />
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="font-medium text-[13px]">
+                                      {pt.code}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground truncate w-44">
+                                      {pt.title}
+                                    </span>
+                                  </div>
+                                </CommandItem>
+                              ))}
+                              {task.parentId && (
+                                <CommandItem
+                                  onSelect={() => {
+                                    handleUpdate("parentId", null);
+                                    setIsParentSelectOpen(false);
+                                  }}
+                                  className="cursor-pointer text-muted-foreground flex items-center gap-2 mt-1 border-t border-border/50 rounded-none"
+                                >
+                                  <X className="w-4 h-4 shrink-0" />
+                                  Remove parent
+                                </CommandItem>
+                              )}
                             </CommandGroup>
                           </CommandList>
                         </Command>

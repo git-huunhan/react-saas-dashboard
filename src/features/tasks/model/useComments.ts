@@ -8,6 +8,7 @@ import {
   getActivityByTaskId,
   getCommentsByTaskId,
   updateComment,
+  logActivityApi,
 } from "../api/commentsApi";
 import { mockUsers } from "../../users/model/mockUsers";
 
@@ -159,5 +160,28 @@ export function useActivity(taskId: string) {
     staleTime: 30_000,
   });
 
-  return { entries: data ?? [], isLoading };
+  return { activity: data ?? [], isLoading };
+}
+
+export function useLogActivity(taskId: string) {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      field,
+      from,
+      to,
+      fromAvatar,
+      toAvatar,
+    }: {
+      field: string;
+      from: string;
+      to: string;
+      fromAvatar?: string;
+      toAvatar?: string;
+    }) => logActivityApi(taskId, field, from, to, fromAvatar, toAvatar),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: commentKeys.activity(taskId) });
+    },
+  });
 }

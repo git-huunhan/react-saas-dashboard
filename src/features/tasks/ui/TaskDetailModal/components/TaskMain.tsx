@@ -1,12 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ChevronDown,
   GitFork,
   Link as LinkIcon,
   Paperclip,
-  ClipboardList,
+  FileText,
+  X,
+  Loader2,
   Plus,
+  ClipboardList,
   MoreHorizontal,
+  Search,
+  Pencil,
+  ArrowDown,
+  CheckSquare,
+  Globe,
+  Video,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -17,30 +26,88 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 import type { Task } from "../../../model/types";
-import { PriorityIcon } from "../../PriorityIcon";
 import { TaskActivity } from "./TaskActivity";
+import {
+  useCreateTask,
+  useTasksByProject,
+  useUpdateTask,
+} from "../../../model/useTasks";
+import { useLogActivity } from "../../../model/useComments";
+import { mockUsers } from "@/features/users/model/mockUsers";
+import { Input } from "@/components/ui/input";
+import { PriorityIcon } from "../../PriorityIcon";
 
 interface TaskMainProps {
   task: Task;
   handleUpdate: (field: "title" | "description", value: string) => void;
+  onOpenTask?: (task: Task) => void;
 }
 
-export function TaskMain({ task, handleUpdate }: TaskMainProps) {
-  const [editTitle, setEditTitle] = useState("");
+export function TaskMain({ task, handleUpdate, onOpenTask }: TaskMainProps) {
+  const { data: tasks = [] } = useTasksByProject(task.projectId);
+  const { mutate: updateTask } = useUpdateTask();
+  const { mutate: logActivity } = useLogActivity(task.id);
+  const subtasks = tasks.filter((t) => t.parentId === task.id);
+  const doneSubtasks = subtasks.filter((t) => t.status === "done").length;
+  const progress =
+    subtasks.length === 0
+      ? 0
+      : Math.round((doneSubtasks / subtasks.length) * 100);
   const [editDesc, setEditDesc] = useState("");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDesc, setIsEditingDesc] = useState(false);
 
+  // Subtask Edit State
+  const [editingSubtaskId, setEditingSubtaskId] = useState<string | null>(null);
+  const [editingSubtaskTitle, setEditingSubtaskTitle] = useState("");
+  const [openAssigneePopover, setOpenAssigneePopover] = useState<string | null>(
+    null,
+  );
+  const [openStatusPopover, setOpenStatusPopover] = useState<string | null>(
+    null,
+  );
+
   const [isDescOpen, setIsDescOpen] = useState(true);
   const [isAttachOpen, setIsAttachOpen] = useState(true);
+  const [isSubtasksOpen, setIsSubtasksOpen] = useState(true);
+
+  // Attachments
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [attachments, setAttachments] = useState<
+    { id: string; name: string; size: string; type: string }[]
+  >([]);
+  const [attachmentTab, setAttachmentTab] = useState("all");
+
+  // Subtask Form
+  const [isSubtaskFormOpen, setIsSubtaskFormOpen] = useState(false);
+  const [isLinkedWorkFormOpen, setIsLinkedWorkFormOpen] = useState(false);
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
+  const subtaskInputRef = useRef<HTMLInputElement>(null);
+  const [subtaskTitle, setSubtaskTitle] = useState("");
+  const { mutate: createSubtask, isPending: isCreatingSubtask } =
+    useCreateTask();
 
   // Sync state when task opens/changes
   useEffect(() => {
     if (task) {
-      setEditTitle(task.title);
       setEditDesc(task.description || "");
+      setIsSubtaskFormOpen(false);
     }
   }, [task]);
 
@@ -99,39 +166,124 @@ export function TaskMain({ task, handleUpdate }: TaskMainProps) {
           </div>
 
           {/* Quick Actions */}
-          <div className="flex flex-wrap gap-2 mb-8">
+          <div className="flex items-center gap-2 mb-8 -ml-1">
+            <Popover
+              open={isQuickActionsOpen}
+              onOpenChange={setIsQuickActionsOpen}
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 bg-muted/20 border-border/60 hover:bg-muted/50 transition-colors shadow-sm text-muted-foreground"
+                  title="Add or create related work"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Find menu item" className="h-9" />
+                  <CommandList>
+                    <CommandEmpty>No action found.</CommandEmpty>
+                    <CommandGroup>
+                      <CommandItem
+                        onSelect={() => {
+                          setIsQuickActionsOpen(false);
+                          setIsSubtaskFormOpen(true);
+                          setTimeout(() => subtaskInputRef.current?.focus(), 0);
+                        }}
+                        className="gap-2 cursor-pointer"
+                      >
+                        <GitFork className="w-4 h-4 text-muted-foreground" />
+                        <span>Create subtask</span>
+                        <span className="ml-auto text-xs tracking-widest text-muted-foreground opacity-70">
+                          ⇧ C
+                        </span>
+                      </CommandItem>
+                      <CommandItem
+                        onSelect={() => setIsQuickActionsOpen(false)}
+                        className="gap-2 cursor-pointer"
+                      >
+                        <CheckSquare className="w-4 h-4 text-muted-foreground" />
+                        <span>Link work item</span>
+                        <span className="ml-auto text-xs tracking-widest text-muted-foreground opacity-70">
+                          ⇧ K
+                        </span>
+                      </CommandItem>
+                    </CommandGroup>
+                    <div className="h-px bg-border/50 my-1"></div>
+                    <CommandGroup>
+                      <CommandItem
+                        onSelect={() => {
+                          setIsQuickActionsOpen(false);
+                          setIsAttachOpen(true);
+                          fileInputRef.current?.click();
+                        }}
+                        className="gap-2 cursor-pointer"
+                      >
+                        <Paperclip className="w-4 h-4 text-muted-foreground" />
+                        <span>Add attachment</span>
+                      </CommandItem>
+                      <CommandItem
+                        onSelect={() => setIsQuickActionsOpen(false)}
+                        className="gap-2 cursor-pointer"
+                      >
+                        <Globe className="w-4 h-4 text-muted-foreground" />
+                        <span>Add web link</span>
+                      </CommandItem>
+                    </CommandGroup>
+                    <div className="h-px bg-border/50 my-1"></div>
+                    <CommandGroup
+                      heading="Recommended for you"
+                      className="text-muted-foreground font-semibold"
+                    >
+                      <CommandItem
+                        onSelect={() => setIsQuickActionsOpen(false)}
+                        className="gap-2 cursor-pointer justify-between"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Video className="w-4 h-4 text-muted-foreground" />
+                          <span>Video</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="bg-purple-500/15 text-purple-500 border border-purple-500/30 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">
+                            ADD
+                          </span>
+                          <X
+                            className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                      </CommandItem>
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             <Button
               variant="outline"
-              size="sm"
-              className="h-8 text-xs font-semibold bg-muted/20 border-border/60 hover:bg-muted/50 transition-colors shadow-sm"
+              size="icon"
+              className="h-8 w-8 bg-muted/20 border-border/60 hover:bg-muted/50 transition-colors shadow-sm text-muted-foreground"
+              title="More actions"
             >
-              <Paperclip className="w-3.5 h-3.5 mr-2" /> Attach
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs font-semibold bg-muted/20 border-border/60 hover:bg-muted/50 transition-colors shadow-sm"
-            >
-              <GitFork className="w-3.5 h-3.5 mr-2" /> Create subtask
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs font-semibold bg-muted/20 border-border/60 hover:bg-muted/50 transition-colors shadow-sm"
-            >
-              <LinkIcon className="w-3.5 h-3.5 mr-2" /> Link issue
+              <MoreHorizontal className="w-4 h-4" />
             </Button>
           </div>
 
           {/* Description */}
           <div className="mb-10">
             <div
-              className="flex items-center gap-2 cursor-pointer hover:bg-muted/40 p-1 -ml-1 rounded-md w-fit transition-colors mb-3 group"
-              onClick={() => setIsDescOpen(!isDescOpen)}
+              className={`flex items-center gap-2 w-fit transition-colors mb-3 group ${task.description?.trim() ? "cursor-pointer hover:bg-muted/40 p-1 -ml-1 rounded-md" : ""}`}
+              onClick={() =>
+                task.description?.trim() && setIsDescOpen(!isDescOpen)
+              }
             >
-              <ChevronDown
-                className={`w-4 h-4 text-muted-foreground transition-transform ${!isDescOpen ? "-rotate-90" : ""} group-hover:text-foreground`}
-              />
+              {task.description?.trim() && (
+                <ChevronDown
+                  className={`w-4 h-4 text-muted-foreground transition-transform ${!isDescOpen ? "-rotate-90" : ""} group-hover:text-foreground`}
+                />
+              )}
               <h3 className="text-[15px] font-semibold text-foreground">
                 Description
               </h3>
@@ -174,17 +326,18 @@ export function TaskMain({ task, handleUpdate }: TaskMainProps) {
                       }
                     }}
                   >
-                    {task.description ||
-                      (isEditingDesc ? (
-                        ""
-                      ) : (
-                        <span
-                          className="text-muted-foreground"
-                          contentEditable={false}
-                        >
-                          Add a description...
-                        </span>
-                      ))}
+                    {task.description?.trim() ? (
+                      task.description
+                    ) : isEditingDesc ? (
+                      ""
+                    ) : (
+                      <span
+                        className="text-muted-foreground"
+                        contentEditable={false}
+                      >
+                        Add a description...
+                      </span>
+                    )}
                   </div>
                   {isEditingDesc && (
                     <div className="flex items-center justify-end gap-2 mt-1">
@@ -194,7 +347,7 @@ export function TaskMain({ task, handleUpdate }: TaskMainProps) {
                           setIsEditingDesc(false);
                           handleUpdate(
                             "description",
-                            editDesc || task.description || "",
+                            editDesc.trim() === "" ? "" : editDesc,
                           );
                         }}
                       >
@@ -223,27 +376,176 @@ export function TaskMain({ task, handleUpdate }: TaskMainProps) {
 
           {/* Attachments */}
           <div className="mb-10">
-            <div
-              className="flex items-center gap-2 cursor-pointer hover:bg-muted/40 p-1 -ml-1 rounded-md w-fit transition-colors mb-3 group"
-              onClick={() => setIsAttachOpen(!isAttachOpen)}
-            >
-              <ChevronDown
-                className={`w-4 h-4 text-muted-foreground transition-transform ${!isAttachOpen ? "-rotate-90" : ""} group-hover:text-foreground`}
-              />
-              <h3 className="text-[15px] font-semibold text-foreground">
-                Attachments
-              </h3>
+            <div className="flex items-center justify-between mb-3">
+              <div
+                className={`flex items-center gap-2 w-fit transition-colors group ${attachments.length > 0 ? "cursor-pointer hover:bg-muted/40 p-1 -ml-1 rounded-md" : ""}`}
+                onClick={() =>
+                  attachments.length > 0 && setIsAttachOpen(!isAttachOpen)
+                }
+              >
+                {attachments.length > 0 && (
+                  <ChevronDown
+                    className={`w-4 h-4 text-muted-foreground transition-transform ${!isAttachOpen ? "-rotate-90" : ""} group-hover:text-foreground`}
+                  />
+                )}
+                <h3 className="text-[15px] font-semibold text-foreground flex items-center gap-2">
+                  Attachments
+                  {attachments.length > 0 && (
+                    <span className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-bold text-muted-foreground">
+                      {attachments.length}
+                    </span>
+                  )}
+                </h3>
+              </div>
+
+              {attachments.length > 0 && (
+                <div className="flex items-center gap-1">
+                  <div className="flex bg-muted/20 p-0.5 rounded-md border border-border/50 text-[13px] font-medium text-muted-foreground mr-2">
+                    <button
+                      className={`px-2.5 py-1 rounded-sm transition-colors ${attachmentTab === "all" ? "bg-primary/20 text-primary font-semibold" : "hover:text-foreground hover:bg-muted/50"}`}
+                      onClick={() => setAttachmentTab("all")}
+                    >
+                      All
+                    </button>
+                    <button
+                      className={`px-2.5 py-1 rounded-sm transition-colors ${attachmentTab === "images" ? "bg-primary/20 text-primary font-semibold" : "hover:text-foreground hover:bg-muted/50"}`}
+                      onClick={() => setAttachmentTab("images")}
+                    >
+                      Images
+                    </button>
+                    <button
+                      className={`px-2.5 py-1 rounded-sm transition-colors ${attachmentTab === "documents" ? "bg-primary/20 text-primary font-semibold" : "hover:text-foreground hover:bg-muted/50"}`}
+                      onClick={() => setAttachmentTab("documents")}
+                    >
+                      Documents
+                    </button>
+                    <button
+                      className={`px-2.5 py-1 rounded-sm transition-colors ${attachmentTab === "videos" ? "bg-primary/20 text-primary font-semibold" : "hover:text-foreground hover:bg-muted/50"}`}
+                      onClick={() => setAttachmentTab("videos")}
+                    >
+                      Videos
+                    </button>
+                    <button
+                      className={`px-2.5 py-1 rounded-sm transition-colors ${attachmentTab === "other" ? "bg-primary/20 text-primary font-semibold" : "hover:text-foreground hover:bg-muted/50"}`}
+                      onClick={() => setAttachmentTab("other")}
+                    >
+                      Other
+                    </button>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                  >
+                    <MoreHorizontal className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
             </div>
 
             {isAttachOpen && (
-              <div className="border border-dashed border-border/80 bg-muted/10 rounded-lg p-8 flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/30 hover:border-border transition-colors cursor-pointer group">
-                <div className="flex items-center gap-2">
-                  <Paperclip className="w-4 h-4 group-hover:text-foreground transition-colors" />
-                  <span className="text-sm font-medium">
-                    Drop files to attach, or{" "}
-                    <span className="text-primary hover:underline">browse</span>
-                  </span>
-                </div>
+              <div className="flex flex-col gap-3">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  multiple
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      const newFiles = Array.from(e.target.files).map((f) => ({
+                        id: Math.random().toString(),
+                        name: f.name,
+                        size: (f.size / 1024).toFixed(0) + " KB",
+                        type: f.type,
+                      }));
+                      setAttachments((prev) => [...prev, ...newFiles]);
+                      logActivity({
+                        field: "Attachment",
+                        from: "",
+                        to:
+                          newFiles.length === 1
+                            ? newFiles[0].name
+                            : `${newFiles.length} files added`,
+                      });
+                    }
+                  }}
+                />
+
+                {attachments.length > 0 ? (
+                  <div className="border border-border/50 rounded-lg overflow-hidden text-[13px] bg-card">
+                    <div className="grid grid-cols-[1fr_120px_80px_40px] bg-muted/10 font-medium text-muted-foreground p-2 border-b border-border/50 text-xs">
+                      <div className="pl-2">Name</div>
+                      <div className="flex items-center gap-1 cursor-pointer hover:text-foreground">
+                        Date added <ArrowDown className="w-3 h-3" />
+                      </div>
+                      <div>Size</div>
+                      <div></div>
+                    </div>
+                    {attachments.map((file) => (
+                      <div
+                        key={file.id}
+                        className="grid grid-cols-[1fr_120px_80px_40px] p-2 items-center hover:bg-muted/20 transition-colors border-b last:border-b-0 border-border/50 group"
+                      >
+                        <div className="flex items-center gap-3 pl-2 overflow-hidden pr-2">
+                          <div className="w-8 h-8 rounded bg-background border border-border/50 flex items-center justify-center shrink-0 shadow-sm">
+                            {file.type.startsWith("image/") ? (
+                              <div className="w-full h-full bg-blue-100 dark:bg-blue-900/30 rounded" />
+                            ) : (
+                              <FileText className="w-4 h-4 text-muted-foreground" />
+                            )}
+                          </div>
+                          <span className="font-medium text-foreground truncate hover:underline cursor-pointer">
+                            {file.name}
+                          </span>
+                        </div>
+                        <div className="text-muted-foreground">
+                          Jun 27, 2026
+                        </div>
+                        <div className="text-muted-foreground">{file.size}</div>
+                        <div className="flex justify-center">
+                          <button
+                            className="p-1.5 text-muted-foreground hover:bg-muted rounded transition-colors"
+                            onClick={() => {
+                              setAttachments((prev) =>
+                                prev.filter((f) => f.id !== file.id),
+                              );
+                              logActivity({
+                                field: "Attachment",
+                                from: file.name,
+                                to: "Removed",
+                              });
+                            }}
+                          >
+                            <MoreHorizontal className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    className="border border-dashed border-border/80 bg-muted/10 rounded-lg p-8 flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/30 hover:border-border transition-colors cursor-pointer group"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Paperclip className="w-4 h-4 group-hover:text-foreground transition-colors" />
+                      <span className="text-sm font-medium">
+                        Drop files to attach, or{" "}
+                        <span className="text-primary hover:underline">
+                          browse
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -251,171 +553,498 @@ export function TaskMain({ task, handleUpdate }: TaskMainProps) {
           {/* Subtasks */}
           <div className="mb-10">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2 cursor-pointer hover:bg-muted/40 p-1 -ml-1 rounded-md w-fit transition-colors group">
-                <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform group-hover:text-foreground" />
+              <div
+                className={`flex items-center gap-2 w-fit transition-colors group ${subtasks.length > 0 ? "cursor-pointer hover:bg-muted/40 p-1 -ml-1 rounded-md" : ""}`}
+                onClick={() =>
+                  subtasks.length > 0 && setIsSubtasksOpen(!isSubtasksOpen)
+                }
+              >
+                {subtasks.length > 0 && (
+                  <ChevronDown
+                    className={`w-4 h-4 text-muted-foreground transition-transform ${!isSubtasksOpen ? "-rotate-90" : ""} group-hover:text-foreground`}
+                  />
+                )}
                 <h3 className="text-[15px] font-semibold text-foreground">
                   Subtasks
                 </h3>
               </div>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                >
-                  <MoreHorizontal className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end text-xs text-muted-foreground mb-1 font-medium">
-              0% Done
-            </div>
-            <div className="h-1.5 w-full bg-muted/30 rounded-full mb-4 overflow-hidden">
-              <div className="h-full bg-primary/20 w-0"></div>
-            </div>
-
-            <div className="border border-border/50 rounded-lg overflow-hidden text-[13px] bg-card">
-              <div className="grid grid-cols-[1fr_120px_140px_100px] bg-muted/10 font-medium text-muted-foreground p-2 border-b border-border/50 text-xs">
-                <div className="pl-2">Work</div>
-                <div>Priority</div>
-                <div>Assignee</div>
-                <div>Status</div>
-              </div>
-
-              <div className="grid grid-cols-[1fr_120px_140px_100px] p-2 items-center hover:bg-muted/20 transition-colors border-border/50 group">
-                <div className="flex items-center gap-2 pl-2">
-                  <ClipboardList className="w-4 h-4 text-primary shrink-0" />
-                  <span className="font-semibold text-primary hover:underline cursor-pointer">
-                    PRJ1-102
-                  </span>
-                  <span className="truncate">User Authentication API</span>
+              {subtasks.length > 0 && (
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      setIsSubtaskFormOpen(true);
+                      setTimeout(() => subtaskInputRef.current?.focus(), 0);
+                    }}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                  >
+                    <MoreHorizontal className="w-4 h-4" />
+                  </Button>
                 </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <PriorityIcon priority="medium" />
-                  Medium
+              )}
+            </div>
+
+            {subtasks.length > 0 && isSubtasksOpen && (
+              <>
+                <div className="flex items-center justify-end text-xs text-muted-foreground mb-1 font-medium">
+                  {progress}% Done
                 </div>
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <div className="h-5 w-5 rounded-full border border-dashed border-muted-foreground/40 flex items-center justify-center bg-muted/20 shrink-0">
-                    <svg
-                      className="w-3 h-3 text-muted-foreground/60"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                <div className="h-1.5 w-full bg-black/10 dark:bg-white/10 rounded-full mb-4 overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+
+                <div className="border border-border/50 rounded-lg overflow-hidden text-[13px] bg-card">
+                  <div className="grid grid-cols-[1fr_120px_140px_100px] bg-muted/10 font-medium text-muted-foreground p-2 border-b border-border/50 text-xs">
+                    <div className="pl-2">Work</div>
+                    <div>Priority</div>
+                    <div>Assignee</div>
+                    <div>Status</div>
+                  </div>
+
+                  {subtasks.map((st) => (
+                    <div
+                      key={st.id}
+                      className="grid grid-cols-[1fr_120px_140px_100px] p-2 items-center hover:bg-muted/20 transition-colors border-b last:border-b-0 border-border/50 group"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
-                  </div>
-                  Unassigned
+                      <div className="flex items-center gap-2 pl-2 overflow-hidden pr-2">
+                        <ClipboardList className="w-4 h-4 text-primary shrink-0" />
+                        <span
+                          className={`font-semibold text-primary hover:underline cursor-pointer shrink-0 ${st.status === "done" ? "line-through opacity-70" : ""}`}
+                          onClick={() => onOpenTask?.(st)}
+                        >
+                          {st.code}
+                        </span>
+                        {editingSubtaskId === st.id ? (
+                          <input
+                            autoFocus
+                            value={editingSubtaskTitle}
+                            onChange={(e) =>
+                              setEditingSubtaskTitle(e.target.value)
+                            }
+                            onBlur={() => {
+                              if (
+                                editingSubtaskTitle.trim() &&
+                                editingSubtaskTitle !== st.title
+                              ) {
+                                updateTask({
+                                  taskId: st.id,
+                                  data: { title: editingSubtaskTitle.trim() },
+                                });
+                              }
+                              setEditingSubtaskId(null);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") e.currentTarget.blur();
+                              if (e.key === "Escape") setEditingSubtaskId(null);
+                            }}
+                            className="flex-1 bg-transparent border border-primary/60 ring-1 ring-primary/20 rounded px-1.5 py-0.5 outline-none text-[13px] h-6 text-foreground min-w-0"
+                          />
+                        ) : (
+                          <div
+                            className="flex items-center flex-1 min-w-0 cursor-text hover:bg-muted/50 px-1.5 py-0.5 rounded -ml-1.5 border border-transparent hover:border-border/50 transition-colors group/edit"
+                            onClick={() => {
+                              setEditingSubtaskTitle(st.title);
+                              setEditingSubtaskId(st.id);
+                            }}
+                          >
+                            <span
+                              className={`truncate flex-1 ${st.status === "done" ? "line-through opacity-70" : ""}`}
+                            >
+                              {st.title}
+                            </span>
+                            <Pencil className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover/edit:opacity-100 ml-2 shrink-0 transition-opacity" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground capitalize">
+                        <PriorityIcon priority={st.priority} />
+                        {st.priority}
+                      </div>
+                      <div className="flex items-center min-w-0 pr-2">
+                        <Popover
+                          open={openAssigneePopover === st.id}
+                          onOpenChange={(o) =>
+                            setOpenAssigneePopover(o ? st.id : null)
+                          }
+                        >
+                          <PopoverTrigger asChild>
+                            <button className="flex items-center gap-1.5 text-muted-foreground hover:bg-muted/50 hover:text-foreground px-1.5 py-1 rounded border border-transparent hover:border-border/50 transition-colors w-full text-left min-w-0">
+                              {st.assignee ? (
+                                <>
+                                  <img
+                                    src={st.assignee.avatarUrl}
+                                    alt=""
+                                    className="w-5 h-5 rounded-full border border-border shrink-0"
+                                  />
+                                  <span className="truncate">
+                                    {st.assignee.name}
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="h-5 w-5 rounded-full border border-dashed border-muted-foreground/40 flex items-center justify-center bg-muted/20 shrink-0">
+                                    <svg
+                                      className="w-3 h-3 text-muted-foreground/60"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                      />
+                                    </svg>
+                                  </div>
+                                  <span className="truncate">Unassigned</span>
+                                </>
+                              )}
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-52 p-0" align="start">
+                            <Command>
+                              <CommandInput
+                                placeholder="Search assignee..."
+                                className="h-9"
+                              />
+                              <CommandList>
+                                <CommandEmpty>No user found.</CommandEmpty>
+                                <CommandGroup>
+                                  <CommandItem
+                                    onSelect={() => {
+                                      updateTask({
+                                        taskId: st.id,
+                                        data: { assigneeId: null as any },
+                                      });
+                                      setOpenAssigneePopover(null);
+                                    }}
+                                    className="gap-2 cursor-pointer"
+                                  >
+                                    <div className="h-6 w-6 rounded-full border border-dashed border-muted-foreground/40 flex items-center justify-center bg-muted/20 shrink-0">
+                                      <svg
+                                        className="w-3 h-3 text-muted-foreground/60"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                        />
+                                      </svg>
+                                    </div>
+                                    Unassigned
+                                  </CommandItem>
+                                  {mockUsers.map((user) => (
+                                    <CommandItem
+                                      key={user.id}
+                                      onSelect={() => {
+                                        updateTask({
+                                          taskId: st.id,
+                                          data: { assigneeId: user.id },
+                                        });
+                                        setOpenAssigneePopover(null);
+                                      }}
+                                      className="gap-2 cursor-pointer"
+                                    >
+                                      <Avatar className="h-6 w-6">
+                                        <AvatarImage src={user.avatarUrl} />
+                                        <AvatarFallback>
+                                          {user.name.charAt(0)}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <span className="truncate">
+                                        {user.name}
+                                      </span>
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div>
+                        <Popover
+                          open={openStatusPopover === st.id}
+                          onOpenChange={(o) =>
+                            setOpenStatusPopover(o ? st.id : null)
+                          }
+                        >
+                          <PopoverTrigger asChild>
+                            <button
+                              className={`text-[10px] font-bold px-1.5 py-0.5 rounded w-fit uppercase border flex items-center gap-1 transition-colors ${st.status === "done" ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25" : st.status === "in-progress" ? "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30 hover:bg-blue-500/25" : st.status === "review" ? "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 border-yellow-500/30 hover:bg-yellow-500/25" : "bg-violet-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30 hover:bg-violet-500/25"}`}
+                            >
+                              {st.status.replace("-", " ")}{" "}
+                              <ChevronDown className="w-3 h-3 opacity-70" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="w-40 p-1 flex flex-col gap-0.5"
+                            align="start"
+                          >
+                            <button
+                              className="px-2 py-1.5 rounded-sm hover:bg-muted text-[10px] font-bold text-left transition-colors flex items-center"
+                              onClick={() => {
+                                updateTask({
+                                  taskId: st.id,
+                                  data: { status: "todo" },
+                                });
+                                setOpenStatusPopover(null);
+                              }}
+                            >
+                              <span className="bg-violet-500/15 text-violet-700 dark:text-violet-300 px-1.5 py-0.5 rounded uppercase border border-violet-500/30">
+                                TO DO
+                              </span>
+                            </button>
+                            <button
+                              className="px-2 py-1.5 rounded-sm hover:bg-muted text-[10px] font-bold text-left transition-colors flex items-center"
+                              onClick={() => {
+                                updateTask({
+                                  taskId: st.id,
+                                  data: { status: "in-progress" },
+                                });
+                                setOpenStatusPopover(null);
+                              }}
+                            >
+                              <span className="bg-blue-500/15 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded uppercase border border-blue-500/30">
+                                IN PROGRESS
+                              </span>
+                            </button>
+                            <button
+                              className="px-2 py-1.5 rounded-sm hover:bg-muted text-[10px] font-bold text-left transition-colors flex items-center"
+                              onClick={() => {
+                                updateTask({
+                                  taskId: st.id,
+                                  data: { status: "review" },
+                                });
+                                setOpenStatusPopover(null);
+                              }}
+                            >
+                              <span className="bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 px-1.5 py-0.5 rounded uppercase border border-yellow-500/30">
+                                REVIEW
+                              </span>
+                            </button>
+                            <button
+                              className="px-2 py-1.5 rounded-sm hover:bg-muted text-[10px] font-bold text-left transition-colors flex items-center"
+                              onClick={() => {
+                                updateTask({
+                                  taskId: st.id,
+                                  data: { status: "done" },
+                                });
+                                setOpenStatusPopover(null);
+                              }}
+                            >
+                              <span className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded uppercase border border-emerald-500/30">
+                                DONE
+                              </span>
+                            </button>
+                            <div className="h-px bg-border/50 my-1"></div>
+                            <button className="px-2 py-1.5 rounded-sm hover:bg-muted text-[12px] font-medium text-left transition-colors">
+                              View workflow
+                            </button>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <div className="text-[10px] font-bold bg-slate-500/15 text-slate-300 px-1.5 py-0.5 rounded w-fit uppercase border border-slate-500/30 flex items-center gap-1 cursor-pointer hover:bg-slate-500/25 transition-colors">
-                    TO DO <ChevronDown className="w-3 h-3" />
-                  </div>
-                </div>
+              </>
+            )}
+
+            {/* Empty Subtasks Placeholder */}
+            {subtasks.length === 0 && !isSubtaskFormOpen && (
+              <div
+                className="text-[13px] text-muted-foreground hover:text-foreground cursor-pointer transition-colors w-fit"
+                onClick={() => {
+                  setIsSubtaskFormOpen(true);
+                  setTimeout(() => subtaskInputRef.current?.focus(), 0);
+                }}
+              >
+                Add subtask
               </div>
-              <div className="grid grid-cols-[1fr_120px_140px_100px] p-2 items-center hover:bg-muted/20 transition-colors border-t border-border/50 group">
-                <div className="flex items-center gap-2 pl-2">
-                  <ClipboardList className="w-4 h-4 text-primary shrink-0" />
-                  <span className="font-semibold text-primary hover:underline cursor-pointer">
-                    PRJ1-103
-                  </span>
-                  <span className="truncate">Login UI implementation</span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <PriorityIcon priority="medium" />
-                  Medium
-                </div>
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <div className="h-5 w-5 rounded-full border border-dashed border-muted-foreground/40 flex items-center justify-center bg-muted/20 shrink-0">
-                    <svg
-                      className="w-3 h-3 text-muted-foreground/60"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+            )}
+
+            {isSubtaskFormOpen && (
+              <div className="mt-2 flex flex-col gap-2">
+                <div className="flex items-center border border-primary/60 ring-1 ring-primary/20 rounded-md bg-background px-3 py-1.5 focus-within:ring-2 focus-within:ring-primary/50 transition-shadow">
+                  <input
+                    placeholder="Name this subtask"
+                    className="flex-1 bg-transparent outline-none text-[13px] h-6 text-foreground placeholder:text-muted-foreground"
+                    value={subtaskTitle}
+                    onChange={(e) => setSubtaskTitle(e.target.value)}
+                    ref={subtaskInputRef}
+                    autoFocus={false}
+                    onKeyDown={(e) => {
+                      if (
+                        e.key === "Enter" &&
+                        subtaskTitle.trim() &&
+                        !isCreatingSubtask
+                      ) {
+                        createSubtask(
+                          {
+                            title: subtaskTitle.trim(),
+                            projectId: task.projectId,
+                            type: "task",
+                            status: "todo",
+                            priority: "medium",
+                            parentId: task.id,
+                          },
+                          {
+                            onSuccess: () => {
+                              setSubtaskTitle("");
+                            },
+                          },
+                        );
+                      }
+                    }}
+                  />
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 px-2 py-1 bg-muted/50 rounded text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground">
+                      <ClipboardList className="w-3.5 h-3.5" /> Subtask{" "}
+                      <ChevronDown className="w-3 h-3" />
+                    </div>
+                    <button
+                      className={`p-1 rounded transition-colors ${subtaskTitle.trim() ? "bg-primary text-primary-foreground hover:bg-primary/90" : "hover:bg-muted text-muted-foreground hover:text-foreground"}`}
+                      disabled={!subtaskTitle.trim() || isCreatingSubtask}
+                      onClick={() => {
+                        if (subtaskTitle.trim() && !isCreatingSubtask) {
+                          createSubtask(
+                            {
+                              title: subtaskTitle.trim(),
+                              projectId: task.projectId,
+                              type: "task",
+                              status: "todo",
+                              priority: "medium",
+                              parentId: task.id,
+                            },
+                            {
+                              onSuccess: () => {
+                                setSubtaskTitle("");
+                              },
+                            },
+                          );
+                        }
+                      }}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
+                      {isCreatingSubtask ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="9 10 4 15 9 20"></polyline>
+                          <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
+                        </svg>
+                      )}
+                    </button>
                   </div>
-                  Unassigned
                 </div>
-                <div>
-                  <div className="text-[10px] font-bold bg-slate-500/15 text-slate-300 px-1.5 py-0.5 rounded w-fit uppercase border border-slate-500/30 flex items-center gap-1 cursor-pointer hover:bg-slate-500/25 transition-colors">
-                    TO DO <ChevronDown className="w-3 h-3" />
-                  </div>
+                <div className="flex items-center justify-between mt-1 px-1">
+                  <button className="flex items-center gap-1.5 text-[13px] text-primary hover:underline font-medium transition-colors">
+                    <Search className="w-3.5 h-3.5" /> Choose existing
+                  </button>
+                  <button
+                    className="text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={() => {
+                      setSubtaskTitle("");
+                      setIsSubtaskFormOpen(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Linked work items */}
           <div className="mb-10">
-            <h3 className="text-[15px] font-semibold text-foreground mb-3">
-              Linked work items
-            </h3>
+            <div className="flex items-center gap-2 w-fit transition-colors mb-3 group">
+              <h3 className="text-[15px] font-semibold text-foreground">
+                Linked work items
+              </h3>
+            </div>
 
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <Select defaultValue="blocked_by">
-                  <SelectTrigger className="w-40 h-9 text-[13px] bg-transparent border-border/50 focus:ring-1 focus:ring-primary/50 shadow-none">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="blocked_by">Is blocked by</SelectItem>
-                    <SelectItem value="relates_to">Relates to</SelectItem>
-                    <SelectItem value="duplicates">Duplicates</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <input
-                  type="text"
-                  placeholder="Type, search or paste URL"
-                  className="flex-1 h-9 px-3 bg-transparent border border-border/50 rounded-md text-[13px] outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-foreground placeholder:text-muted-foreground"
-                />
+            {!isLinkedWorkFormOpen && (
+              <div
+                className="text-[13px] text-muted-foreground hover:text-foreground cursor-pointer transition-colors w-fit"
+                onClick={() => setIsLinkedWorkFormOpen(true)}
+              >
+                Add linked work item
               </div>
-              <div className="flex items-center justify-between">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-2 text-muted-foreground hover:text-foreground text-[13px] font-medium"
-                >
-                  <Plus className="w-3.5 h-3.5 mr-1.5" /> Create linked work
-                  item
-                </Button>
+            )}
+
+            {isLinkedWorkFormOpen && (
+              <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-2">
+                  <Select defaultValue="blocked_by">
+                    <SelectTrigger className="w-40 h-9 text-[13px] bg-transparent border-border/50 focus:ring-1 focus:ring-primary/50 shadow-none">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="blocked_by">Is blocked by</SelectItem>
+                      <SelectItem value="relates_to">Relates to</SelectItem>
+                      <SelectItem value="duplicates">Duplicates</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <input
+                    type="text"
+                    autoFocus
+                    placeholder="Type, search or paste URL"
+                    className="flex-1 h-9 px-3 bg-transparent border border-border/50 rounded-md text-[13px] outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 text-[13px] font-medium"
+                    className="h-8 px-2 text-muted-foreground hover:text-foreground text-[13px] font-medium"
                   >
-                    Cancel
+                    <Plus className="w-3.5 h-3.5 mr-1.5" /> Create linked work
+                    item
                   </Button>
-                  <Button
-                    size="sm"
-                    className="h-8 bg-muted text-muted-foreground hover:bg-muted/80 cursor-not-allowed shadow-none text-[13px] font-medium"
-                  >
-                    Link
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-[13px] font-medium"
+                      onClick={() => setIsLinkedWorkFormOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="h-8 bg-muted text-muted-foreground hover:bg-muted/80 cursor-not-allowed shadow-none text-[13px] font-medium"
+                    >
+                      Link
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Activity Section */}

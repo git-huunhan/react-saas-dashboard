@@ -24,6 +24,7 @@ export interface Task {
   };
   labels?: string[];
   dueDate?: string;
+  parentId?: string;
   createdAt: string;
 }
 

@@ -12,6 +12,7 @@ interface TaskDetailModalProps {
   onClose: () => void;
   onEdit?: (task: Task) => void;
   onDelete?: (task: Task) => void;
+  onOpenTask?: (task: Task) => void;
 }
 
 export function TaskDetailModal({
@@ -20,6 +21,7 @@ export function TaskDetailModal({
   onClose,
   onEdit, // unused for now
   onDelete,
+  onOpenTask,
 }: TaskDetailModalProps) {
   const updateTask = useUpdateTask();
 
@@ -55,10 +57,18 @@ export function TaskDetailModal({
 
         <div className="flex flex-1 h-full overflow-hidden">
           {/* Left Column - Main Content */}
-          <TaskMain task={task} handleUpdate={handleUpdate as any} />
+          <TaskMain
+            task={task}
+            handleUpdate={handleUpdate as any}
+            onOpenTask={onOpenTask}
+          />
 
           {/* Right Column - Sidebar */}
-          <TaskSidebar task={task} handleUpdate={handleUpdate as any} />
+          <TaskSidebar
+            task={task}
+            handleUpdate={handleUpdate as any}
+            onOpenTask={onOpenTask}
+          />
         </div>
       </DialogContent>
     </Dialog>

@@ -157,6 +157,18 @@ export async function getActivityByTaskId(
     );
 }
 
+export async function logActivityApi(
+  taskId: string,
+  field: string,
+  from: string,
+  to: string,
+  fromAvatar?: string,
+  toAvatar?: string,
+) {
+  await delay(200);
+  logActivity(taskId, field, from, to, fromAvatar, toAvatar);
+}
+
 /** Call this from task update flows to log field changes automatically */
 export function logActivity(
   taskId: string,
