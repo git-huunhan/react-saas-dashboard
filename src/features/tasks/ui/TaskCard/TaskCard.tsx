@@ -147,18 +147,20 @@ export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
                   new Date().setHours(0, 0, 0, 0);
                 return (
                   <div
-                    className={`w-fit flex items-center gap-1 text-[11px] font-medium px-1.5 py-0.5 rounded border ${isOverdue ? "border-red-500/40 text-red-500 bg-red-500/10" : "border-primary/30 text-primary bg-primary/10"}`}
+                    className={`w-fit flex items-center gap-1 text-[11px] font-medium px-1.5 py-0.5 rounded border ${isOverdue ? "border-[#e3244a]/40 text-[#e3244a] bg-[#e3244a]/10 dark:text-[#f23f66] dark:border-[#f23f66]/40 dark:bg-[#f23f66]/10" : "border-primary/30 text-primary bg-primary/10"}`}
                   >
                     {isOverdue ? (
-                      <AlertTriangle className="w-3 h-3" />
+                      <AlertTriangle className="w-3 h-3 shrink-0" />
                     ) : (
-                      <CalendarIcon className="w-3 h-3" />
+                      <CalendarIcon className="w-3 h-3 shrink-0" />
                     )}
-                    {new Date(task.dueDate).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
+                    <span className="translate-y-[1px]">
+                      {new Date(task.dueDate).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
                   </div>
                 );
               })()}

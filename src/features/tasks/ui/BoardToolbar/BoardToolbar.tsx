@@ -23,6 +23,7 @@ import { useTasksByProject } from "../../model/useTasks";
 import type { FilterCategory } from "./AdvancedFilterPopover";
 import { AdvancedFilterPopover } from "./AdvancedFilterPopover";
 import { ViewSettingsPopover } from "./ViewSettingsPopover";
+import { BoardInsightsPopover } from "./BoardInsightsPopover";
 
 interface BoardToolbarProps {
   searchQuery: string;
@@ -227,13 +228,7 @@ export function BoardToolbar({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-8 w-8 text-muted-foreground border-muted rounded-md hover:text-foreground hover:border-muted-foreground"
-        >
-          <LineChart className="w-4 h-4" />
-        </Button>
+        <BoardInsightsPopover />
         <ViewSettingsPopover groupBy={groupBy} />
 
         <Button
