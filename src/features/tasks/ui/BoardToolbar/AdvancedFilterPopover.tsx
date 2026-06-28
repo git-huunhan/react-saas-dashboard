@@ -105,7 +105,7 @@ function SortableCategoryItem({
       </div>
       <div className="flex items-center h-5">
         {count > 0 && (
-          <div className="h-5 min-w-7 px-2 flex items-center justify-center text-[11px] font-bold rounded-sm group-hover:hidden bg-primary text-primary-foreground">
+          <div className="h-5 min-w-7 px-2 flex items-center justify-center text-[13px] font-bold rounded-sm group-hover:hidden bg-primary text-primary-foreground">
             {count}
           </div>
         )}
@@ -296,16 +296,16 @@ export function AdvancedFilterPopover({
         <Button
           variant="outline"
           size="sm"
-          className={`h-8 gap-1.5 transition-colors ${
+          className={`h-8 gap-1.5 transition-colors aria-expanded:bg-primary/10 aria-expanded:text-primary aria-expanded:!border-primary aria-expanded:hover:bg-primary/20 aria-expanded:hover:text-primary ${
             activeFilterCount > 0
-              ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:text-primary"
+              ? "bg-primary/10 text-primary !border-primary hover:bg-primary/20 hover:text-primary"
               : "bg-transparent border-muted text-muted-foreground hover:text-foreground hover:border-muted-foreground"
           }`}
         >
           <Filter className="w-3.5 h-3.5" />
           Filter
           {activeFilterCount > 0 && (
-            <div className="h-5 min-w-7 px-2 ml-1 flex items-center justify-center text-[11px] font-bold rounded-sm bg-primary text-primary-foreground">
+            <div className="h-5 min-w-7 px-2 ml-1 flex items-center justify-center text-[13px] font-bold rounded-sm bg-primary text-primary-foreground">
               {activeFilterCount}
             </div>
           )}

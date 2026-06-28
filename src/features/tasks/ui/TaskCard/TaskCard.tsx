@@ -15,12 +15,25 @@ import type { Task } from "../../model/types";
 import { useTasksByProject } from "../../model/useTasks";
 import { PriorityIcon } from "../PriorityIcon";
 
+import { useViewSettingsStore } from "../../model/useViewSettingsStore";
+
 interface TaskCardProps {
   task: Task;
   onClick: (task: Task) => void;
   isOverlay?: boolean;
 }
 export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
+  const {
+    showWorkType,
+    showWorkItemKey,
+    showEpic,
+    showLabels,
+    showDueDate,
+    showPriority,
+    showAssignee,
+    showComment,
+    showAttachment,
+  } = useViewSettingsStore();
   const {
     setNodeRef,
     attributes,
@@ -49,23 +62,39 @@ export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
 
   const CardContent = () => {
     const hasMiddleContent =
-      (task.type !== "epic" && !!parentTask) ||
-      (task.labels && task.labels.length > 0) ||
-      task.dueDate;
+      (showEpic && task.type !== "epic" && !!parentTask) ||
+      (showLabels && task.labels && task.labels.length > 0) ||
+      (showDueDate && !!task.dueDate);
+
+    const hasBottomContent =
+      showPriority || showAttachment || showComment || showAssignee;
+    const hasAnyContentBelowTitle = hasMiddleContent || hasBottomContent;
 
     return (
       <>
-        <div className="flex flex-col gap-1.5 mb-2.5 pb-2.5 border-b border-border/40">
-          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-            {task.type === "epic" ? (
-              <Crown className="w-3.5 h-3.5 text-purple-500" />
-            ) : task.type === "bug" ? (
-              <Bug className="w-3.5 h-3.5 text-red-500" />
-            ) : (
-              <ClipboardList className="w-3.5 h-3.5 text-primary" />
-            )}
-            {task.code || `TASK-${task.id.slice(-3)}`}
-          </span>
+        <div
+          className={`flex flex-col gap-1.5 ${hasAnyContentBelowTitle ? "mb-2.5 pb-2.5 border-b border-border/40" : ""}`}
+        >
+          {(showWorkType || showWorkItemKey) && (
+            <div className="min-h-[16px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              {showWorkType && (
+                <>
+                  {task.type === "epic" ? (
+                    <Crown className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                  ) : task.type === "bug" ? (
+                    <Bug className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                  ) : (
+                    <ClipboardList className="w-3.5 h-3.5 text-primary shrink-0" />
+                  )}
+                </>
+              )}
+              {showWorkItemKey && (
+                <span className="translate-y-[0.5px]">
+                  {task.code || `TASK-${task.id.slice(-3)}`}
+                </span>
+              )}
+            </div>
+          )}
           <p className="text-[13px] font-medium leading-snug text-foreground/90 line-clamp-3">
             {task.title}
           </p>
@@ -73,7 +102,7 @@ export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
 
         {hasMiddleContent && (
           <div className="flex flex-col gap-2 mb-4">
-            {task.type !== "epic" && parentTask && (
+            {showEpic && task.type !== "epic" && parentTask && (
               <div className="flex items-center gap-1 text-[11px] font-medium text-foreground/70 hover:text-foreground cursor-pointer transition-colors bg-muted/40 px-1.5 py-0.5 rounded border border-border/50 w-fit">
                 <Crown className="w-3 h-3 text-purple-500 shrink-0" />
                 <span
@@ -84,7 +113,7 @@ export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
                 </span>
               </div>
             )}
-            {task.labels && task.labels.length > 0 && (
+            {showLabels && task.labels && task.labels.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {task.labels.map((label) => {
                   let hash = 0;
@@ -110,7 +139,8 @@ export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
                 })}
               </div>
             )}
-            {task.dueDate &&
+            {showDueDate &&
+              task.dueDate &&
               (() => {
                 const isOverdue =
                   new Date(task.dueDate).getTime() <
@@ -135,49 +165,63 @@ export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
           </div>
         )}
 
-        <div
-          className={`flex items-center justify-between mt-auto ${hasMiddleContent ? "pt-2 border-t border-border/40" : "pt-0.5"}`}
-        >
-          <div className="flex items-center gap-3">
-            <PriorityIcon priority={task.priority} />
+        {hasBottomContent && (
+          <div
+            className={`flex items-center justify-between mt-auto ${hasMiddleContent ? "pt-2 border-t border-border/40" : "pt-0.5"}`}
+          >
+            <div className="flex items-center gap-3 min-h-[22px]">
+              {showPriority && <PriorityIcon priority={task.priority} />}
 
-            <div className="flex items-center gap-3 text-muted-foreground text-xs font-medium">
-              <div className="flex items-center gap-1">
-                <Paperclip className="w-3.5 h-3.5" />
-                <span>{task.id.length % 4}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>{(task.id.charCodeAt(task.id.length - 1) || 0) % 6}</span>
-              </div>
+              {(showAttachment || showComment) && (
+                <div className="flex items-center gap-3 text-muted-foreground text-xs font-medium">
+                  {showAttachment && (
+                    <div className="flex items-center gap-1">
+                      <Paperclip className="w-3.5 h-3.5" />
+                      <span>{task.id.length % 4}</span>
+                    </div>
+                  )}
+                  {showComment && (
+                    <div className="flex items-center gap-1">
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>
+                        {(task.id.charCodeAt(task.id.length - 1) || 0) % 6}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
+
+            {showAssignee && (
+              <>
+                {task.assignee ? (
+                  <Avatar className="h-[22px] w-[22px] ring-2 ring-background">
+                    <AvatarImage src={task.assignee.avatarUrl} />
+                    <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
+                      {task.assignee.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <div className="h-[22px] w-[22px] rounded-full border border-dashed border-muted-foreground/60 flex items-center justify-center bg-muted/20">
+                    <svg
+                      className="w-3 h-3 text-muted-foreground/80"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                  </div>
+                )}
+              </>
+            )}
           </div>
-
-          {task.assignee ? (
-            <Avatar className="h-[22px] w-[22px] ring-2 ring-background">
-              <AvatarImage src={task.assignee.avatarUrl} />
-              <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
-                {task.assignee.name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-          ) : (
-            <div className="h-[22px] w-[22px] rounded-full border border-dashed border-muted-foreground/60 flex items-center justify-center bg-muted/20">
-              <svg
-                className="w-3 h-3 text-muted-foreground/80"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-            </div>
-          )}
-        </div>
+        )}
       </>
     );
   };

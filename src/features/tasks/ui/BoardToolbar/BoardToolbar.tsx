@@ -22,6 +22,7 @@ import { useParams } from "react-router-dom";
 import { useTasksByProject } from "../../model/useTasks";
 import type { FilterCategory } from "./AdvancedFilterPopover";
 import { AdvancedFilterPopover } from "./AdvancedFilterPopover";
+import { ViewSettingsPopover } from "./ViewSettingsPopover";
 
 interface BoardToolbarProps {
   searchQuery: string;
@@ -203,9 +204,9 @@ export function BoardToolbar({
             <Button
               variant="outline"
               size="sm"
-              className={`h-8 gap-1.5 transition-colors ${
+              className={`h-8 gap-1.5 transition-colors aria-expanded:bg-primary/10 aria-expanded:text-primary aria-expanded:!border-primary aria-expanded:hover:bg-primary/20 aria-expanded:hover:text-primary ${
                 groupBy !== "None"
-                  ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:text-primary"
+                  ? "bg-primary/10 text-primary !border-primary hover:bg-primary/20 hover:text-primary"
                   : "bg-transparent border-muted text-muted-foreground hover:text-foreground hover:border-muted-foreground"
               }`}
             >
@@ -233,13 +234,7 @@ export function BoardToolbar({
         >
           <LineChart className="w-4 h-4" />
         </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-8 w-8 text-muted-foreground border-muted rounded-md hover:text-foreground hover:border-muted-foreground"
-        >
-          <SlidersHorizontal className="w-4 h-4" />
-        </Button>
+        <ViewSettingsPopover groupBy={groupBy} />
 
         <Button
           variant="outline"

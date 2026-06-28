@@ -58,6 +58,8 @@ interface KanbanBoardProps {
   groupBy?: string;
 }
 
+import { useViewSettingsStore } from "../../model/useViewSettingsStore";
+
 function SwimlaneGroup({
   title,
   taskCount,
@@ -74,6 +76,15 @@ function SwimlaneGroup({
   children: React.ReactNode;
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const { expandAllCounter, collapseAllCounter } = useViewSettingsStore();
+
+  useEffect(() => {
+    if (expandAllCounter > 0) setIsExpanded(true);
+  }, [expandAllCounter]);
+
+  useEffect(() => {
+    if (collapseAllCounter > 0) setIsExpanded(false);
+  }, [collapseAllCounter]);
 
   return (
     <div className="flex flex-col w-full min-w-max mb-6 last:mb-0">
