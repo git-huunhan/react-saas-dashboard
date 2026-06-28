@@ -1,6 +1,6 @@
 import { getProjectKeySync } from "../../projects/api/projectsApi";
-import type { Task, TaskStatus } from "../model/types";
 import { mockUsers } from "../../users/model/mockUsers";
+import type { Task, TaskStatus } from "../model/types";
 import { logActivity } from "./commentsApi";
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
@@ -51,11 +51,13 @@ export async function getTasksByProjectId(projectId: string): Promise<Task[]> {
 
 export async function updateTaskStatus(
   taskId: string,
-  status: TaskStatus,
+  newStatus: TaskStatus,
 ): Promise<Task> {
   await delay(300);
-  const task = tasksDb.find((t) => t.id === taskId);
-  if (!task) throw new Error("Task not found");
+  const taskIndex = tasksDb.findIndex((t) => t.id === taskId);
+  if (taskIndex === -1) throw new Error("Task not found");
+
+  const task = tasksDb[taskIndex];
 
   const STATUS_LABELS: Record<TaskStatus, string> = {
     todo: "To Do",
@@ -63,15 +65,18 @@ export async function updateTaskStatus(
     review: "Review",
     done: "Done",
   };
+
   logActivity(
     taskId,
     "status",
     STATUS_LABELS[task.status],
-    STATUS_LABELS[status],
+    STATUS_LABELS[newStatus],
   );
 
-  task.status = status;
-  return { ...task };
+  const updatedTask = { ...task, status: newStatus };
+  tasksDb[taskIndex] = updatedTask;
+
+  return updatedTask;
 }
 
 export async function createTask(
@@ -103,8 +108,10 @@ export async function updateTask(
   >,
 ): Promise<Task> {
   await delay(300);
-  const task = tasksDb.find((t) => t.id === taskId);
-  if (!task) throw new Error("Task not found");
+  const taskIndex = tasksDb.findIndex((t) => t.id === taskId);
+  if (taskIndex === -1) throw new Error("Task not found");
+
+  const task = tasksDb[taskIndex];
 
   const STATUS_LABELS: Record<TaskStatus, string> = {
     todo: "To Do",
@@ -166,15 +173,16 @@ export async function updateTask(
     }
   }
 
-  Object.assign(task, data);
+  const updatedTask = { ...task, ...data };
 
   if (data.assigneeId !== undefined) {
     if (data.assigneeId === null) {
-      task.assignee = undefined;
+      updatedTask.assigneeId = undefined;
+      updatedTask.assignee = undefined;
     } else {
       const user = mockUsers.find((u) => u.id === data.assigneeId);
       if (user) {
-        task.assignee = {
+        updatedTask.assignee = {
           id: user.id,
           name: user.name,
           avatarUrl: user.avatarUrl || "",
@@ -185,11 +193,11 @@ export async function updateTask(
 
   if (data.reporterId !== undefined) {
     if (data.reporterId === null) {
-      task.reporter = undefined;
+      updatedTask.reporter = undefined;
     } else {
       const user = mockUsers.find((u) => u.id === data.reporterId);
       if (user) {
-        task.reporter = {
+        updatedTask.reporter = {
           id: user.id,
           name: user.name,
           avatarUrl: user.avatarUrl || "",
@@ -198,7 +206,8 @@ export async function updateTask(
     }
   }
 
-  return { ...task };
+  tasksDb[taskIndex] = updatedTask;
+  return updatedTask;
 }
 
 export async function deleteTask(taskId: string): Promise<void> {

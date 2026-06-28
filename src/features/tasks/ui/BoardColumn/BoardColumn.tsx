@@ -1,13 +1,15 @@
-import type { Task, TaskStatus } from "../../model/types";
-import { TaskCard } from "../TaskCard/TaskCard";
+import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { useDroppable } from "@dnd-kit/core";
+import type { Task, TaskStatus } from "../../model/types";
+import { TaskCard } from "../TaskCard/TaskCard";
 
 interface BoardColumnProps {
   columnId: TaskStatus;
+  droppableId?: string;
+  groupId?: string;
   title: string;
   tasks: Task[];
   isFirstColumn?: boolean;
@@ -17,6 +19,8 @@ interface BoardColumnProps {
 
 export function BoardColumn({
   columnId,
+  droppableId,
+  groupId,
   title,
   tasks,
   isFirstColumn,
@@ -24,10 +28,11 @@ export function BoardColumn({
   onCreateTask,
 }: BoardColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
-    id: columnId,
+    id: droppableId || columnId,
     data: {
       type: "Column",
       column: columnId,
+      groupId: groupId,
     },
   });
 

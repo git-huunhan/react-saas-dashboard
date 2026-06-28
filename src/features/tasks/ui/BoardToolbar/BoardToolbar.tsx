@@ -1,0 +1,254 @@
+import {
+  ChevronDown,
+  LineChart,
+  MoreHorizontal,
+  Search,
+  SlidersHorizontal,
+  User as UserIcon,
+} from "lucide-react";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { mockUsers } from "@/features/users/model/mockUsers";
+import { useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useTasksByProject } from "../../model/useTasks";
+import type { FilterCategory } from "./AdvancedFilterPopover";
+import { AdvancedFilterPopover } from "./AdvancedFilterPopover";
+
+interface BoardToolbarProps {
+  searchQuery: string;
+  setSearchQuery: (val: string) => void;
+  parentIds: string[];
+  setParentIds: (val: string[]) => void;
+  assigneeIds: string[];
+  setAssigneeIds: (val: string[]) => void;
+  priorities: string[];
+  setPriorities: (val: string[]) => void;
+  statuses: string[];
+  setStatuses: (val: string[]) => void;
+  workTypes: string[];
+  setWorkTypes: (val: string[]) => void;
+  labels: string[];
+  setLabels: (val: string[]) => void;
+  activeView?: "board" | "list";
+  onViewChange?: (view: "board" | "list") => void;
+  groupBy: "None" | "Assignee" | "Epic" | "Subtask";
+  setGroupBy: (val: "None" | "Assignee" | "Epic" | "Subtask") => void;
+}
+
+export function BoardToolbar({
+  searchQuery,
+  setSearchQuery,
+  parentIds,
+  setParentIds,
+  assigneeIds,
+  setAssigneeIds,
+  priorities,
+  setPriorities,
+  statuses,
+  setStatuses,
+  workTypes,
+  setWorkTypes,
+  labels,
+  setLabels,
+  activeView = "board",
+  onViewChange,
+  groupBy,
+  setGroupBy,
+}: BoardToolbarProps) {
+  const [categoriesOrder, setCategoriesOrder] = useState<FilterCategory[]>([
+    "Parent",
+    "Assignee",
+    "Status",
+    "Priority",
+    "Work type",
+    "Labels",
+  ]);
+  const [pinnedCategories, setPinnedCategories] = useState<FilterCategory[]>(
+    [],
+  );
+
+  const { id } = useParams<{ id: string }>();
+  const { data: tasks = [] } = useTasksByProject(id || "");
+
+  const availableLabels = useMemo(() => {
+    const allLabels = tasks.flatMap((t) => t.labels || []);
+    return Array.from(new Set(allLabels)).sort();
+  }, [tasks]);
+
+  const parentTasks = useMemo(() => {
+    return tasks.filter(
+      (t) =>
+        t.type === "epic" || tasks.some((child) => child.parentId === t.id),
+    );
+  }, [tasks]);
+
+  const toggleAssignee = (id: string) => {
+    if (assigneeIds.includes(id)) {
+      setAssigneeIds(assigneeIds.filter((x) => x !== id));
+    } else {
+      setAssigneeIds([...assigneeIds, id]);
+    }
+  };
+
+  const activeFilterCount =
+    parentIds.length +
+    assigneeIds.length +
+    statuses.length +
+    priorities.length +
+    workTypes.length +
+    labels.length;
+
+  const handleClearAll = () => {
+    setParentIds([]);
+    setAssigneeIds([]);
+    setStatuses([]);
+    setPriorities([]);
+    setWorkTypes([]);
+    setLabels([]);
+  };
+
+  return (
+    <div className="flex items-center justify-between pb-1 mt-1">
+      <div className="flex items-center gap-3">
+        {/* Search */}
+        <div className="relative group">
+          <Search className="absolute left-2.5 top-2 h-4 w-4 text-muted-foreground group-focus-within:text-foreground" />
+          <Input
+            type="search"
+            placeholder="Search tasks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-48 pl-8 h-8 bg-transparent text-sm border-muted hover:border-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/30 transition-colors"
+          />
+        </div>
+
+        {/* Assignee Avatars */}
+        <div className="flex -space-x-2">
+          {/* Unassigned Option */}
+          <div
+            title="Unassigned"
+            className={`h-7 w-7 rounded-full border-2 cursor-pointer hover:-translate-y-0.5 transition-all flex items-center justify-center shrink-0 hover:z-10 ${
+              assigneeIds.includes("unassigned")
+                ? "border-background ring-2 ring-primary bg-muted/50 z-10"
+                : "border-dashed border-muted-foreground/40 bg-muted/20"
+            }`}
+            onClick={() => toggleAssignee("unassigned")}
+          >
+            <UserIcon className="w-3.5 h-3.5 text-muted-foreground/80" />
+          </div>
+          {mockUsers.slice(0, 5).map((user) => {
+            const isActive = assigneeIds.includes(user.id);
+            return (
+              <Avatar
+                key={user.id}
+                className={`h-7 w-7 border-2 border-background cursor-pointer hover:-translate-y-0.5 transition-all hover:z-10 ${
+                  isActive ? "ring-2 ring-primary z-10" : ""
+                }`}
+                onClick={() => toggleAssignee(user.id)}
+                title={user.name}
+              >
+                <AvatarImage src={user.avatarUrl} />
+                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+            );
+          })}
+        </div>
+
+        {/* Filters Popover */}
+        <AdvancedFilterPopover
+          categoriesOrder={categoriesOrder}
+          setCategoriesOrder={setCategoriesOrder}
+          pinnedCategories={pinnedCategories}
+          setPinnedCategories={setPinnedCategories}
+          parentIds={parentIds}
+          setParentIds={setParentIds}
+          assigneeIds={assigneeIds}
+          setAssigneeIds={setAssigneeIds}
+          statuses={statuses}
+          setStatuses={setStatuses}
+          priorities={priorities}
+          setPriorities={setPriorities}
+          workTypes={workTypes}
+          setWorkTypes={setWorkTypes}
+          labels={labels}
+          setLabels={setLabels}
+        />
+
+        {/* Clear Filters */}
+        {(activeFilterCount > 0 || searchQuery.length > 0) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearAll}
+            className="h-8 text-primary font-normal hover:bg-primary/10 hover:text-primary transition-colors px-2"
+          >
+            Clear filters
+          </Button>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2">
+        {/* Group By */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className={`h-8 gap-1.5 transition-colors ${
+                groupBy !== "None"
+                  ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:text-primary"
+                  : "bg-transparent border-muted text-muted-foreground hover:text-foreground hover:border-muted-foreground"
+              }`}
+            >
+              Group{groupBy !== "None" && `: ${groupBy}`}
+              <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            {(["None", "Assignee", "Epic", "Subtask"] as const).map((opt) => (
+              <DropdownMenuItem
+                key={opt}
+                onClick={() => setGroupBy(opt)}
+                className={`cursor-pointer ${groupBy === opt ? "bg-muted font-medium" : ""}`}
+              >
+                {opt}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground border-muted rounded-md hover:text-foreground hover:border-muted-foreground"
+        >
+          <LineChart className="w-4 h-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground border-muted rounded-md hover:text-foreground hover:border-muted-foreground"
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+        </Button>
+
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground border-muted rounded-md hover:text-foreground hover:border-muted-foreground"
+        >
+          <MoreHorizontal className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}

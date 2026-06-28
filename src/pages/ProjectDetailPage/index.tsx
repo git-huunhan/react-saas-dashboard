@@ -1,37 +1,40 @@
 import {
   Calendar,
-  ChevronDown,
   ClipboardList,
   FileText,
-  Filter,
   FolderKanban,
   GanttChart,
   Globe,
   KanbanSquare,
-  Layers,
-  LayoutGrid,
-  LayoutList,
   List,
   Maximize2,
   MoreHorizontal,
   Plus,
-  Search,
   Share2,
   Users,
 } from "lucide-react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProject } from "@/features/projects";
-import { KanbanBoard } from "@/features/tasks";
+import { BoardToolbar, KanbanBoard } from "@/features/tasks";
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: project, isLoading, isError } = useProject(id || "");
+
+  const [activeTab, setActiveTab] = useState("board");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [parentIds, setParentIds] = useState<string[]>([]);
+  const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
+  const [priorities, setPriorities] = useState<string[]>([]);
+  const [statuses, setStatuses] = useState<string[]>([]);
+  const [workTypes, setWorkTypes] = useState<string[]>([]);
+  const [labels, setLabels] = useState<string[]>([]);
+  const [groupBy, setGroupBy] = useState<string>("None");
 
   if (isLoading)
     return (
@@ -46,7 +49,8 @@ export default function ProjectDetailPage() {
 
   return (
     <Tabs
-      defaultValue="list"
+      value={activeTab}
+      onValueChange={setActiveTab}
       className="flex flex-col h-full w-full bg-background overflow-hidden"
     >
       <div className="flex flex-col border-b border-border bg-background pt-4 pb-2 px-6 shrink-0 gap-4">
@@ -161,83 +165,28 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* Row 4: Filters Toolbar */}
-        <div className="flex items-center justify-between pb-1 mt-1">
-          <div className="flex items-center gap-3">
-            <div className="relative group">
-              <Search className="absolute left-2.5 top-2 h-4 w-4 text-muted-foreground group-focus-within:text-foreground" />
-              <Input
-                type="search"
-                placeholder="Search w..."
-                className="w-45 pl-8 h-8 bg-transparent text-sm border-muted hover:border-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/30 transition-colors"
-              />
-            </div>
-            <div className="flex -space-x-2">
-              <Avatar className="h-7 w-7 border-2 border-background">
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
-              <Avatar className="h-7 w-7 border-2 border-background">
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 gap-1.5 bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:text-primary transition-colors"
-            >
-              <Filter className="w-3.5 h-3.5" />
-              Filter
-              <Badge className="h-5 px-1.5 ml-1 bg-primary text-primary-foreground font-normal rounded-sm">
-                1
-              </Badge>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 gap-1.5 bg-transparent border-muted text-muted-foreground hover:text-foreground hover:border-muted-foreground transition-colors"
-            >
-              <Layers className="w-3.5 h-3.5" />
-              Group
-            </Button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 gap-1 text-muted-foreground hover:text-foreground font-normal"
-            >
-              Saved filters
-              <ChevronDown className="w-3.5 h-3.5 opacity-70" />
-            </Button>
-
-            <div className="flex items-center h-8 border border-muted rounded-md p-0.5">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-full aspect-square rounded-sm bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary transition-colors"
-              >
-                <LayoutList className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-full aspect-square rounded-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground border-muted rounded-md hover:text-foreground hover:border-muted-foreground"
-            >
-              <MoreHorizontal className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
+        {activeTab === "board" && (
+          <BoardToolbar
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            parentIds={parentIds}
+            setParentIds={setParentIds}
+            assigneeIds={assigneeIds}
+            setAssigneeIds={setAssigneeIds}
+            priorities={priorities}
+            setPriorities={setPriorities}
+            statuses={statuses}
+            setStatuses={setStatuses}
+            workTypes={workTypes}
+            setWorkTypes={setWorkTypes}
+            labels={labels}
+            setLabels={setLabels}
+            activeView={activeTab === "list" ? "list" : "board"}
+            onViewChange={(view) => setActiveTab(view)}
+            groupBy={groupBy}
+            setGroupBy={setGroupBy}
+          />
+        )}
       </div>
 
       <div className="flex-1 overflow-hidden relative">
@@ -283,7 +232,17 @@ export default function ProjectDetailPage() {
           value="board"
           className="h-full m-0 p-0 flex flex-col data-[state=active]:flex pt-4"
         >
-          <KanbanBoard projectId={project.id} />
+          <KanbanBoard
+            projectId={project.id}
+            searchQuery={searchQuery}
+            parentIds={parentIds}
+            assigneeIds={assigneeIds}
+            priorities={priorities}
+            statuses={statuses}
+            workTypes={workTypes}
+            labels={labels}
+            groupBy={groupBy}
+          />
         </TabsContent>
       </div>
     </Tabs>

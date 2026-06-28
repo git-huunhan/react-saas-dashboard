@@ -36,7 +36,8 @@ export function TaskDetailModal({
       | "assigneeId"
       | "labels"
       | "dueDate"
-      | "reporterId",
+      | "reporterId"
+      | "parentId",
     value: any,
   ) => {
     if (!task) return;

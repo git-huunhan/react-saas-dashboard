@@ -4,13 +4,15 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   AlertTriangle,
   Bug,
+  CalendarIcon,
   ClipboardList,
   Crown,
   MessageSquare,
   Paperclip,
-  CalendarIcon,
 } from "lucide-react";
+import { useParams } from "react-router-dom";
 import type { Task } from "../../model/types";
+import { useTasksByProject } from "../../model/useTasks";
 import { PriorityIcon } from "../PriorityIcon";
 
 interface TaskCardProps {
@@ -39,10 +41,15 @@ export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
     transform: CSS.Transform.toString(transform),
   };
 
+  const { id } = useParams<{ id: string }>();
+  const { data: tasks = [] } = useTasksByProject(id || "");
+  const parentTask = task.parentId
+    ? tasks.find((t) => t.id === task.parentId)
+    : null;
+
   const CardContent = () => {
     const hasMiddleContent =
-      (task.type !== "epic" &&
-        parseInt(task.id.replace(/\\D/g, "") || "0") % 2 === 0) ||
+      (task.type !== "epic" && !!parentTask) ||
       (task.labels && task.labels.length > 0) ||
       task.dueDate;
 
@@ -66,15 +73,17 @@ export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
 
         {hasMiddleContent && (
           <div className="flex flex-col gap-2 mb-4">
-            {task.type !== "epic" &&
-              parseInt(task.id.replace(/\D/g, "") || "0") % 2 === 0 && (
-                <div className="flex items-center gap-1 text-[11px] font-medium text-foreground/70 hover:text-foreground cursor-pointer transition-colors bg-muted/40 px-1.5 py-0.5 rounded border border-border/50 w-fit">
-                  <Crown className="w-3 h-3 text-purple-500 shrink-0" />
-                  <span className="truncate max-w-[150px]">
-                    Core Infrastructure Setup
-                  </span>
-                </div>
-              )}
+            {task.type !== "epic" && parentTask && (
+              <div className="flex items-center gap-1 text-[11px] font-medium text-foreground/70 hover:text-foreground cursor-pointer transition-colors bg-muted/40 px-1.5 py-0.5 rounded border border-border/50 w-fit">
+                <Crown className="w-3 h-3 text-purple-500 shrink-0" />
+                <span
+                  className="truncate max-w-[150px]"
+                  title={parentTask.title}
+                >
+                  {parentTask.title}
+                </span>
+              </div>
+            )}
             {task.labels && task.labels.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {task.labels.map((label) => {
@@ -186,11 +195,12 @@ export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
       <div
         ref={setNodeRef}
         style={style}
-        className="flex flex-col rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-3 mb-3"
+        className="relative flex flex-col rounded-xl border border-transparent p-3 mb-2.5"
       >
-        <div className="opacity-0">
+        <div className="flex flex-col flex-1 opacity-0 pointer-events-none">
           <CardContent />
         </div>
+        <div className="absolute inset-0 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 pointer-events-none" />
       </div>
     );
   }
