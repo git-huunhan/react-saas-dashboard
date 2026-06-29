@@ -320,13 +320,26 @@ export function KanbanBoard({
           }
         }
 
+        const newTasks = [...tasks];
+        const activeTaskObj = newTasks.splice(activeIndex, 1)[0];
+
         if (shouldUpdate) {
-          const newTasks = [...tasks];
-          newTasks[activeIndex] = newActiveTask;
-          return arrayMove(newTasks, activeIndex, overIndex);
+          Object.assign(activeTaskObj, newActiveTask);
         }
 
-        return arrayMove(tasks, activeIndex, overIndex);
+        const targetIndex = newTasks.findIndex((t) => t.id === overId);
+
+        // Determine if we should insert below or above based on pointer position
+        const isBelowOverItem =
+          over &&
+          active.rect.current.translated &&
+          active.rect.current.translated.top >
+            over.rect.top + over.rect.height / 2;
+
+        const insertIndex = isBelowOverItem ? targetIndex + 1 : targetIndex;
+        newTasks.splice(insertIndex, 0, activeTaskObj);
+
+        return newTasks;
       }
 
       if (isOverColumn) {
@@ -370,11 +383,16 @@ export function KanbanBoard({
           }
         }
 
+        const newTasks = [...tasks];
+        const activeTaskObj = newTasks.splice(activeIndex, 1)[0];
+
         if (shouldUpdate) {
-          const newTasks = [...tasks];
-          newTasks[activeIndex] = newActiveTask;
-          return arrayMove(newTasks, activeIndex, newTasks.length - 1);
+          Object.assign(activeTaskObj, newActiveTask);
         }
+
+        // When dropping on empty column, just put at the end
+        newTasks.push(activeTaskObj);
+        return newTasks;
       }
 
       return tasks;
