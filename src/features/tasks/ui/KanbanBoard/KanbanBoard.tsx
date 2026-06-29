@@ -171,11 +171,13 @@ export function KanbanBoard({
   labels = [],
   groupBy = "None",
 }: KanbanBoardProps) {
-  const { data: serverTasks = [], isLoading } = useTasksByProject(projectId);
+  const { data: serverTasks, isLoading } = useTasksByProject(projectId);
   const [localTasks, setLocalTasks] = useState<Task[]>([]);
 
   useEffect(() => {
-    setLocalTasks(serverTasks);
+    if (serverTasks) {
+      setLocalTasks(serverTasks);
+    }
   }, [serverTasks]);
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);

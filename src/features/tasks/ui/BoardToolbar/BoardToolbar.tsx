@@ -7,7 +7,7 @@ import {
   User as UserIcon,
   Layers,
   Table,
-  PanelRight,
+  PanelLeft,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -275,30 +275,30 @@ export function BoardToolbar({
             <ViewSettingsPopover groupBy={groupBy} />
           </>
         ) : (
-          <div className="flex items-center bg-transparent border border-muted rounded-md p-0.5">
+          <div className="flex items-center -space-x-px">
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className={`h-7 w-8 rounded-sm ${
+              className={`h-8 w-8 rounded-r-none ${
                 listLayout === "table"
-                  ? "bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  ? "bg-primary/10 text-primary !border-primary hover:bg-primary/20 hover:text-primary z-10"
+                  : "bg-transparent border-muted text-muted-foreground hover:text-foreground hover:bg-muted z-0"
               }`}
               onClick={() => onListLayoutChange?.("table")}
             >
               <Table className="w-4 h-4" />
             </Button>
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className={`h-7 w-8 rounded-sm ${
+              className={`h-8 w-8 rounded-l-none ${
                 listLayout === "split"
-                  ? "bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  ? "bg-primary/10 text-primary !border-primary hover:bg-primary/20 hover:text-primary z-10"
+                  : "bg-transparent border-muted text-muted-foreground hover:text-foreground hover:bg-muted z-0"
               }`}
               onClick={() => onListLayoutChange?.("split")}
             >
-              <PanelRight className="w-4 h-4" />
+              <PanelLeft className="w-4 h-4" />
             </Button>
           </div>
         )}
