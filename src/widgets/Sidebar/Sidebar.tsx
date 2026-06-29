@@ -1,5 +1,4 @@
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-
+import { useRef, useEffect } from "react";
 import { FolderKanban, LayoutDashboard, Users2 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSidebar } from "./useSidebar";
@@ -46,12 +45,29 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
 
 export function Sidebar() {
   const { isMobileOpen, closeMobile, isDesktopClosed } = useSidebar();
+  const mobileSidebarRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        isMobileOpen &&
+        mobileSidebarRef.current &&
+        !mobileSidebarRef.current.contains(event.target as Node)
+      ) {
+        const target = event.target as Element;
+        if (target.closest("[data-sidebar-toggle]")) return;
+        closeMobile();
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMobileOpen, closeMobile]);
 
   return (
     <>
       {/* Desktop sidebar */}
       <aside
-        className={`hidden md:flex flex-col h-full shrink-0 border-r bg-background ${
+        className={`hidden xl:flex flex-col h-full shrink-0 border-r bg-background ${
           isDesktopClosed
             ? "w-0 overflow-hidden border-none opacity-0"
             : "w-64 opacity-100"
@@ -62,12 +78,19 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* Mobile sheet */}
-      <Sheet open={isMobileOpen} onOpenChange={closeMobile}>
-        <SheetContent side="left" className="w-64 p-0">
-          <SidebarContent onNavClick={closeMobile} />
-        </SheetContent>
-      </Sheet>
+      {/* Mobile absolute sidebar */}
+      <aside
+        ref={mobileSidebarRef}
+        className={`xl:hidden absolute top-0 left-0 h-full shrink-0 border-r bg-card z-50 transition-all duration-300 ${
+          isMobileOpen
+            ? "w-64 opacity-100 shadow-2xl"
+            : "w-0 overflow-hidden border-none opacity-0"
+        }`}
+      >
+        <div className="w-64 h-full">
+          <SidebarContent />
+        </div>
+      </aside>
     </>
   );
 }

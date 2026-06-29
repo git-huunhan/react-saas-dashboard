@@ -69,7 +69,8 @@ export function Header() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const { toggleMobile, toggleDesktop, isDesktopClosed } = useSidebar();
+  const { toggleMobile, toggleDesktop, isDesktopClosed, isMobileOpen } =
+    useSidebar();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -286,18 +287,24 @@ export function Header() {
 
       <header className="flex h-14 items-center border-b bg-background shrink-0">
         {/* Left Area - Fixed width to match sidebar on desktop ONLY */}
-        <div className="flex items-center gap-2 md:gap-4 lg:w-64 px-2 md:px-4 shrink-0">
+        <div className="flex items-center gap-2 md:gap-4 xl:w-64 px-2 md:px-4 shrink-0">
           {/* Mobile toggle */}
           <button
+            data-sidebar-toggle="true"
             onClick={toggleMobile}
-            className="md:hidden h-8 w-8 flex items-center justify-center rounded hover:bg-accent text-muted-foreground transition-colors"
+            className="xl:hidden h-8 w-8 flex items-center justify-center rounded hover:bg-accent text-muted-foreground transition-colors"
           >
-            <Menu className="h-5 w-5" />
+            {isMobileOpen ? (
+              <PanelLeftClose className="h-5 w-5" />
+            ) : (
+              <PanelLeft className="h-5 w-5" />
+            )}
           </button>
           {/* Desktop toggle */}
           <button
+            data-sidebar-toggle="true"
             onClick={toggleDesktop}
-            className="hidden md:flex h-8 w-8 items-center justify-center rounded hover:bg-accent text-muted-foreground transition-colors"
+            className="hidden xl:flex h-8 w-8 items-center justify-center rounded hover:bg-accent text-muted-foreground transition-colors"
           >
             {isDesktopClosed ? (
               <PanelLeft className="h-5 w-5" />

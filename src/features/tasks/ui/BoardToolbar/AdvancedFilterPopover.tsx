@@ -15,8 +15,8 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  Filter,
   GripVertical,
+  ListFilter,
   MoreHorizontal,
   Pin,
   Plus,
@@ -302,7 +302,7 @@ export function AdvancedFilterPopover({
               : "bg-transparent border-muted text-muted-foreground hover:text-foreground hover:border-muted-foreground"
           }`}
         >
-          <Filter className="w-3.5 h-3.5" />
+          <ListFilter className="w-4 h-4 opacity-70" />
           Filter
           {activeFilterCount > 0 && (
             <div className="h-5 min-w-7 px-2 ml-1 flex items-center justify-center text-[13px] font-bold rounded-sm bg-primary text-primary-foreground">

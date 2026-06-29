@@ -53,12 +53,16 @@ interface TaskSidebarProps {
     value: any,
   ) => void;
   onOpenTask?: (task: Task) => void;
+  className?: string;
+  hideStatusDropdown?: boolean;
 }
 
 export function TaskSidebar({
   task,
   handleUpdate,
   onOpenTask,
+  className,
+  hideStatusDropdown,
 }: TaskSidebarProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(true);
   const [isAssigneeOpen, setIsAssigneeOpen] = useState(false);
@@ -83,75 +87,84 @@ export function TaskSidebar({
   );
 
   return (
-    <div className="w-1/3 shrink-0 bg-muted/10 flex flex-col overflow-hidden relative border-l border-transparent z-10 shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.03)] dark:shadow-none">
-      <div className="flex-1 p-5 overflow-y-auto custom-scrollbar min-h-0 space-y-4 pb-12">
+    <div
+      className={
+        className ||
+        "w-1/3 min-w-[300px] shrink-0 bg-muted/10 flex flex-col overflow-hidden relative border-l border-transparent z-10 shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.03)] dark:shadow-none"
+      }
+    >
+      <div className="flex-1 p-0 lg:p-5 overflow-visible lg:overflow-y-auto custom-scrollbar min-h-0 space-y-4 pb-12">
         {/* Status Dropdown */}
-        <div>
-          {(() => {
-            const statusConfig: Record<
-              TaskStatus,
-              { label: string; trigger: string; dot: string }
-            > = {
-              todo: {
-                label: "To Do",
-                trigger:
-                  "bg-violet-500/15 border-violet-500/40 text-violet-700 dark:text-violet-300 hover:bg-violet-500/25",
-                dot: "bg-violet-500 dark:bg-violet-400",
-              },
-              "in-progress": {
-                label: "In Progress",
-                trigger:
-                  "bg-blue-500/15 border-blue-500/40 text-blue-700 dark:text-blue-300 hover:bg-blue-500/25",
-                dot: "bg-blue-500 dark:bg-blue-400",
-              },
-              review: {
-                label: "Review",
-                trigger:
-                  "bg-yellow-500/15 border-yellow-500/40 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-500/25",
-                dot: "bg-yellow-600 dark:bg-yellow-400",
-              },
-              done: {
-                label: "Done",
-                trigger:
-                  "bg-emerald-500/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25",
-                dot: "bg-emerald-600 dark:bg-emerald-400",
-              },
-            };
-            const cfg = statusConfig[task.status] ?? statusConfig["todo"];
-            return (
-              <Select
-                value={task.status}
-                onValueChange={(val: TaskStatus) => handleUpdate("status", val)}
-              >
-                <SelectTrigger
-                  className={`w-fit h-9 px-3 font-semibold border shadow-sm focus:ring-0 focus:outline-none text-sm transition-colors ${cfg.trigger}`}
+        {!hideStatusDropdown && (
+          <div>
+            {(() => {
+              const statusConfig: Record<
+                TaskStatus,
+                { label: string; trigger: string; dot: string }
+              > = {
+                todo: {
+                  label: "To Do",
+                  trigger:
+                    "bg-violet-500/15 border-violet-500/40 text-violet-700 dark:text-violet-300 hover:bg-violet-500/25",
+                  dot: "bg-violet-500 dark:bg-violet-400",
+                },
+                "in-progress": {
+                  label: "In Progress",
+                  trigger:
+                    "bg-blue-500/15 border-blue-500/40 text-blue-700 dark:text-blue-300 hover:bg-blue-500/25",
+                  dot: "bg-blue-500 dark:bg-blue-400",
+                },
+                review: {
+                  label: "Review",
+                  trigger:
+                    "bg-yellow-500/15 border-yellow-500/40 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-500/25",
+                  dot: "bg-yellow-600 dark:bg-yellow-400",
+                },
+                done: {
+                  label: "Done",
+                  trigger:
+                    "bg-emerald-500/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25",
+                  dot: "bg-emerald-600 dark:bg-emerald-400",
+                },
+              };
+              const cfg = statusConfig[task.status] ?? statusConfig["todo"];
+              return (
+                <Select
+                  value={task.status}
+                  onValueChange={(val: TaskStatus) =>
+                    handleUpdate("status", val)
+                  }
                 >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`}
-                    />
-                    <SelectValue>{cfg.label}</SelectValue>
-                  </div>
-                </SelectTrigger>
-                <SelectContent align="start">
-                  {(
-                    Object.entries(statusConfig) as [
-                      TaskStatus,
-                      (typeof statusConfig)[TaskStatus],
-                    ][]
-                  ).map(([id, s]) => (
-                    <SelectItem key={id} value={id}>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${s.dot}`} />
-                        {s.label}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            );
-          })()}
-        </div>
+                  <SelectTrigger
+                    className={`w-fit h-9 px-3 font-semibold border shadow-sm focus:ring-0 focus:outline-none text-sm transition-colors ${cfg.trigger}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`}
+                      />
+                      <SelectValue>{cfg.label}</SelectValue>
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent align="start">
+                    {(
+                      Object.entries(statusConfig) as [
+                        TaskStatus,
+                        (typeof statusConfig)[TaskStatus],
+                      ][]
+                    ).map(([id, s]) => (
+                      <SelectItem key={id} value={id}>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${s.dot}`} />
+                          {s.label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              );
+            })()}
+          </div>
+        )}
 
         {/* Details Section */}
         <div className="border border-border/50 rounded-xl bg-card shadow-sm overflow-hidden">

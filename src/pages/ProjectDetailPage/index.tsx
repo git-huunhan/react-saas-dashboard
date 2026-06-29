@@ -20,13 +20,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProject } from "@/features/projects";
-import { BoardToolbar, KanbanBoard } from "@/features/tasks";
+import { BoardToolbar, KanbanBoard, ListView } from "@/features/tasks";
 
-export default function ProjectDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const { data: project, isLoading, isError } = useProject(id || "");
-
-  const [activeTab, setActiveTab] = useState("board");
+function useFilters() {
   const [searchQuery, setSearchQuery] = useState("");
   const [parentIds, setParentIds] = useState<string[]>([]);
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
@@ -35,6 +31,39 @@ export default function ProjectDetailPage() {
   const [workTypes, setWorkTypes] = useState<string[]>([]);
   const [labels, setLabels] = useState<string[]>([]);
   const [groupBy, setGroupBy] = useState<string>("None");
+
+  return {
+    searchQuery,
+    setSearchQuery,
+    parentIds,
+    setParentIds,
+    assigneeIds,
+    setAssigneeIds,
+    priorities,
+    setPriorities,
+    statuses,
+    setStatuses,
+    workTypes,
+    setWorkTypes,
+    labels,
+    setLabels,
+    groupBy,
+    setGroupBy,
+  };
+}
+
+export default function ProjectDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const { data: project, isLoading, isError } = useProject(id || "");
+
+  const [activeTab, setActiveTab] = useState("board");
+
+  const boardFilters = useFilters();
+  const listFilters = useFilters();
+
+  const currentFilters = activeTab === "list" ? listFilters : boardFilters;
+
+  const [listLayout, setListLayout] = useState<"table" | "split">("table");
 
   if (isLoading)
     return (
@@ -51,7 +80,7 @@ export default function ProjectDetailPage() {
     <Tabs
       value={activeTab}
       onValueChange={setActiveTab}
-      className="flex flex-col h-full w-full bg-background overflow-hidden"
+      className="flex flex-col h-full w-full bg-background overflow-hidden gap-0"
     >
       <div className="flex flex-col border-b border-border bg-background pt-4 pb-2 px-6 shrink-0 gap-4">
         {/* Top: Breadcrumb */}
@@ -165,27 +194,47 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* Row 4: Filters Toolbar */}
-        {activeTab === "board" && (
+        {activeTab === "board" || activeTab === "list" ? (
           <BoardToolbar
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            parentIds={parentIds}
-            setParentIds={setParentIds}
-            assigneeIds={assigneeIds}
-            setAssigneeIds={setAssigneeIds}
-            priorities={priorities}
-            setPriorities={setPriorities}
-            statuses={statuses}
-            setStatuses={setStatuses}
-            workTypes={workTypes}
-            setWorkTypes={setWorkTypes}
-            labels={labels}
-            setLabels={setLabels}
+            searchQuery={currentFilters.searchQuery}
+            setSearchQuery={currentFilters.setSearchQuery}
+            parentIds={currentFilters.parentIds}
+            setParentIds={currentFilters.setParentIds}
+            assigneeIds={currentFilters.assigneeIds}
+            setAssigneeIds={currentFilters.setAssigneeIds}
+            priorities={currentFilters.priorities}
+            setPriorities={currentFilters.setPriorities}
+            statuses={currentFilters.statuses}
+            setStatuses={currentFilters.setStatuses}
+            workTypes={currentFilters.workTypes}
+            setWorkTypes={currentFilters.setWorkTypes}
+            labels={currentFilters.labels}
+            setLabels={currentFilters.setLabels}
             activeView={activeTab === "list" ? "list" : "board"}
             onViewChange={(view) => setActiveTab(view)}
-            groupBy={groupBy}
-            setGroupBy={setGroupBy}
+            groupBy={currentFilters.groupBy}
+            setGroupBy={currentFilters.setGroupBy}
+            listLayout={listLayout}
+            onListLayoutChange={setListLayout}
           />
+        ) : (
+          <div className="flex items-center justify-between min-h-[40px] pb-1 mt-1 shrink-0 opacity-50 pointer-events-none">
+            <div className="flex items-center gap-3">
+              <div className="w-48 h-8 rounded-md bg-muted/50 border border-muted/50" />
+              <div className="flex -space-x-2">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="w-7 h-7 rounded-full bg-muted border-2 border-background"
+                  />
+                ))}
+              </div>
+              <div className="w-20 h-8 rounded-md bg-muted/50" />
+            </div>
+            <div className="text-xs text-muted-foreground font-medium px-4">
+              Filters unavailable in {activeTab} view
+            </div>
+          </div>
         )}
       </div>
 
@@ -221,11 +270,19 @@ export default function ProjectDetailPage() {
 
         <TabsContent
           value="list"
-          className="h-full m-0 p-0 flex flex-col data-[state=active]:flex pt-4 px-6"
+          className="h-full m-0 p-0 flex flex-col data-[state=active]:flex"
         >
-          <div className="text-muted-foreground p-8 text-center border-2 border-dashed border-border rounded-lg m-4">
-            List View Features will be added later
-          </div>
+          <ListView
+            projectId={project.id}
+            searchQuery={listFilters.searchQuery}
+            parentIds={listFilters.parentIds}
+            assigneeIds={listFilters.assigneeIds}
+            priorities={listFilters.priorities}
+            statuses={listFilters.statuses}
+            workTypes={listFilters.workTypes}
+            labels={listFilters.labels}
+            layout={listLayout}
+          />
         </TabsContent>
 
         <TabsContent
@@ -234,14 +291,14 @@ export default function ProjectDetailPage() {
         >
           <KanbanBoard
             projectId={project.id}
-            searchQuery={searchQuery}
-            parentIds={parentIds}
-            assigneeIds={assigneeIds}
-            priorities={priorities}
-            statuses={statuses}
-            workTypes={workTypes}
-            labels={labels}
-            groupBy={groupBy}
+            searchQuery={boardFilters.searchQuery}
+            parentIds={boardFilters.parentIds}
+            assigneeIds={boardFilters.assigneeIds}
+            priorities={boardFilters.priorities}
+            statuses={boardFilters.statuses}
+            workTypes={boardFilters.workTypes}
+            labels={boardFilters.labels}
+            groupBy={boardFilters.groupBy}
           />
         </TabsContent>
       </div>

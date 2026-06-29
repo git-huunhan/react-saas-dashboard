@@ -16,6 +16,7 @@ import {
   CheckSquare,
   Globe,
   Video,
+  Zap,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,7 @@ import {
 
 import type { Task } from "../../../model/types";
 import { TaskActivity } from "./TaskActivity";
+import { TaskSidebar } from "./TaskSidebar";
 import {
   useCreateTask,
   useTasksByProject,
@@ -57,9 +59,15 @@ interface TaskMainProps {
   task: Task;
   handleUpdate: (field: "title" | "description", value: string) => void;
   onOpenTask?: (task: Task) => void;
+  className?: string;
 }
 
-export function TaskMain({ task, handleUpdate, onOpenTask }: TaskMainProps) {
+export function TaskMain({
+  task,
+  handleUpdate,
+  onOpenTask,
+  className,
+}: TaskMainProps) {
   const { data: tasks = [] } = useTasksByProject(task.projectId);
   const { mutate: updateTask } = useUpdateTask();
   const { mutate: logActivity } = useLogActivity(task.id);
@@ -112,9 +120,14 @@ export function TaskMain({ task, handleUpdate, onOpenTask }: TaskMainProps) {
   }, [task]);
 
   return (
-    <div className="w-2/3 shrink-0 flex flex-col overflow-hidden border-r border-border/40 bg-card">
+    <div
+      className={
+        className ||
+        "w-2/3 shrink-0 flex flex-col overflow-hidden border-r border-border/40 bg-card"
+      }
+    >
       <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar min-h-0 pt-5">
-        <div className="max-w-4xl pb-12">
+        <div className="pb-12">
           {/* Title Editable */}
           <div className="mb-6 -ml-2">
             <h1
@@ -269,6 +282,72 @@ export function TaskMain({ task, handleUpdate, onOpenTask }: TaskMainProps) {
             >
               <MoreHorizontal className="w-4 h-4" />
             </Button>
+          </div>
+
+          {/* Mobile Status Dropdown (Merged View Only) */}
+          <div className="flex items-center gap-2 mb-8 -ml-1 lg:hidden">
+            {(() => {
+              const statusConfig: Record<
+                string,
+                { label: string; trigger: string; dot: string }
+              > = {
+                todo: {
+                  label: "To Do",
+                  trigger:
+                    "bg-violet-500/15 border-violet-500/40 text-violet-700 dark:text-violet-300 hover:bg-violet-500/25",
+                  dot: "bg-violet-500 dark:bg-violet-400",
+                },
+                "in-progress": {
+                  label: "In Progress",
+                  trigger:
+                    "bg-blue-500/15 border-blue-500/40 text-blue-700 dark:text-blue-300 hover:bg-blue-500/25",
+                  dot: "bg-blue-500 dark:bg-blue-400",
+                },
+                review: {
+                  label: "Review",
+                  trigger:
+                    "bg-yellow-500/15 border-yellow-500/40 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-500/25",
+                  dot: "bg-yellow-600 dark:bg-yellow-400",
+                },
+                done: {
+                  label: "Done",
+                  trigger:
+                    "bg-emerald-500/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25",
+                  dot: "bg-emerald-600 dark:bg-emerald-400",
+                },
+              };
+              const cfg =
+                statusConfig[task.status as string] ?? statusConfig["todo"];
+              return (
+                <>
+                  <Select
+                    value={task.status}
+                    onValueChange={(val: any) => handleUpdate("status", val)}
+                  >
+                    <SelectTrigger
+                      className={`w-fit h-9 px-3 font-semibold border shadow-sm focus:ring-0 focus:outline-none text-sm transition-colors ${cfg.trigger}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`}
+                        />
+                        <SelectValue>{cfg.label}</SelectValue>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent align="start">
+                      {Object.entries(statusConfig).map(([id, s]) => (
+                        <SelectItem key={id} value={id}>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${s.dot}`} />
+                            {s.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </>
+              );
+            })()}
           </div>
 
           {/* Description */}
@@ -1045,6 +1124,17 @@ export function TaskMain({ task, handleUpdate, onOpenTask }: TaskMainProps) {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Mobile Sidebar Content */}
+          <div className="block lg:hidden mb-10">
+            <TaskSidebar
+              task={task}
+              handleUpdate={handleUpdate as any}
+              onOpenTask={onOpenTask}
+              hideStatusDropdown={true}
+              className="w-full flex flex-col bg-transparent shadow-none"
+            />
           </div>
 
           {/* Activity Section */}

@@ -4,10 +4,8 @@ import {
   Crown,
   Eye,
   Lock,
-  Maximize2,
   MoreHorizontal,
   Share2,
-  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -72,13 +70,6 @@ export function TaskHeader({ task, onClose, onDelete }: TaskHeaderProps) {
         >
           <Share2 className="w-4 h-4" />
         </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-8 w-8 hover:bg-muted/50 rounded-md border-border/60 shadow-sm"
-        >
-          <Maximize2 className="w-4 h-4" />
-        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -100,15 +91,6 @@ export function TaskHeader({ task, onClose, onDelete }: TaskHeaderProps) {
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-        <div className="w-px h-4 bg-border/60 mx-1"></div>
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-8 w-8 hover:bg-muted/50 rounded-md border-border/60 shadow-sm transition-colors hover:text-foreground"
-          onClick={onClose}
-        >
-          <X className="w-4 h-4" />
-        </Button>
       </div>
     </div>
   );

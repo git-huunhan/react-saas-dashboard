@@ -5,6 +5,9 @@ import {
   Search,
   SlidersHorizontal,
   User as UserIcon,
+  Layers,
+  Table,
+  PanelRight,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -44,6 +47,8 @@ interface BoardToolbarProps {
   onViewChange?: (view: "board" | "list") => void;
   groupBy: "None" | "Assignee" | "Epic" | "Subtask";
   setGroupBy: (val: "None" | "Assignee" | "Epic" | "Subtask") => void;
+  listLayout?: "table" | "split";
+  onListLayoutChange?: (val: "table" | "split") => void;
 }
 
 export function BoardToolbar({
@@ -65,6 +70,8 @@ export function BoardToolbar({
   onViewChange,
   groupBy,
   setGroupBy,
+  listLayout = "table",
+  onListLayoutChange,
 }: BoardToolbarProps) {
   const [categoriesOrder, setCategoriesOrder] = useState<FilterCategory[]>([
     "Parent",
@@ -119,7 +126,7 @@ export function BoardToolbar({
   };
 
   return (
-    <div className="flex items-center justify-between pb-1 mt-1">
+    <div className="flex items-center justify-between min-h-[40px] pb-1 mt-1 shrink-0">
       <div className="flex items-center gap-3">
         {/* Search */}
         <div className="relative group">
@@ -185,6 +192,38 @@ export function BoardToolbar({
           setLabels={setLabels}
         />
 
+        {/* Group By (List View only) */}
+        {activeView === "list" && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className={`h-8 gap-1.5 transition-colors aria-expanded:bg-primary/10 aria-expanded:text-primary aria-expanded:!border-primary aria-expanded:hover:bg-primary/20 aria-expanded:hover:text-primary ${
+                  groupBy !== "None"
+                    ? "bg-primary/10 text-primary !border-primary hover:bg-primary/20 hover:text-primary"
+                    : "bg-transparent border-muted text-muted-foreground hover:text-foreground hover:border-muted-foreground"
+                }`}
+              >
+                <Layers className="w-4 h-4 opacity-70" />
+                Group{groupBy !== "None" && `: ${groupBy}`}
+                <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-40">
+              {(["None", "Assignee", "Epic", "Subtask"] as const).map((opt) => (
+                <DropdownMenuItem
+                  key={opt}
+                  onClick={() => setGroupBy(opt)}
+                  className={`cursor-pointer ${groupBy === opt ? "bg-muted font-medium" : ""}`}
+                >
+                  {opt}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
         {/* Clear Filters */}
         {(activeFilterCount > 0 || searchQuery.length > 0) && (
           <Button
@@ -199,37 +238,70 @@ export function BoardToolbar({
       </div>
 
       <div className="flex items-center gap-2">
-        {/* Group By */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={`h-8 gap-1.5 transition-colors aria-expanded:bg-primary/10 aria-expanded:text-primary aria-expanded:!border-primary aria-expanded:hover:bg-primary/20 aria-expanded:hover:text-primary ${
-                groupBy !== "None"
-                  ? "bg-primary/10 text-primary !border-primary hover:bg-primary/20 hover:text-primary"
-                  : "bg-transparent border-muted text-muted-foreground hover:text-foreground hover:border-muted-foreground"
-              }`}
-            >
-              Group{groupBy !== "None" && `: ${groupBy}`}
-              <ChevronDown className="w-3.5 h-3.5 opacity-70" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            {(["None", "Assignee", "Epic", "Subtask"] as const).map((opt) => (
-              <DropdownMenuItem
-                key={opt}
-                onClick={() => setGroupBy(opt)}
-                className={`cursor-pointer ${groupBy === opt ? "bg-muted font-medium" : ""}`}
-              >
-                {opt}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {activeView === "board" ? (
+          <>
+            {/* Group By (Board View only) */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`h-8 gap-1.5 transition-colors aria-expanded:bg-primary/10 aria-expanded:text-primary aria-expanded:!border-primary aria-expanded:hover:bg-primary/20 aria-expanded:hover:text-primary ${
+                    groupBy !== "None"
+                      ? "bg-primary/10 text-primary !border-primary hover:bg-primary/20 hover:text-primary"
+                      : "bg-transparent border-muted text-muted-foreground hover:text-foreground hover:border-muted-foreground"
+                  }`}
+                >
+                  Group{groupBy !== "None" && `: ${groupBy}`}
+                  <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                {(["None", "Assignee", "Epic", "Subtask"] as const).map(
+                  (opt) => (
+                    <DropdownMenuItem
+                      key={opt}
+                      onClick={() => setGroupBy(opt)}
+                      className={`cursor-pointer ${groupBy === opt ? "bg-muted font-medium" : ""}`}
+                    >
+                      {opt}
+                    </DropdownMenuItem>
+                  ),
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-        <BoardInsightsPopover />
-        <ViewSettingsPopover groupBy={groupBy} />
+            <BoardInsightsPopover />
+            <ViewSettingsPopover groupBy={groupBy} />
+          </>
+        ) : (
+          <div className="flex items-center bg-transparent border border-muted rounded-md p-0.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-7 w-8 rounded-sm ${
+                listLayout === "table"
+                  ? "bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+              onClick={() => onListLayoutChange?.("table")}
+            >
+              <Table className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-7 w-8 rounded-sm ${
+                listLayout === "split"
+                  ? "bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+              onClick={() => onListLayoutChange?.("split")}
+            >
+              <PanelRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
 
         <Button
           variant="outline"

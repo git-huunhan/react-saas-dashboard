@@ -1,0 +1,66 @@
+import { useUpdateTask } from "@/features/tasks";
+import type { Task } from "../../model/types";
+import { TaskHeader } from "./TaskHeader";
+import { TaskMain } from "./TaskMain";
+import { TaskSidebar } from "./TaskSidebar";
+
+interface TaskDetailPanelProps {
+  task: Task | null;
+  onClose?: () => void;
+  onEdit?: (task: Task) => void;
+  onDelete?: (task: Task) => void;
+  onOpenTask?: (task: Task) => void;
+}
+
+export function TaskDetailPanel({
+  task,
+  onClose = () => {},
+  onDelete,
+  onOpenTask,
+}: TaskDetailPanelProps) {
+  const updateTask = useUpdateTask();
+
+  if (!task) return null;
+
+  const handleUpdate = (
+    field:
+      | "title"
+      | "description"
+      | "status"
+      | "priority"
+      | "assigneeId"
+      | "labels"
+      | "dueDate"
+      | "reporterId"
+      | "parentId",
+    value: any,
+  ) => {
+    if (!task) return;
+    const isArrayField = Array.isArray(value);
+    if (!isArrayField && (task as any)[field] === value) return;
+    updateTask.mutate({
+      taskId: task.id,
+      data: { [field]: value },
+    });
+  };
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden bg-background">
+      <TaskHeader task={task} onClose={onClose} onDelete={onDelete} />
+      <div className="flex flex-1 h-full overflow-hidden flex-col lg:flex-row">
+        <TaskMain
+          task={task}
+          handleUpdate={handleUpdate as any}
+          onOpenTask={onOpenTask}
+          className="w-full lg:w-2/3 flex-1 shrink-0 flex flex-col overflow-hidden border-r-0 lg:border-r border-border/40 bg-card"
+        />
+        <TaskSidebar
+          task={task}
+          handleUpdate={handleUpdate as any}
+          onOpenTask={onOpenTask}
+          className="w-1/3 min-w-[300px] shrink-0 bg-muted/10 hidden lg:flex flex-col overflow-hidden relative border-l border-transparent z-10 shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.03)] dark:shadow-none"
+        />
+      </div>
+    </div>
+  );
+}
