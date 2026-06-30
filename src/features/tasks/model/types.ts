@@ -23,6 +23,7 @@ export interface Task {
     avatarUrl: string;
   };
   labels?: string[];
+  isPending?: boolean;
   dueDate?: string;
   parentId?: string;
   createdAt: string;

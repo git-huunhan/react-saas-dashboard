@@ -727,11 +727,11 @@ export function TaskMain({
                               if (e.key === "Enter") e.currentTarget.blur();
                               if (e.key === "Escape") setEditingSubtaskId(null);
                             }}
-                            className="flex-1 bg-transparent border border-primary/60 ring-1 ring-primary/20 rounded px-1.5 py-0.5 outline-none text-[13px] h-6 text-foreground min-w-0"
+                            className="w-full h-[26px] px-1.5 bg-background border-2 border-primary rounded text-foreground focus:outline-none text-[13px]"
                           />
                         ) : (
                           <div
-                            className="flex items-center flex-1 min-w-0 cursor-text hover:bg-muted/50 px-1.5 py-0.5 rounded -ml-1.5 border border-transparent hover:border-border/50 transition-colors group/edit"
+                            className="flex items-center flex-1 h-[26px] min-w-0 cursor-text border border-transparent hover:border-border hover:bg-muted/30 rounded px-1.5 transition-colors group/edit"
                             onClick={() => {
                               setEditingSubtaskTitle(st.title);
                               setEditingSubtaskId(st.id);
@@ -998,7 +998,7 @@ export function TaskMain({
                       <ChevronDown className="w-3 h-3" />
                     </div>
                     <button
-                      className={`p-1 rounded transition-colors ${subtaskTitle.trim() ? "bg-primary text-primary-foreground hover:bg-primary/90" : "hover:bg-muted text-muted-foreground hover:text-foreground"}`}
+                      className={`p-1 rounded transition-colors cursor-pointer disabled:cursor-not-allowed ${subtaskTitle.trim() ? "bg-primary text-primary-foreground hover:bg-primary/90" : "hover:bg-muted text-muted-foreground hover:text-foreground"}`}
                       disabled={!subtaskTitle.trim() || isCreatingSubtask}
                       onClick={() => {
                         if (subtaskTitle.trim() && !isCreatingSubtask) {

@@ -9,6 +9,7 @@ import {
   Crown,
   MessageSquare,
   Paperclip,
+  Loader2,
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import type { Task } from "../../model/types";
@@ -47,6 +48,7 @@ export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
       type: "Task",
       task,
     },
+    disabled: task.isPending,
   });
 
   const style = {
@@ -95,9 +97,14 @@ export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
               )}
             </div>
           )}
-          <p className="text-[13px] font-medium leading-snug text-foreground/90 line-clamp-3">
-            {task.title}
-          </p>
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-[13px] font-medium leading-snug text-foreground/90 line-clamp-3">
+              {task.title}
+            </p>
+            {task.isPending && (
+              <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin shrink-0" />
+            )}
+          </div>
         </div>
 
         {hasMiddleContent && (
@@ -255,10 +262,14 @@ export function TaskCard({ task, onClick, isOverlay }: TaskCardProps) {
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
+      {...(task.isPending ? {} : attributes)}
+      {...(task.isPending ? {} : listeners)}
       onClick={() => onClick(task)}
-      className="group flex flex-col rounded-xl border border-border/50 bg-card text-card-foreground p-3 mb-2.5 cursor-grab hover:border-border/80 hover:shadow-sm transition-all duration-200"
+      className={`group flex flex-col rounded-xl border border-border/50 bg-card text-card-foreground p-3 mb-2.5 transition-all duration-200 ${
+        task.isPending
+          ? "opacity-60 cursor-default"
+          : "cursor-grab hover:border-border/80 hover:shadow-sm"
+      }`}
     >
       <CardContent />
     </div>

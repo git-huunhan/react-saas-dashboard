@@ -31,6 +31,7 @@ export function TaskDetailModal({
           onClose={onClose}
           onDelete={onDelete}
           onOpenTask={onOpenTask}
+          showCloseButton
         />
       </DialogContent>
     </Dialog>

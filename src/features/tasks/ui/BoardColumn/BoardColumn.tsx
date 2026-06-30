@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -5,6 +6,7 @@ import {
 } from "@dnd-kit/sortable";
 import type { Task, TaskStatus } from "../../model/types";
 import { TaskCard } from "../TaskCard/TaskCard";
+import { QuickCreateInput } from "../shared/QuickCreateInput";
 
 interface BoardColumnProps {
   columnId: TaskStatus;
@@ -14,7 +16,13 @@ interface BoardColumnProps {
   tasks: Task[];
   isFirstColumn?: boolean;
   onTaskClick: (task: Task) => void;
-  onCreateTask?: () => void;
+  onCreateTask?: (data: {
+    title: string;
+    type: "task" | "epic" | "bug";
+    assigneeId: string | null;
+    dueDate: string | null;
+    status: TaskStatus;
+  }) => void;
 }
 
 export function BoardColumn({
@@ -35,6 +43,8 @@ export function BoardColumn({
       groupId: groupId,
     },
   });
+
+  const [isCreating, setIsCreating] = useState(false);
 
   return (
     <div className="flex flex-col rounded-xl border bg-muted/50 min-w-70 w-70 shrink-0 group mr-6 last:mr-0 pb-2">
@@ -58,31 +68,41 @@ export function BoardColumn({
 
           {onCreateTask && (
             <div
-              className={`mt-1 transition-opacity ${
-                isFirstColumn
-                  ? "opacity-100"
-                  : "opacity-0 group-hover:opacity-100 focus-within:opacity-100"
-              }`}
+              className={`mt-1 transition-opacity ${isFirstColumn || isCreating ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus-within:opacity-100"}`}
             >
-              <button
-                onClick={onCreateTask}
-                className="flex w-full items-center gap-2 rounded-lg border border-transparent px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary transition-all"
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
+              {isCreating ? (
+                <div className="animate-in fade-in duration-150">
+                  <QuickCreateInput
+                    variant="card"
+                    hideEpicOption
+                    onClose={() => setIsCreating(false)}
+                    onCreate={(data) => {
+                      onCreateTask({ ...data, status: columnId });
+                      setIsCreating(false);
+                    }}
                   />
-                </svg>
-                Create
-              </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsCreating(true)}
+                  className="flex w-full items-center gap-2 rounded-lg border border-transparent px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary transition-all"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  Create
+                </button>
+              )}
             </div>
           )}
         </div>

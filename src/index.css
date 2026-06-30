@@ -165,6 +165,10 @@
   background: transparent;
 }
 
+.table-scrollbar-offset::-webkit-scrollbar-track {
+  margin-top: 45px;
+}
+
 ::-webkit-scrollbar-thumb {
   background: oklch(0.7 0 0 / 40%);
   border-radius: 9999px;

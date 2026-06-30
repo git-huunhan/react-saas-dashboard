@@ -80,13 +80,27 @@ export async function updateTaskStatus(
 }
 
 export async function createTask(
-  data: Omit<Task, "id" | "createdAt" | "code" | "assignee">,
+  data: Omit<Task, "id" | "createdAt" | "code" | "assignee"> & {
+    afterTaskId?: string;
+  },
 ): Promise<Task> {
   await delay(500);
+  const { afterTaskId, ...taskData } = data;
+  const assignedUser = taskData.assigneeId
+    ? mockUsers.find((u) => u.id === taskData.assigneeId)
+    : undefined;
+
   const newTask: Task = {
-    ...data,
+    ...taskData,
     id: `task-${Date.now()}`,
-    code: `${getProjectKeySync(data.projectId)}-${Math.floor(Math.random() * 900) + 100}`,
+    code: `${getProjectKeySync(taskData.projectId)}-${Math.floor(Math.random() * 900) + 100}`,
+    assignee: assignedUser
+      ? {
+          id: assignedUser.id,
+          name: assignedUser.name,
+          avatarUrl: assignedUser.avatarUrl || "",
+        }
+      : undefined,
     reporterId: "user-1",
     reporter: mockUsers[0]
       ? {
@@ -97,6 +111,19 @@ export async function createTask(
       : undefined,
     createdAt: new Date().toISOString().split("T")[0],
   };
+
+  if (afterTaskId) {
+    const index = tasksDb.findIndex((t) => t.id === afterTaskId);
+    if (index !== -1) {
+      tasksDb = [
+        ...tasksDb.slice(0, index + 1),
+        newTask,
+        ...tasksDb.slice(index + 1),
+      ];
+      return newTask;
+    }
+  }
+
   tasksDb = [newTask, ...tasksDb];
   return newTask;
 }

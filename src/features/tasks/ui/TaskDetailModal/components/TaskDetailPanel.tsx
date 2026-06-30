@@ -10,6 +10,8 @@ interface TaskDetailPanelProps {
   onEdit?: (task: Task) => void;
   onDelete?: (task: Task) => void;
   onOpenTask?: (task: Task) => void;
+  /** Show Close/Expand buttons in header (for split-view outside a Dialog) */
+  showCloseButton?: boolean;
 }
 
 export function TaskDetailPanel({
@@ -17,6 +19,7 @@ export function TaskDetailPanel({
   onClose = () => {},
   onDelete,
   onOpenTask,
+  showCloseButton,
 }: TaskDetailPanelProps) {
   const updateTask = useUpdateTask();
 
@@ -46,7 +49,14 @@ export function TaskDetailPanel({
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-background">
-      <TaskHeader task={task} onClose={onClose} onDelete={onDelete} />
+      <TaskHeader
+        task={task}
+        onClose={onClose}
+        onDelete={onDelete}
+        onOpenTask={onOpenTask}
+        handleUpdate={handleUpdate as any}
+        showCloseButton={showCloseButton}
+      />
       <div className="flex flex-1 h-full overflow-hidden flex-col lg:flex-row">
         <TaskMain
           task={task}

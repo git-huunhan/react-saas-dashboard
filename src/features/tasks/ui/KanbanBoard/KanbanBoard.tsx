@@ -25,6 +25,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
+import { useIsMutating } from "@tanstack/react-query";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { mockUsers } from "@/features/users/model/mockUsers";
@@ -41,10 +42,7 @@ import type { Task, TaskStatus } from "../../model/types";
 import { BoardColumn } from "../BoardColumn/BoardColumn";
 import { TaskCard } from "../TaskCard/TaskCard";
 import { TaskDetailModal } from "../TaskDetailModal/TaskDetailModal";
-import {
-  TaskFormModal,
-  type TaskFormData,
-} from "../TaskFormModal/TaskFormModal";
+import { TaskFormModal } from "../TaskFormModal/TaskFormModal";
 
 interface KanbanBoardProps {
   projectId: string;
@@ -173,12 +171,45 @@ export function KanbanBoard({
 }: KanbanBoardProps) {
   const { data: serverTasks, isLoading } = useTasksByProject(projectId);
   const [localTasks, setLocalTasks] = useState<Task[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const isDraggingRef = useRef(false); // ref syncs synchronously, unlike state
+  const isMutating = useIsMutating();
 
   useEffect(() => {
-    if (serverTasks) {
+    if (!serverTasks) return;
+    // If not yet initialized, set everything from server
+    if (localTasks.length === 0) {
       setLocalTasks(serverTasks);
+      return;
     }
-  }, [serverTasks]);
+    // While dragging (check ref) OR mutating (updating to server), skip sync
+    // This prevents stale server responses from overwriting optimistic local state
+    if (isDraggingRef.current || isMutating > 0) return;
+
+    // Merge: preserve the current local order but update any field that changed on the server.
+    // Also add newly-created tasks and remove deleted ones.
+    setLocalTasks((prev) => {
+      const serverMap = new Map(serverTasks.map((t) => [t.id, t]));
+      const serverIds = new Set(serverTasks.map((t) => t.id));
+
+      // Update / keep existing tasks in their current order
+      const merged = prev
+        .filter((t) => serverIds.has(t.id))
+        .map((t) => {
+          const fromServer = serverMap.get(t.id);
+          return fromServer ? { ...fromServer } : t;
+        });
+
+      // Append any brand-new tasks that aren't in prev yet
+      serverTasks.forEach((st) => {
+        if (!prev.find((t) => t.id === st.id)) {
+          merged.push(st);
+        }
+      });
+
+      return merged;
+    });
+  }, [serverTasks, isMutating]);
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
@@ -198,8 +229,6 @@ export function KanbanBoard({
   const deleteTask = useDeleteTask();
 
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [activeId, setActiveId] = useState<string | null>(null);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const previousLocalTasksRef = useRef<Task[]>([]);
@@ -223,6 +252,7 @@ export function KanbanBoard({
   );
 
   const onDragStart = (event: DragStartEvent) => {
+    isDraggingRef.current = true; // set ref BEFORE setActiveId (synchronous)
     setActiveId(event.active.id as string);
     previousLocalTasksRef.current = localTasks;
 
@@ -402,6 +432,7 @@ export function KanbanBoard({
   };
 
   const onDragEnd = (event: DragEndEvent) => {
+    isDraggingRef.current = false; // reset ref immediately when drag ends
     setActiveId(null);
     const { active, over } = event;
     if (!over) {
@@ -459,14 +490,26 @@ export function KanbanBoard({
     }
   };
 
-  const handleCreate = (data: TaskFormData) => {
+  const handleCreate = (data: {
+    title: string;
+    type: "task" | "epic" | "bug";
+    assigneeId: string | null;
+    dueDate: string | null;
+    status: string;
+  }) => {
     createTask.mutate(
-      { ...data, projectId, assigneeId: data.assigneeId || undefined },
       {
-        onSuccess: () => {
-          setIsCreateOpen(false);
-          toast.success("Task created");
-        },
+        title: data.title,
+        type: data.type,
+        status: data.status as any,
+        priority: "medium",
+        labels: [],
+        assigneeId: data.assigneeId || undefined,
+        dueDate: data.dueDate || undefined,
+        projectId,
+      },
+      {
+        onSuccess: () => toast.success("Task created"),
         onError: () => toast.error("Failed to create task"),
       },
     );
@@ -685,7 +728,7 @@ export function KanbanBoard({
                                 tasks={columnTasks}
                                 onTaskClick={setSelectedTask}
                                 isFirstColumn={index === 0}
-                                onCreateTask={() => setIsCreateOpen(true)}
+                                onCreateTask={handleCreate}
                               />
                             );
                           })}
@@ -714,7 +757,7 @@ export function KanbanBoard({
                               tasks={columnTasks}
                               onTaskClick={setSelectedTask}
                               isFirstColumn={index === 0}
-                              onCreateTask={() => setIsCreateOpen(true)}
+                              onCreateTask={handleCreate}
                             />
                           );
                         })}
@@ -739,7 +782,7 @@ export function KanbanBoard({
                     tasks={columnTasks}
                     onTaskClick={setSelectedTask}
                     isFirstColumn={index === 0}
-                    onCreateTask={() => setIsCreateOpen(true)}
+                    onCreateTask={handleCreate}
                   />
                 );
               })}
@@ -777,15 +820,6 @@ export function KanbanBoard({
         }}
         onDelete={handleDelete}
         onOpenTask={setSelectedTask}
-      />
-
-      {/* Create modal */}
-      <TaskFormModal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        onSubmit={handleCreate}
-        isLoading={createTask.isPending}
-        mode="create"
       />
 
       {/* Edit modal */}
