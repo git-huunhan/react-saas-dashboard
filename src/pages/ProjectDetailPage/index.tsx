@@ -12,15 +12,26 @@ import {
   Plus,
   Share2,
   Users,
+  Pencil,
 } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  PopoverClose,
+} from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useProject } from "@/features/projects";
+import { useProject, useUpdateProject } from "@/features/projects";
 import { BoardToolbar, KanbanBoard, ListView } from "@/features/tasks";
+import {
+  SPACE_AVATARS,
+  getSpaceAvatar,
+} from "@/features/projects/model/avatars";
 
 function useFilters() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -55,6 +66,7 @@ function useFilters() {
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: project, isLoading, isError } = useProject(id || "");
+  const updateProject = useUpdateProject();
 
   const [activeTab, setActiveTab] = useState("board");
 
@@ -88,12 +100,67 @@ export default function ProjectDetailPage() {
           Spaces
         </div>
 
-        {/* Row 2: Title and Actions */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-primary text-primary-foreground p-1.5 rounded-md shadow-sm">
-              <FolderKanban className="w-5 h-5" />
-            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="relative group p-0 m-0 border-none bg-transparent cursor-pointer focus:outline-none">
+                  {(() => {
+                    const currentAvatar = getSpaceAvatar(project.avatar);
+                    const Icon = currentAvatar.icon;
+                    return (
+                      <div
+                        className={`p-1.5 rounded-md shadow-sm ${currentAvatar.bg} ${currentAvatar.text}`}
+                      >
+                        <Icon className="w-6 h-6 group-hover:opacity-10 transition-opacity" />
+                      </div>
+                    );
+                  })()}
+                  <div className="absolute inset-0 bg-black/40 rounded-md opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Pencil className="w-4 h-4 text-white" />
+                  </div>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-[340px] p-4 bg-popover border-border shadow-xl rounded-xl"
+                align="start"
+              >
+                <div className="font-semibold text-[13.5px] mb-3 text-foreground">
+                  Choose an avatar
+                </div>
+                <div className="grid grid-cols-8 gap-2">
+                  {SPACE_AVATARS.map((opt) => {
+                    const OptionIcon = opt.icon;
+                    return (
+                      <PopoverClose key={opt.id} asChild>
+                        <button
+                          onClick={() => {
+                            updateProject.mutate({
+                              id: project.id,
+                              data: { avatar: opt.id },
+                            });
+                          }}
+                          className={`flex items-center justify-center aspect-square rounded cursor-pointer transition-all hover:ring-2 hover:ring-offset-2 hover:ring-offset-popover hover:ring-primary/50 focus:outline-none ${opt.bg} ${opt.text}`}
+                        >
+                          <OptionIcon className="w-5 h-5" />
+                        </button>
+                      </PopoverClose>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-border">
+                  <div className="border border-dashed border-border/80 rounded-md py-4 px-2 flex flex-col items-center justify-center text-center bg-muted/20 hover:bg-muted/40 cursor-pointer transition-colors group">
+                    <span className="text-[13px] font-medium text-blue-500 hover:underline">
+                      Select an image to upload
+                    </span>
+                    <span className="text-[12px] text-muted-foreground mt-0.5">
+                      or drag and drop it here
+                    </span>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
             <h1 className="text-xl font-bold text-foreground m-0 flex items-center gap-2">
               {project.name}
               <Badge

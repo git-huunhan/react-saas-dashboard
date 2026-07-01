@@ -92,7 +92,7 @@ export async function createTask(
 
   const newTask: Task = {
     ...taskData,
-    id: `task-${Date.now()}`,
+    id: `task-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
     code: `${getProjectKeySync(taskData.projectId)}-${Math.floor(Math.random() * 900) + 100}`,
     assignee: assignedUser
       ? {

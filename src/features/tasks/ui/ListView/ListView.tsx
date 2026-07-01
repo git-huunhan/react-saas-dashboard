@@ -1220,9 +1220,7 @@ export function ListView({
                         </Avatar>
                       ) : (
                         <div className="w-5 h-5 rounded-full border border-dashed border-muted-foreground/40 flex items-center justify-center bg-muted/20">
-                          <AvatarFallback className="bg-transparent text-muted-foreground/50 text-[9px]">
-                            ?
-                          </AvatarFallback>
+                          <User className="w-3.5 h-3.5 text-muted-foreground/60" />
                         </div>
                       )}
                     </div>
@@ -1255,78 +1253,78 @@ export function ListView({
               ref={containerRef}
               className="overflow-auto custom-scrollbar table-scrollbar-offset min-h-0"
             >
-              <table
-                className="text-left border-collapse whitespace-nowrap min-w-full"
-                style={{ tableLayout: "auto" }}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
               >
-                <colgroup>
-                  <col style={{ width: "24px", minWidth: "24px" }} />{" "}
-                  {/* drag handle */}
-                  <col className="w-10" />
-                  <col style={{ minWidth: "360px", width: "360px" }} />
-                  <col style={{ width: "180px", minWidth: "180px" }} />
-                  <col style={{ width: "180px", minWidth: "180px" }} />
-                  <col style={{ width: "128px", minWidth: "128px" }} />
-                  <col style={{ width: "160px", minWidth: "160px" }} />
-                  <col style={{ width: "128px", minWidth: "128px" }} />
-                  <col style={{ width: "192px", minWidth: "192px" }} />
-                  <col style={{ width: "192px", minWidth: "192px" }} />
-                  <col style={{ width: "220px", minWidth: "220px" }} />
-                  <col style={{ width: "48px", minWidth: "48px" }} />
-                </colgroup>
-                <thead className="sticky top-0 bg-background/95 backdrop-blur z-10">
-                  <tr className="border-b border-border text-muted-foreground">
-                    <th className="py-2 sticky left-0 bg-background/95 z-20 w-6 relative after:absolute after:inset-0 after:bg-muted/20 after:pointer-events-none"></th>
-                    <th className="py-2 px-3 font-medium">
-                      <Checkbox
-                        className="rounded-[4px] border-muted-foreground/40"
-                        checked={
-                          checkedTaskIds.size === 0
-                            ? false
-                            : checkedTaskIds.size === flatRenderList.length
-                              ? true
-                              : "indeterminate"
-                        }
-                        onCheckedChange={(checked) => {
-                          const isIndeterminate =
-                            checkedTaskIds.size > 0 &&
-                            checkedTaskIds.size < flatRenderList.length;
-                          if (isIndeterminate) {
-                            handleSelectAll(false);
-                          } else {
-                            handleSelectAll(checked as boolean);
+                <table
+                  className="text-left border-collapse whitespace-nowrap min-w-full"
+                  style={{ tableLayout: "auto" }}
+                >
+                  <colgroup>
+                    <col style={{ width: "24px", minWidth: "24px" }} />
+                    {/* drag handle */}
+                    <col className="w-10" />
+                    <col style={{ minWidth: "360px", width: "360px" }} />
+                    <col style={{ width: "180px", minWidth: "180px" }} />
+                    <col style={{ width: "180px", minWidth: "180px" }} />
+                    <col style={{ width: "128px", minWidth: "128px" }} />
+                    <col style={{ width: "160px", minWidth: "160px" }} />
+                    <col style={{ width: "128px", minWidth: "128px" }} />
+                    <col style={{ width: "192px", minWidth: "192px" }} />
+                    <col style={{ width: "192px", minWidth: "192px" }} />
+                    <col style={{ width: "220px", minWidth: "220px" }} />
+                    <col style={{ width: "48px", minWidth: "48px" }} />
+                  </colgroup>
+                  <thead className="sticky top-0 bg-background/95 backdrop-blur z-10">
+                    <tr className="border-b border-border text-muted-foreground">
+                      <th className="py-2 sticky left-0 bg-background/95 z-20 w-6 relative after:absolute after:inset-0 after:bg-muted/20 after:pointer-events-none"></th>
+                      <th className="py-2 px-3 font-medium">
+                        <Checkbox
+                          className="rounded-[4px] border-muted-foreground/40"
+                          checked={
+                            checkedTaskIds.size === 0
+                              ? false
+                              : checkedTaskIds.size === flatRenderList.length
+                                ? true
+                                : "indeterminate"
                           }
-                        }}
-                      />
-                    </th>
-                    <th className="py-2 px-3 font-medium">Work</th>
-                    <th className="py-2 px-3 font-medium">Assignee</th>
-                    <th className="py-2 px-3 font-medium">Reporter</th>
-                    <th className="py-2 px-3 font-medium">Priority</th>
-                    <th className="py-2 px-3 font-medium">Status</th>
-                    <th className="py-2 px-3 font-medium">Resolution</th>
-                    <th className="py-2 px-3 font-medium">Created</th>
-                    <th className="py-2 px-3 font-medium">Updated</th>
-                    <th className="py-2 px-3 font-medium">Due date</th>
-                    <th className="py-2 px-3 font-medium"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orderedRenderList.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={12}
-                        className="py-12 text-center text-muted-foreground"
-                      >
-                        No tasks found matching the filters.
-                      </td>
+                          onCheckedChange={(checked) => {
+                            const isIndeterminate =
+                              checkedTaskIds.size > 0 &&
+                              checkedTaskIds.size < flatRenderList.length;
+                            if (isIndeterminate) {
+                              handleSelectAll(false);
+                            } else {
+                              handleSelectAll(checked as boolean);
+                            }
+                          }}
+                        />
+                      </th>
+                      <th className="py-2 px-3 font-medium">Work</th>
+                      <th className="py-2 px-3 font-medium">Assignee</th>
+                      <th className="py-2 px-3 font-medium">Reporter</th>
+                      <th className="py-2 px-3 font-medium">Priority</th>
+                      <th className="py-2 px-3 font-medium">Status</th>
+                      <th className="py-2 px-3 font-medium">Resolution</th>
+                      <th className="py-2 px-3 font-medium">Created</th>
+                      <th className="py-2 px-3 font-medium">Updated</th>
+                      <th className="py-2 px-3 font-medium">Due date</th>
+                      <th className="py-2 px-3 font-medium"></th>
                     </tr>
-                  ) : (
-                    <DndContext
-                      sensors={sensors}
-                      collisionDetection={closestCenter}
-                      onDragEnd={handleDragEnd}
-                    >
+                  </thead>
+                  <tbody>
+                    {orderedRenderList.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={12}
+                          className="py-12 text-center text-muted-foreground"
+                        >
+                          No tasks found matching the filters.
+                        </td>
+                      </tr>
+                    ) : (
                       <SortableContext
                         items={orderedRenderList.map((i) => i.task.id)}
                         strategy={verticalListSortingStrategy}
@@ -1413,10 +1411,10 @@ export function ListView({
                           },
                         )}
                       </SortableContext>
-                    </DndContext>
-                  )}
-                </tbody>
-              </table>
+                    )}
+                  </tbody>
+                </table>
+              </DndContext>
             </div>
             {/* Table Footer */}
             {inlineCreateRowId === "bottom" ? (

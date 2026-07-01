@@ -34,7 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RoleGuard } from "@/features/auth";
+import { RoleGuard, useAuth } from "@/features/auth";
 import {
   ProjectForm,
   useCreateProject,
@@ -44,11 +44,23 @@ import {
   type Project,
 } from "@/features/projects";
 import { useUrlParams } from "@/shared/hooks/useUrlParams";
-import { FolderKanban, Pencil, Trash2 } from "lucide-react";
+import {
+  FolderKanban,
+  Pencil,
+  Trash2,
+  Search,
+  Star,
+  MoreHorizontal,
+  LayoutGrid,
+} from "lucide-react";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getSpaceAvatar } from "@/features/projects/model/avatars";
 
 export default function ProjectsPage() {
   const { getParam, setParams } = useUrlParams();
+  const { user } = useAuth();
 
   const initialPage = Number(getParam("page", "1"));
   const initialStatus = getParam("status", "all");
@@ -150,21 +162,33 @@ export default function ProjectsPage() {
     <div className="h-full overflow-y-auto">
       <div className="space-y-6 p-6 md:p-8">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Projects
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            Spaces
           </h1>
-          <RoleGuard allowedRoles={["admin"]}>
-            <Button onClick={() => setIsModalOpen(true)}>Create Project</Button>
-          </RoleGuard>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" className="hidden md:flex">
+              Templates
+            </Button>
+            <RoleGuard allowedRoles={["admin"]}>
+              <Button onClick={() => setIsModalOpen(true)}>Create space</Button>
+            </RoleGuard>
+          </div>
         </div>
 
-        <div className="flex gap-4 items-center">
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search spaces"
+              className="pl-9 bg-background border-border"
+            />
+          </div>
           <Select value={status} onValueChange={handleFilterChange}>
-            <SelectTrigger className="w-45">
-              <SelectValue placeholder="All Statuses" />
+            <SelectTrigger className="w-full sm:w-48 bg-background">
+              <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="all">All statuses</SelectItem>
               <SelectItem value="planning">Planning</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
@@ -176,23 +200,23 @@ export default function ProjectsPage() {
           <table className="w-full text-sm text-left table-fixed">
             <thead className="bg-muted border-b">
               <tr>
-                <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[30%]">
-                  Name
+                <th className="h-10 px-4 align-middle font-medium text-muted-foreground text-[13px] w-[5%]">
+                  <Star className="h-4 w-4 text-muted-foreground" />
                 </th>
-                <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[15%]">
+                <th className="h-10 px-4 align-middle font-medium text-muted-foreground text-[13px] w-[25%]">
+                  Name &darr;
+                </th>
+                <th className="h-10 px-4 align-middle font-medium text-muted-foreground text-[13px] w-[10%]">
                   Key
                 </th>
-                <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[15%]">
-                  Status
+                <th className="h-10 px-4 align-middle font-medium text-muted-foreground text-[13px] w-[20%]">
+                  Type
                 </th>
-                <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[22%]">
-                  Timeline
+                <th className="h-10 px-4 align-middle font-medium text-muted-foreground text-[13px] w-[25%]">
+                  Lead
                 </th>
-                <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[13%]">
-                  Team
-                </th>
-                <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[10%]">
-                  Actions
+                <th className="h-10 px-4 align-middle font-medium text-muted-foreground text-[13px] w-[15%] text-right">
+                  Space URL
                 </th>
               </tr>
             </thead>
@@ -200,24 +224,23 @@ export default function ProjectsPage() {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i}>
-                    <td className="p-4 align-middle">
+                    <td className="p-3 align-middle">
+                      <div className="h-4 w-4 bg-muted animate-pulse rounded" />
+                    </td>
+                    <td className="p-3 align-middle">
                       <div className="h-5 w-48 bg-muted animate-pulse rounded" />
                     </td>
-                    <td className="p-4 align-middle">
+                    <td className="p-3 align-middle">
                       <div className="h-4 w-12 bg-muted animate-pulse rounded" />
                     </td>
-                    <td className="p-4 align-middle">
-                      <div className="h-6 w-20 bg-muted animate-pulse rounded-full" />
-                    </td>
-                    <td className="p-4 align-middle">
+                    <td className="p-3 align-middle">
                       <div className="h-4 w-32 bg-muted animate-pulse rounded" />
                     </td>
-                    <td className="p-4 align-middle">
-                      <div className="flex -space-x-2">
-                        <div className="h-8 w-8 rounded-full bg-muted animate-pulse border-2 border-background" />
-                        <div className="h-8 w-8 rounded-full bg-muted animate-pulse border-2 border-background" />
-                        <div className="h-8 w-8 rounded-full bg-muted animate-pulse border-2 border-background" />
-                      </div>
+                    <td className="p-3 align-middle">
+                      <div className="h-6 w-32 bg-muted animate-pulse rounded-full" />
+                    </td>
+                    <td className="p-3 align-middle text-right">
+                      <div className="h-4 w-8 bg-muted animate-pulse rounded ml-auto" />
                     </td>
                   </tr>
                 ))
@@ -251,64 +274,67 @@ export default function ProjectsPage() {
                     key={project.id}
                     className="hover:bg-muted/50 transition-colors"
                   >
-                    <td className="p-4 align-middle">
-                      <Link
-                        to={`/projects/${project.id}`}
-                        className="font-medium text-primary hover:underline"
-                      >
-                        {project.name}
-                      </Link>
+                    <td className="p-3 px-4 align-middle">
+                      <Star className="h-4 w-4 text-muted-foreground hover:text-yellow-400 cursor-pointer transition-colors" />
                     </td>
-                    <td className="p-4 align-middle">
-                      <span className="text-muted-foreground font-mono text-xs">
+                    <td className="p-3 px-4 align-middle">
+                      <div className="flex items-center gap-3">
+                        {(() => {
+                          const currentAvatar = getSpaceAvatar(project.avatar);
+                          const Icon = currentAvatar.icon;
+                          return (
+                            <div
+                              className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${currentAvatar.bg} ${currentAvatar.text}`}
+                            >
+                              <Icon className="w-4 h-4" />
+                            </div>
+                          );
+                        })()}
+                        <Link
+                          to={`/projects/${project.id}`}
+                          className="text-[13.5px] font-medium text-primary hover:underline"
+                        >
+                          {project.name}
+                        </Link>
+                      </div>
+                    </td>
+                    <td className="p-3 px-4 align-middle">
+                      <span className="text-[13px] text-foreground">
                         {project.key}
                       </span>
                     </td>
-                    <td className="p-4 align-middle">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          project.status === "active"
-                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                            : project.status === "completed"
-                              ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                              : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
-                        }`}
-                      >
+                    <td className="p-3 px-4 align-middle">
+                      <span className="text-[13px] text-foreground whitespace-nowrap">
                         {project.status === "active"
-                          ? "Active"
-                          : project.status === "completed"
-                            ? "Completed"
-                            : "Planning"}
+                          ? "Team-managed software"
+                          : "Company-managed software"}
                       </span>
                     </td>
-                    <td className="p-4 align-middle">
-                      <span className="text-muted-foreground">
-                        {project.startDate} &rarr; {project.endDate}
-                      </span>
+                    <td className="p-3 px-4 align-middle">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage
+                            src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}&backgroundColor=10b981&textColor=ffffff&backgroundType=solid`}
+                            alt={user?.name}
+                          />
+                          <AvatarFallback className="bg-primary/10 text-primary font-semibold text-[10px]">
+                            {user?.name?.substring(0, 2).toUpperCase() || "UN"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-[13px] text-foreground">
+                          {user?.name || "Unassigned"}
+                        </span>
+                      </div>
                     </td>
-                    <td className="p-4 align-middle text-muted-foreground">
-                      {project.memberIds.length} members
-                    </td>
-                    <td className="p-4 align-middle">
-                      <div className="flex items-center gap-1">
-                        <RoleGuard allowedRoles={["admin"]}>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                            onClick={() => setEditingProject(project)}
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                            onClick={() => setDeletingProjectId(project.id)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </RoleGuard>
+                    <td className="p-3 px-4 align-middle text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:bg-accent"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
                       </div>
                     </td>
                   </tr>
