@@ -33,25 +33,16 @@ import {
 import { useUsers } from "@/features/users";
 import { mockUsers } from "@/features/users/model/mockUsers";
 import { useTasksByProject } from "@/features/tasks/model/useTasks";
-import type { Task, TaskStatus } from "../../../model/types";
+import type { Task, TaskFieldUpdater } from "../../../model/types";
 import { PriorityIcon } from "../../PriorityIcon";
+import { TaskStatusSelect } from "../../shared/TaskStatusSelect";
 
 const CURRENT_USER = mockUsers[0]; // In real app: from auth context
 const CURRENT_USER_ID = CURRENT_USER.id;
 
 interface TaskSidebarProps {
   task: Task;
-  handleUpdate: (
-    field:
-      | "status"
-      | "priority"
-      | "assigneeId"
-      | "labels"
-      | "dueDate"
-      | "reporterId"
-      | "parentId",
-    value: any,
-  ) => void;
+  handleUpdate: TaskFieldUpdater;
   onOpenTask?: (task: Task) => void;
   className?: string;
   hideStatusDropdown?: boolean;
@@ -96,72 +87,10 @@ export function TaskSidebar({
         {/* Status Dropdown */}
         {!hideStatusDropdown && (
           <div>
-            {(() => {
-              const statusConfig: Record<
-                TaskStatus,
-                { label: string; trigger: string; dot: string }
-              > = {
-                todo: {
-                  label: "To Do",
-                  trigger:
-                    "bg-violet-500/15 border-violet-500/40 text-violet-700 dark:text-violet-300 hover:bg-violet-500/25",
-                  dot: "bg-violet-500 dark:bg-violet-400",
-                },
-                "in-progress": {
-                  label: "In Progress",
-                  trigger:
-                    "bg-blue-500/15 border-blue-500/40 text-blue-700 dark:text-blue-300 hover:bg-blue-500/25",
-                  dot: "bg-blue-500 dark:bg-blue-400",
-                },
-                review: {
-                  label: "Review",
-                  trigger:
-                    "bg-yellow-500/15 border-yellow-500/40 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-500/25",
-                  dot: "bg-yellow-600 dark:bg-yellow-400",
-                },
-                done: {
-                  label: "Done",
-                  trigger:
-                    "bg-emerald-500/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25",
-                  dot: "bg-emerald-600 dark:bg-emerald-400",
-                },
-              };
-              const cfg = statusConfig[task.status] ?? statusConfig["todo"];
-              return (
-                <Select
-                  value={task.status}
-                  onValueChange={(val: TaskStatus) =>
-                    handleUpdate("status", val)
-                  }
-                >
-                  <SelectTrigger
-                    className={`w-fit h-9 px-3 font-semibold border shadow-sm focus:ring-0 focus:outline-none text-sm transition-colors ${cfg.trigger}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`}
-                      />
-                      <SelectValue>{cfg.label}</SelectValue>
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent align="start">
-                    {(
-                      Object.entries(statusConfig) as [
-                        TaskStatus,
-                        (typeof statusConfig)[TaskStatus],
-                      ][]
-                    ).map(([id, s]) => (
-                      <SelectItem key={id} value={id}>
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${s.dot}`} />
-                          {s.label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              );
-            })()}
+            <TaskStatusSelect
+              value={task.status}
+              onChange={(status) => handleUpdate("status", status)}
+            />
           </div>
         )}
 

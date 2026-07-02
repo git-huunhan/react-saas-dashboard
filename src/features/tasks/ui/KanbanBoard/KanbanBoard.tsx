@@ -39,6 +39,7 @@ import {
   useUpdateTaskStatus,
 } from "@/features/tasks";
 import type { Task, TaskStatus, TaskUpdateData } from "../../model/types";
+import { filterTasks, mergeServerTasks } from "../../model/taskViewUtils";
 import { BoardColumn } from "../BoardColumn/BoardColumn";
 import { TaskCard } from "../TaskCard/TaskCard";
 import { TaskDetailModal } from "../TaskDetailModal/TaskDetailModal";
@@ -178,11 +179,15 @@ export function KanbanBoard({
   const [localTasks, setLocalTasks] = useState<Task[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const isDraggingRef = useRef(false); // ref syncs synchronously, unlike state
+  const initializedProjectIdRef = useRef<string | null>(null);
   const isMutating = useIsMutating();
 
   useEffect(() => {
-    // If not yet initialized, set everything from server
-    if (localTasks.length === 0) {
+    if (isLoading) return;
+
+    // Initialize once per project, including projects with no tasks.
+    if (initializedProjectIdRef.current !== projectId) {
+      initializedProjectIdRef.current = projectId;
       setLocalTasks(serverTasks);
       return;
     }
@@ -192,28 +197,8 @@ export function KanbanBoard({
 
     // Merge: preserve the current local order but update any field that changed on the server.
     // Also add newly-created tasks and remove deleted ones.
-    setLocalTasks((prev) => {
-      const serverMap = new Map(serverTasks.map((t) => [t.id, t]));
-      const serverIds = new Set(serverTasks.map((t) => t.id));
-
-      // Update / keep existing tasks in their current order
-      const merged = prev
-        .filter((t) => serverIds.has(t.id))
-        .map((t) => {
-          const fromServer = serverMap.get(t.id);
-          return fromServer ? { ...fromServer } : t;
-        });
-
-      // Append any brand-new tasks that aren't in prev yet
-      serverTasks.forEach((st) => {
-        if (!prev.find((t) => t.id === st.id)) {
-          merged.push(st);
-        }
-      });
-
-      return merged;
-    });
-  }, [serverTasks, isMutating, localTasks.length]);
+    setLocalTasks((previous) => mergeServerTasks(previous, serverTasks));
+  }, [serverTasks, isMutating, isLoading, projectId]);
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
@@ -552,52 +537,17 @@ export function KanbanBoard({
     [activeId, localTasks],
   );
 
-  const normalizedSearchQuery = searchQuery.toLowerCase();
-  const filteredTasks = localTasks.filter((t) => {
-    // In Jira, Epics are not shown as cards on the Kanban board
-    if (t.type === "epic") return false;
-
-    if (
-      normalizedSearchQuery &&
-      !t.title.toLowerCase().includes(normalizedSearchQuery) &&
-      !t.description?.toLowerCase().includes(normalizedSearchQuery) &&
-      !t.code.toLowerCase().includes(normalizedSearchQuery)
-    ) {
-      return false;
-    }
-    if (parentIds.length > 0) {
-      if (parentIds.includes("no-parent") && !t.parentId) {
-        // keep
-      } else if (t.parentId && parentIds.includes(t.parentId)) {
-        // keep
-      } else {
-        return false;
-      }
-    }
-    if (assigneeIds.length > 0) {
-      if (assigneeIds.includes("unassigned") && !t.assigneeId) {
-        // keep
-      } else if (t.assigneeId && assigneeIds.includes(t.assigneeId)) {
-        // keep
-      } else {
-        return false;
-      }
-    }
-    if (priorities.length > 0 && !priorities.includes(t.priority)) {
-      return false;
-    }
-    if (statuses.length > 0 && !statuses.includes(t.status)) {
-      return false;
-    }
-    if (workTypes.length > 0) {
-      if (!t.type || !workTypes.includes(t.type)) return false;
-    }
-    if (labels.length > 0) {
-      if (!t.labels || !labels.some((label) => t.labels?.includes(label))) {
-        return false;
-      }
-    }
-    return true;
+  const filteredTasks = filterTasks(localTasks, {
+    searchQuery,
+    parentIds,
+    assigneeIds,
+    priorities,
+    statuses,
+    workTypes,
+    labels,
+    hideEpics: true,
+    supportNoParent: true,
+    labelMatch: "any",
   });
 
   if (isLoading)

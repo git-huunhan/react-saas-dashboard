@@ -18,13 +18,6 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Command,
@@ -40,9 +33,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-import type { Task } from "../../../model/types";
+import type { Task, TaskFieldUpdater, TaskStatus } from "../../../model/types";
 import { TaskActivity } from "./TaskActivity";
 import { TaskSidebar } from "./TaskSidebar";
+import { TaskTitleEditor } from "./TaskTitleEditor";
+import { LinkedWorkSection } from "./LinkedWorkSection";
 import {
   useCreateTask,
   useTasksByProject,
@@ -51,13 +46,11 @@ import {
 import { useLogActivity } from "../../../model/useComments";
 import { mockUsers } from "@/features/users/model/mockUsers";
 import { PriorityIcon } from "../../PriorityIcon";
+import { TaskStatusSelect } from "../../shared/TaskStatusSelect";
 
 interface TaskMainProps {
   task: Task;
-  handleUpdate: (
-    field: "title" | "description" | "status",
-    value: string,
-  ) => void;
+  handleUpdate: TaskFieldUpdater;
   onOpenTask?: (task: Task) => void;
   className?: string;
 }
@@ -78,7 +71,6 @@ export function TaskMain({
       ? 0
       : Math.round((doneSubtasks / subtasks.length) * 100);
   const [editDesc, setEditDesc] = useState("");
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDesc, setIsEditingDesc] = useState(false);
 
   // Subtask Edit State
@@ -104,7 +96,6 @@ export function TaskMain({
 
   // Subtask Form
   const [isSubtaskFormOpen, setIsSubtaskFormOpen] = useState(false);
-  const [isLinkedWorkFormOpen, setIsLinkedWorkFormOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const subtaskInputRef = useRef<HTMLInputElement>(null);
   const [subtaskTitle, setSubtaskTitle] = useState("");
@@ -128,55 +119,10 @@ export function TaskMain({
     >
       <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar min-h-0 pt-5">
         <div className="pb-12">
-          {/* Title Editable */}
-          <div className="mb-6 -ml-2">
-            <h1
-              contentEditable={isEditingTitle}
-              suppressContentEditableWarning
-              className={`!text-2xl !font-semibold text-foreground tracking-tight leading-[1.2] p-2 rounded-md cursor-text transition-colors border m-0 whitespace-pre-wrap outline-none ${isEditingTitle ? "bg-background border-primary/50 ring-1 ring-primary/50 shadow-sm" : "border-transparent hover:bg-muted/40"}`}
-              onClick={(e) => {
-                if (!isEditingTitle) {
-                  setIsEditingTitle(true);
-                  const target = e.currentTarget;
-                  setTimeout(() => {
-                    target.focus();
-                    // Move cursor to the end
-                    if (typeof window !== "undefined") {
-                      const selection = window.getSelection();
-                      const range = document.createRange();
-                      range.selectNodeContents(target);
-                      range.collapse(false);
-                      selection?.removeAllRanges();
-                      selection?.addRange(range);
-                    }
-                  }, 0);
-                }
-              }}
-              onBlur={(e) => {
-                setIsEditingTitle(false);
-                const newTitle = e.currentTarget.textContent?.trim();
-                if (newTitle && newTitle !== task.title) {
-                  handleUpdate("title", newTitle);
-                } else {
-                  e.currentTarget.textContent = task.title; // revert if empty
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  e.currentTarget.blur(); // Triggers onBlur to save
-                }
-                if (e.key === "Escape") {
-                  e.preventDefault();
-                  setIsEditingTitle(false);
-                  e.currentTarget.textContent = task.title; // Revert
-                  e.currentTarget.blur();
-                }
-              }}
-            >
-              {task.title}
-            </h1>
-          </div>
+          <TaskTitleEditor
+            title={task.title}
+            onSave={(title) => handleUpdate("title", title)}
+          />
 
           {/* Quick Actions */}
           <div className="flex items-center gap-2 mb-8 -ml-1">
@@ -286,68 +232,10 @@ export function TaskMain({
 
           {/* Mobile Status Dropdown (Merged View Only) */}
           <div className="flex items-center gap-2 mb-8 -ml-1 lg:hidden">
-            {(() => {
-              const statusConfig: Record<
-                string,
-                { label: string; trigger: string; dot: string }
-              > = {
-                todo: {
-                  label: "To Do",
-                  trigger:
-                    "bg-violet-500/15 border-violet-500/40 text-violet-700 dark:text-violet-300 hover:bg-violet-500/25",
-                  dot: "bg-violet-500 dark:bg-violet-400",
-                },
-                "in-progress": {
-                  label: "In Progress",
-                  trigger:
-                    "bg-blue-500/15 border-blue-500/40 text-blue-700 dark:text-blue-300 hover:bg-blue-500/25",
-                  dot: "bg-blue-500 dark:bg-blue-400",
-                },
-                review: {
-                  label: "Review",
-                  trigger:
-                    "bg-yellow-500/15 border-yellow-500/40 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-500/25",
-                  dot: "bg-yellow-600 dark:bg-yellow-400",
-                },
-                done: {
-                  label: "Done",
-                  trigger:
-                    "bg-emerald-500/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25",
-                  dot: "bg-emerald-600 dark:bg-emerald-400",
-                },
-              };
-              const cfg =
-                statusConfig[task.status as string] ?? statusConfig["todo"];
-              return (
-                <>
-                  <Select
-                    value={task.status}
-                    onValueChange={(val: any) => handleUpdate("status", val)}
-                  >
-                    <SelectTrigger
-                      className={`w-fit h-9 px-3 font-semibold border shadow-sm focus:ring-0 focus:outline-none text-sm transition-colors ${cfg.trigger}`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`}
-                        />
-                        <SelectValue>{cfg.label}</SelectValue>
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent align="start">
-                      {Object.entries(statusConfig).map(([id, s]) => (
-                        <SelectItem key={id} value={id}>
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${s.dot}`} />
-                            {s.label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </>
-              );
-            })()}
+            <TaskStatusSelect
+              value={task.status}
+              onChange={(status: TaskStatus) => handleUpdate("status", status)}
+            />
           </div>
 
           {/* Description */}
@@ -805,7 +693,7 @@ export function TaskMain({
                                     onSelect={() => {
                                       updateTask({
                                         taskId: st.id,
-                                        data: { assigneeId: null as any },
+                                        data: { assigneeId: null },
                                       });
                                       setOpenAssigneePopover(null);
                                     }}
@@ -1058,79 +946,13 @@ export function TaskMain({
             )}
           </div>
 
-          {/* Linked work items */}
-          <div className="mb-10">
-            <div className="flex items-center gap-2 w-fit transition-colors mb-3 group">
-              <h3 className="text-[15px] font-semibold text-foreground">
-                Linked work items
-              </h3>
-            </div>
-
-            {!isLinkedWorkFormOpen && (
-              <div
-                className="text-[13px] text-muted-foreground hover:text-foreground cursor-pointer transition-colors w-fit"
-                onClick={() => setIsLinkedWorkFormOpen(true)}
-              >
-                Add linked work item
-              </div>
-            )}
-
-            {isLinkedWorkFormOpen && (
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-2">
-                  <Select defaultValue="blocked_by">
-                    <SelectTrigger className="w-40 h-9 text-[13px] bg-transparent border-border/50 focus:ring-1 focus:ring-primary/50 shadow-none">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="blocked_by">Is blocked by</SelectItem>
-                      <SelectItem value="relates_to">Relates to</SelectItem>
-                      <SelectItem value="duplicates">Duplicates</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <input
-                    type="text"
-                    autoFocus
-                    placeholder="Type, search or paste URL"
-                    className="flex-1 h-9 px-3 bg-transparent border border-border/50 rounded-md text-[13px] outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-foreground placeholder:text-muted-foreground"
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2 text-muted-foreground hover:text-foreground text-[13px] font-medium"
-                  >
-                    <Plus className="w-3.5 h-3.5 mr-1.5" /> Create linked work
-                    item
-                  </Button>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 text-[13px] font-medium"
-                      onClick={() => setIsLinkedWorkFormOpen(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="h-8 bg-muted text-muted-foreground hover:bg-muted/80 cursor-not-allowed shadow-none text-[13px] font-medium"
-                    >
-                      Link
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          <LinkedWorkSection />
 
           {/* Mobile Sidebar Content */}
           <div className="block lg:hidden mb-10">
             <TaskSidebar
               task={task}
-              handleUpdate={handleUpdate as any}
+              handleUpdate={handleUpdate}
               onOpenTask={onOpenTask}
               hideStatusDropdown={true}
               className="w-full flex flex-col bg-transparent shadow-none"

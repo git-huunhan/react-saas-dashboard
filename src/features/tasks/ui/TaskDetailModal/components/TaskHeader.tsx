@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import type { Task } from "../../../model/types";
+import type { Task, TaskFieldUpdater } from "../../../model/types";
 import { useTasksByProject } from "../../../model/useTasks";
 
 interface TaskHeaderProps {
@@ -27,7 +27,7 @@ interface TaskHeaderProps {
   onClose: () => void;
   onDelete?: (task: Task) => void;
   onOpenTask?: (task: Task) => void;
-  handleUpdate?: (field: any, value: any) => void;
+  handleUpdate?: TaskFieldUpdater;
   /** When true, renders its own Close and Expand buttons (for split-view, outside a Dialog) */
   showCloseButton?: boolean;
 }

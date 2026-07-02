@@ -1,5 +1,9 @@
 import { useUpdateTask } from "@/features/tasks";
-import type { Task } from "../../../model/types";
+import type {
+  Task,
+  TaskFieldUpdater,
+  TaskUpdateData,
+} from "../../../model/types";
 import { TaskHeader } from "./TaskHeader";
 import { TaskMain } from "./TaskMain";
 import { TaskSidebar } from "./TaskSidebar";
@@ -25,25 +29,12 @@ export function TaskDetailPanel({
 
   if (!task) return null;
 
-  const handleUpdate = (
-    field:
-      | "title"
-      | "description"
-      | "status"
-      | "priority"
-      | "assigneeId"
-      | "labels"
-      | "dueDate"
-      | "reporterId"
-      | "parentId",
-    value: any,
-  ) => {
-    if (!task) return;
+  const handleUpdate: TaskFieldUpdater = (field, value) => {
     const isArrayField = Array.isArray(value);
-    if (!isArrayField && (task as any)[field] === value) return;
+    if (!isArrayField && task[field] === value) return;
     updateTask.mutate({
       taskId: task.id,
-      data: { [field]: value },
+      data: { [field]: value } as TaskUpdateData,
     });
   };
 
@@ -54,19 +45,19 @@ export function TaskDetailPanel({
         onClose={onClose}
         onDelete={onDelete}
         onOpenTask={onOpenTask}
-        handleUpdate={handleUpdate as any}
+        handleUpdate={handleUpdate}
         showCloseButton={showCloseButton}
       />
       <div className="flex flex-1 h-full overflow-hidden flex-col lg:flex-row">
         <TaskMain
           task={task}
-          handleUpdate={handleUpdate as any}
+          handleUpdate={handleUpdate}
           onOpenTask={onOpenTask}
           className="w-full flex-1 shrink-0 flex flex-col overflow-hidden border-r-0 lg:border-r border-border/40 bg-card"
         />
         <TaskSidebar
           task={task}
-          handleUpdate={handleUpdate as any}
+          handleUpdate={handleUpdate}
           onOpenTask={onOpenTask}
           className="w-1/3 min-w-[340px] max-w-[550px] shrink-0 bg-muted/10 hidden lg:flex flex-col overflow-hidden relative border-l border-transparent z-10 shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.03)] dark:shadow-none"
         />
