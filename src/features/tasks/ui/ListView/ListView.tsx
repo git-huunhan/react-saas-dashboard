@@ -81,7 +81,18 @@ import { PriorityIcon } from "../PriorityIcon";
 import { TaskDetailModal } from "../TaskDetailModal/TaskDetailModal";
 import { TaskDetailPanel } from "../TaskDetailModal/components/TaskDetailPanel";
 import { BulkEditPanel } from "./components/BulkEditPanel";
-import type { Task } from "../../model/types";
+import type { Task, TaskStatus } from "../../model/types";
+import type { User as UserModel } from "@/features/users/model/types";
+import {
+  useQuickCreateDraft,
+  type QuickCreateDraft,
+} from "../shared/useQuickCreateDraft";
+import { getTaskStatusClassName } from "../shared/taskStatus";
+import {
+  filterTasks,
+  flattenTaskTree,
+  orderTaskTree,
+} from "../../model/taskViewUtils";
 
 // ---------- InlineCreateRow ----------
 function QuickCreateInput({
@@ -92,16 +103,17 @@ function QuickCreateInput({
 }: {
   onClose: () => void;
   containerWidth?: number;
-  onCreate: (data: any) => void;
+  onCreate: (data: QuickCreateDraft) => void;
   asRow?: boolean;
 }) {
-  const containerRef = useRef<any>(null);
+  const containerRef = useRef<HTMLElement | null>(null);
+  const setContainerRef = (node: HTMLElement | null) => {
+    containerRef.current = node;
+  };
   const dueDatePickerRef = useRef<HTMLInputElement>(null);
 
-  const [title, setTitle] = useState("");
-  const [type, setType] = useState<"task" | "epic" | "bug">("task");
-  const [assigneeId, setAssigneeId] = useState<string | null>(null);
-  const [dueDate, setDueDate] = useState<string | null>(null);
+  const { draft, updateDraft } = useQuickCreateDraft();
+  const { title, type, assigneeId, dueDate } = draft;
 
   const assignee = mockUsers.find((u) => u.id === assigneeId);
 
@@ -142,15 +154,24 @@ function QuickCreateInput({
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-32">
-          <DropdownMenuItem onClick={() => setType("task")} className="gap-2">
+          <DropdownMenuItem
+            onClick={() => updateDraft("type", "task")}
+            className="gap-2"
+          >
             <ClipboardList className="w-4 h-4 text-blue-500 fill-blue-500/20" />{" "}
             Task
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setType("epic")} className="gap-2">
+          <DropdownMenuItem
+            onClick={() => updateDraft("type", "epic")}
+            className="gap-2"
+          >
             <Crown className="w-4 h-4 text-purple-500 fill-purple-500/20" />{" "}
             Epic
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setType("bug")} className="gap-2">
+          <DropdownMenuItem
+            onClick={() => updateDraft("type", "bug")}
+            className="gap-2"
+          >
             <Bug className="w-4 h-4 text-red-500 fill-red-500/20" /> Bug
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -161,7 +182,7 @@ function QuickCreateInput({
         placeholder="What needs to be done?"
         className="flex-1 bg-transparent border-none outline-none text-[13px] text-foreground placeholder:text-muted-foreground ml-1"
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={(e) => updateDraft("title", e.target.value)}
         autoFocus
         onKeyDown={(e) => {
           if (e.key === "Escape") onClose();
@@ -175,7 +196,7 @@ function QuickCreateInput({
             ref={dueDatePickerRef}
             className="absolute bottom-0 left-0 w-0 h-0 opacity-0 pointer-events-none [color-scheme:dark]"
             value={dueDate || ""}
-            onChange={(e) => setDueDate(e.target.value)}
+            onChange={(e) => updateDraft("dueDate", e.target.value)}
           />
           <Button
             variant="ghost"
@@ -220,7 +241,7 @@ function QuickCreateInput({
                 <CommandEmpty>No user found.</CommandEmpty>
                 <CommandGroup>
                   <CommandItem
-                    onSelect={() => setAssigneeId(null)}
+                    onSelect={() => updateDraft("assigneeId", null)}
                     className="gap-2 cursor-pointer"
                   >
                     <div className="h-6 w-6 rounded-full border border-dashed border-muted-foreground/40 flex items-center justify-center bg-muted/20 shrink-0">
@@ -231,7 +252,7 @@ function QuickCreateInput({
                   {mockUsers.map((user) => (
                     <CommandItem
                       key={user.id}
-                      onSelect={() => setAssigneeId(user.id)}
+                      onSelect={() => updateDraft("assigneeId", user.id)}
                       className="gap-2 cursor-pointer"
                     >
                       <Avatar className="h-6 w-6">
@@ -262,7 +283,7 @@ function QuickCreateInput({
   if (asRow) {
     return (
       <tr
-        ref={containerRef}
+        ref={setContainerRef}
         className="border-b border-border bg-background group animate-in fade-in slide-in-from-top-2 duration-200"
       >
         <td colSpan={12} className="p-0 border-b border-border">
@@ -279,7 +300,7 @@ function QuickCreateInput({
 
   return (
     <div
-      ref={containerRef}
+      ref={setContainerRef}
       className="flex items-center w-full bg-muted/10 border-t border-border shrink-0 animate-in fade-in duration-200"
     >
       <div className="flex-1 w-full">{content}</div>
@@ -288,6 +309,45 @@ function QuickCreateInput({
 }
 
 // ---------- SortableTableRow ----------
+interface SortableTableRowProps {
+  id: string;
+  isChecked: boolean;
+  depth: number;
+  hasChildren: boolean;
+  hasAnyChildrenInList: boolean;
+  task: Task;
+  assignee: UserModel | null;
+  reporter: UserModel | null;
+  collapsedIds: Set<string>;
+  editingTitleId: string | null;
+  editTitleValue: string;
+  openAssigneeId: string | null;
+  openReporterId: string | null;
+  editingDueDateId: string | null;
+  editDueDateValue: string;
+  todayPlaceholder: string;
+  getPriorityLabel: (priority: string) => string;
+  getTypeIcon: (type?: string) => React.ReactNode;
+  getStatusClass: (status: TaskStatus) => string;
+  formatDueDateDisplay: (date?: string) => string;
+  onToggleCollapse: (id: string, event: React.MouseEvent) => void;
+  onSelectTask: (id: string, checked: boolean) => void;
+  onSelectTaskId: (id: string) => void;
+  onEditTitle: (id: string, title: string) => void;
+  onTitleSubmit: (task: Task) => void;
+  onSetEditTitleValue: (value: string) => void;
+  onSetOpenAssigneeId: (id: string | null) => void;
+  onSetOpenReporterId: (id: string | null) => void;
+  onSetEditingDueDateId: (id: string | null) => void;
+  onSetEditDueDateValue: (value: string) => void;
+  onDueDateInputRef: (id: string, input: HTMLInputElement | null) => void;
+  onOpenDueDatePicker: (id: string) => void;
+  updateTask: ReturnType<typeof useUpdateTask>;
+  isLastRow: boolean;
+  onInlineCreate: (id: string) => void;
+  isInlineCreateOpen: boolean;
+}
+
 function SortableTableRow({
   id,
   isChecked,
@@ -304,7 +364,8 @@ function SortableTableRow({
   openReporterId,
   editingDueDateId,
   editDueDateValue,
-  dueDateHiddenRefs,
+  onDueDateInputRef,
+  onOpenDueDatePicker,
   todayPlaceholder,
   getPriorityLabel,
   getTypeIcon,
@@ -324,7 +385,7 @@ function SortableTableRow({
   isLastRow,
   onInlineCreate,
   isInlineCreateOpen,
-}: any) {
+}: SortableTableRowProps) {
   const {
     attributes,
     listeners,
@@ -531,7 +592,7 @@ function SortableTableRow({
                     onSelect={() => {
                       updateTask.mutate({
                         taskId: task.id,
-                        data: { assigneeId: null as any },
+                        data: { assigneeId: null },
                       });
                       onSetOpenAssigneeId(null);
                     }}
@@ -639,7 +700,10 @@ function SortableTableRow({
         <Select
           value={task.status}
           onValueChange={(val) =>
-            updateTask.mutate({ taskId: task.id, data: { status: val as any } })
+            updateTask.mutate({
+              taskId: task.id,
+              data: { status: val as TaskStatus },
+            })
           }
         >
           <SelectTrigger
@@ -769,16 +833,15 @@ function SortableTableRow({
                 className="flex items-center justify-center w-6 h-6 rounded hover:bg-muted/60 transition-colors text-muted-foreground hover:text-foreground"
                 onClick={(e) => {
                   e.stopPropagation();
-                  dueDateHiddenRefs.current[task.id]?.showPicker?.();
+                  onOpenDueDatePicker(task.id);
                 }}
               >
                 <CalendarIcon className="w-3.5 h-3.5" />
               </button>
               <input
                 type="date"
-                ref={(el) => {
-                  dueDateHiddenRefs.current[task.id] = el;
-                }}
+                id={`due-date-${task.id}`}
+                ref={(input) => onDueDateInputRef(task.id, input)}
                 className="absolute bottom-0 left-0 w-0 h-0 opacity-0 pointer-events-none [color-scheme:dark]"
                 value={
                   task.dueDate
@@ -863,6 +926,15 @@ export function ListView({
   const [editingDueDateId, setEditingDueDateId] = useState<string | null>(null);
   const [editDueDateValue, setEditDueDateValue] = useState("");
   const dueDateHiddenRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const handleDueDateInputRef = useCallback(
+    (id: string, input: HTMLInputElement | null) => {
+      dueDateHiddenRefs.current[id] = input;
+    },
+    [],
+  );
+  const handleOpenDueDatePicker = useCallback((id: string) => {
+    dueDateHiddenRefs.current[id]?.showPicker?.();
+  }, []);
   const updateTask = useUpdateTask();
   const createTaskMutation = useCreateTask();
 
@@ -946,54 +1018,7 @@ export function ListView({
   }, [tasks, selectedTaskId]);
 
   // Apply filters
-  const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => {
-      // 1. Search Query
-      if (
-        searchQuery &&
-        !task.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !task.description?.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !task.code?.toLowerCase().includes(searchQuery.toLowerCase())
-      ) {
-        return false;
-      }
-      // 2. Parent filter (Epic)
-      if (parentIds.length > 0 && !parentIds.includes(task.parentId || "")) {
-        return false;
-      }
-      // 3. Assignee filter
-      if (assigneeIds.length > 0) {
-        if (assigneeIds.includes("unassigned") && !task.assigneeId) {
-          // match
-        } else if (!assigneeIds.includes(task.assigneeId || "")) {
-          return false;
-        }
-      }
-      // 4. Status filter
-      if (statuses.length > 0 && !statuses.includes(task.status)) {
-        return false;
-      }
-      // 5. Priority filter
-      if (priorities.length > 0 && !priorities.includes(task.priority)) {
-        return false;
-      }
-      // 6. Work Type filter
-      if (
-        workTypes.length > 0 &&
-        (!task.type || !workTypes.includes(task.type))
-      ) {
-        return false;
-      }
-      // 7. Labels filter
-      if (labels.length > 0) {
-        const hasAllLabels = labels.every((l) => task.labels?.includes(l));
-        if (!hasAllLabels) return false;
-      }
-
-      return true;
-    });
-  }, [
-    tasks,
+  const filteredTasks = filterTasks(tasks, {
     searchQuery,
     parentIds,
     assigneeIds,
@@ -1001,7 +1026,8 @@ export function ListView({
     priorities,
     workTypes,
     labels,
-  ]);
+    labelMatch: "all",
+  });
 
   const [inlineCreateRowId, setInlineCreateRowId] = useState<string | null>(
     null,
@@ -1033,38 +1059,7 @@ export function ListView({
     });
   };
 
-  const flatRenderList = useMemo(() => {
-    const childrenMap = new Map<string, Task[]>();
-    const roots: Task[] = [];
-    const filteredTaskIds = new Set(filteredTasks.map((t) => t.id));
-
-    filteredTasks.forEach((task) => {
-      if (!task.parentId || !filteredTaskIds.has(task.parentId)) {
-        roots.push(task);
-      } else {
-        if (!childrenMap.has(task.parentId)) {
-          childrenMap.set(task.parentId, []);
-        }
-        childrenMap.get(task.parentId)!.push(task);
-      }
-    });
-
-    const result: { task: Task; depth: number; hasChildren: boolean }[] = [];
-
-    const traverse = (nodes: Task[], depth: number) => {
-      nodes.forEach((node) => {
-        const children = childrenMap.get(node.id) || [];
-        const hasChildren = children.length > 0;
-        result.push({ task: node, depth, hasChildren });
-        if (!collapsedIds.has(node.id)) {
-          traverse(children, depth + 1);
-        }
-      });
-    };
-
-    traverse(roots, 0);
-    return result;
-  }, [filteredTasks, collapsedIds]);
+  const flatRenderList = flattenTaskTree(filteredTasks, collapsedIds);
 
   const getUser = (id?: string) => {
     if (!id) return null;
@@ -1085,7 +1080,7 @@ export function ListView({
     setEditingTitleId(null);
   };
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type?: string) => {
     switch (type) {
       case "epic":
         return <Crown className="w-4 h-4 text-purple-500 fill-purple-500/20" />;
@@ -1098,28 +1093,10 @@ export function ListView({
     }
   };
 
-  const getStatusClass = (status: string) => {
-    switch (status) {
-      case "todo":
-        return "bg-violet-500/15 border-violet-500/40 text-violet-700 dark:text-violet-300 hover:bg-violet-500/25";
-      case "in-progress":
-        return "bg-blue-500/15 border-blue-500/40 text-blue-700 dark:text-blue-300 hover:bg-blue-500/25";
-      case "review":
-        return "bg-yellow-500/15 border-yellow-500/40 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-500/25";
-      case "done":
-        return "bg-emerald-500/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25";
-      default:
-        return "bg-muted/50 border-border text-foreground hover:bg-muted";
-    }
-  };
-
   const hasAnyChildrenInList = flatRenderList.some((item) => item.hasChildren);
 
   // Row reorder state — stores task IDs in current display order
   const [rowOrder, setRowOrder] = useState<string[]>([]);
-  useEffect(() => {
-    setRowOrder(flatRenderList.map((i) => i.task.id));
-  }, [flatRenderList]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -1128,30 +1105,21 @@ export function ListView({
     }),
   );
 
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
-      setRowOrder((prev) => {
-        const oldIdx = prev.indexOf(active.id as string);
-        const newIdx = prev.indexOf(over.id as string);
-        return arrayMove(prev, oldIdx, newIdx);
+      setRowOrder((previous) => {
+        const currentOrder = orderTaskTree(flatRenderList, previous).map(
+          (item) => item.task.id,
+        );
+        const oldIndex = currentOrder.indexOf(active.id as string);
+        const newIndex = currentOrder.indexOf(over.id as string);
+        return arrayMove(currentOrder, oldIndex, newIndex);
       });
     }
-  }, []);
+  };
 
-  // Apply manual row order to the render list
-  const orderedRenderList = useMemo(() => {
-    if (rowOrder.length === 0) return flatRenderList;
-    const map = new Map(flatRenderList.map((i) => [i.task.id, i]));
-    const result = rowOrder
-      .map((id) => map.get(id))
-      .filter(Boolean) as typeof flatRenderList;
-    // append any new items not yet in rowOrder
-    flatRenderList.forEach((i) => {
-      if (!rowOrder.includes(i.task.id)) result.push(i);
-    });
-    return result;
-  }, [flatRenderList, rowOrder]);
+  const orderedRenderList = orderTaskTree(flatRenderList, rowOrder);
 
   return (
     <div className="flex flex-col h-full overflow-hidden text-sm relative">
@@ -1400,12 +1368,14 @@ export function ListView({
                                       openReporterId={openReporterId}
                                       editingDueDateId={editingDueDateId}
                                       editDueDateValue={editDueDateValue}
-                                      dueDateHiddenRefs={dueDateHiddenRefs}
+                                      onDueDateInputRef={handleDueDateInputRef}
+                                      onOpenDueDatePicker={
+                                        handleOpenDueDatePicker
+                                      }
                                       todayPlaceholder={todayPlaceholder}
-                                      getUser={getUser}
                                       getPriorityLabel={getPriorityLabel}
                                       getTypeIcon={getTypeIcon}
-                                      getStatusClass={getStatusClass}
+                                      getStatusClass={getTaskStatusClassName}
                                       formatDueDateDisplay={
                                         formatDueDateDisplay
                                       }
@@ -1452,8 +1422,10 @@ export function ListView({
                                               afterTaskId: task.id, // insert after this task
                                               title: data.title,
                                               type: data.type,
-                                              assigneeId: data.assigneeId,
-                                              dueDate: data.dueDate,
+                                              assigneeId:
+                                                data.assigneeId ?? undefined,
+                                              dueDate:
+                                                data.dueDate ?? undefined,
                                               status: "todo",
                                               priority: "medium",
                                             },
@@ -1490,8 +1462,8 @@ export function ListView({
                           projectId,
                           title: data.title,
                           type: data.type,
-                          assigneeId: data.assigneeId,
-                          dueDate: data.dueDate,
+                          assigneeId: data.assigneeId ?? undefined,
+                          dueDate: data.dueDate ?? undefined,
                           status: "todo",
                           priority: "medium",
                         },

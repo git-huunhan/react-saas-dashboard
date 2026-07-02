@@ -48,6 +48,11 @@ export type TaskUpdateData = Partial<
   parentId?: string | null;
 };
 
+export type TaskFieldUpdater = <Field extends keyof TaskUpdateData>(
+  field: Field,
+  value: TaskUpdateData[Field],
+) => void;
+
 export interface KanbanColumn {
   id: TaskStatus;
   title: string;

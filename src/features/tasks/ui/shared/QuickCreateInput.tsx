@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   CalendarIcon,
   ClipboardList,
@@ -30,15 +30,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { mockUsers } from "@/features/users/model/mockUsers";
+import {
+  useQuickCreateDraft,
+  type QuickCreateDraft,
+} from "./useQuickCreateDraft";
 
 interface QuickCreateInputProps {
   onClose: () => void;
-  onCreate: (data: {
-    title: string;
-    type: "task" | "epic" | "bug";
-    assigneeId: string | null;
-    dueDate: string | null;
-  }) => void;
+  onCreate: (data: QuickCreateDraft) => void;
   /** "inline" = single row (ListView), "card" = Jira-style card (Kanban) */
   variant?: "inline" | "card";
   /** If true, hides the Epic option from the type dropdown */
@@ -54,10 +53,8 @@ export function QuickCreateInput({
   const containerRef = useRef<HTMLDivElement>(null);
   const dueDatePickerRef = useRef<HTMLInputElement>(null);
 
-  const [title, setTitle] = useState("");
-  const [type, setType] = useState<"task" | "epic" | "bug">("task");
-  const [assigneeId, setAssigneeId] = useState<string | null>(null);
-  const [dueDate, setDueDate] = useState<string | null>(null);
+  const { draft, updateDraft, resetDraft } = useQuickCreateDraft();
+  const { title, type, assigneeId, dueDate } = draft;
 
   const assignee = mockUsers.find((u) => u.id === assigneeId);
 
@@ -94,9 +91,7 @@ export function QuickCreateInput({
   const handleCreate = () => {
     if (!title.trim()) return;
     onCreate({ title, type, assigneeId, dueDate });
-    setTitle("");
-    setAssigneeId(null);
-    setDueDate(null);
+    resetDraft();
   };
 
   const TypePicker = (
@@ -114,17 +109,26 @@ export function QuickCreateInput({
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-32">
-        <DropdownMenuItem onClick={() => setType("task")} className="gap-2">
+        <DropdownMenuItem
+          onClick={() => updateDraft("type", "task")}
+          className="gap-2"
+        >
           <ClipboardList className="w-4 h-4 text-blue-500 fill-blue-500/20" />{" "}
           Task
         </DropdownMenuItem>
         {!hideEpicOption && (
-          <DropdownMenuItem onClick={() => setType("epic")} className="gap-2">
+          <DropdownMenuItem
+            onClick={() => updateDraft("type", "epic")}
+            className="gap-2"
+          >
             <Crown className="w-4 h-4 text-purple-500 fill-purple-500/20" />{" "}
             Epic
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onClick={() => setType("bug")} className="gap-2">
+        <DropdownMenuItem
+          onClick={() => updateDraft("type", "bug")}
+          className="gap-2"
+        >
           <Bug className="w-4 h-4 text-red-500 fill-red-500/20" /> Bug
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -138,7 +142,7 @@ export function QuickCreateInput({
         ref={dueDatePickerRef}
         className="absolute bottom-0 left-0 w-0 h-0 opacity-0 pointer-events-none [color-scheme:dark]"
         value={dueDate || ""}
-        onChange={(e) => setDueDate(e.target.value)}
+        onChange={(e) => updateDraft("dueDate", e.target.value)}
       />
       <Button
         variant="ghost"
@@ -183,7 +187,7 @@ export function QuickCreateInput({
             <CommandEmpty>No user found.</CommandEmpty>
             <CommandGroup>
               <CommandItem
-                onSelect={() => setAssigneeId(null)}
+                onSelect={() => updateDraft("assigneeId", null)}
                 className="gap-2 cursor-pointer"
               >
                 <div className="h-6 w-6 rounded-full border border-dashed border-muted-foreground/40 flex items-center justify-center bg-muted/20 shrink-0">
@@ -194,7 +198,7 @@ export function QuickCreateInput({
               {mockUsers.map((user) => (
                 <CommandItem
                   key={user.id}
-                  onSelect={() => setAssigneeId(user.id)}
+                  onSelect={() => updateDraft("assigneeId", user.id)}
                   className="gap-2 cursor-pointer"
                 >
                   <Avatar className="h-6 w-6">
@@ -237,7 +241,7 @@ export function QuickCreateInput({
             placeholder="What needs to be done?"
             className="w-full bg-transparent border-none outline-none text-[14px] text-foreground placeholder:text-muted-foreground/60 leading-snug"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => updateDraft("title", e.target.value)}
             autoFocus
             onKeyDown={(e) => {
               if (e.key === "Escape") onClose();
@@ -268,7 +272,7 @@ export function QuickCreateInput({
         placeholder="What needs to be done?"
         className="flex-1 bg-transparent border-none outline-none text-[13px] text-foreground placeholder:text-muted-foreground"
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={(e) => updateDraft("title", e.target.value)}
         autoFocus
         onKeyDown={(e) => {
           if (e.key === "Escape") onClose();

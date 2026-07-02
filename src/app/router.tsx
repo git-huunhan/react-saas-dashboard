@@ -1,12 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
 
-import DashboardPage from "@/pages/DashboardPage";
-import LoginPage from "@/pages/LoginPage";
-import ProfilePage from "@/pages/ProfilePage";
-import ProjectDetailPage from "@/pages/ProjectDetailPage";
-import ProjectsPage from "@/pages/ProjectsPage";
-import UsersPage from "@/pages/UsersPage";
-
 import { Layout } from "@/widgets/Layout";
 
 import { ProtectedRoute } from "@/features/auth";
@@ -20,23 +13,33 @@ export const router = createBrowserRouter([
         children: [
           {
             path: "/",
-            element: <DashboardPage />,
+            lazy: async () => ({
+              Component: (await import("@/pages/DashboardPage")).default,
+            }),
           },
           {
             path: "/users",
-            element: <UsersPage />,
+            lazy: async () => ({
+              Component: (await import("@/pages/UsersPage")).default,
+            }),
           },
           {
             path: "/projects",
-            element: <ProjectsPage />,
+            lazy: async () => ({
+              Component: (await import("@/pages/ProjectsPage")).default,
+            }),
           },
           {
             path: "/projects/:id",
-            element: <ProjectDetailPage />,
+            lazy: async () => ({
+              Component: (await import("@/pages/ProjectDetailPage")).default,
+            }),
           },
           {
             path: "/profile",
-            element: <ProfilePage />,
+            lazy: async () => ({
+              Component: (await import("@/pages/ProfilePage")).default,
+            }),
           },
         ],
       },
@@ -44,6 +47,8 @@ export const router = createBrowserRouter([
   },
   {
     path: "/login",
-    element: <LoginPage />,
+    lazy: async () => ({
+      Component: (await import("@/pages/LoginPage")).default,
+    }),
   },
 ]);
