@@ -197,9 +197,9 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
                   <PopoverContent
                     side="right"
                     align="start"
-                    className="w-[300px] p-0 bg-popover text-popover-foreground border-border shadow-xl rounded-xl"
+                    className="w-[300px] p-0 gap-0 bg-popover text-popover-foreground border-border shadow-xl rounded-xl"
                   >
-                    <div className="flex items-center justify-between px-3 py-3 border-b border-border/50">
+                    <div className="flex items-center justify-between px-3 pt-3 pb-2">
                       <span className="font-semibold text-[13.5px]">
                         Spaces
                       </span>
@@ -209,7 +209,7 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
                         </button>
                       </PopoverClose>
                     </div>
-                    <div className="p-3 border-b border-border/50">
+                    <div className="px-3 pb-3 border-b border-border/50">
                       <div className="relative">
                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
@@ -219,11 +219,13 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
                       </div>
                     </div>
                     <div className="p-1.5">
-                      <Link to="/projects" onClick={onNavClick}>
-                        <div className="flex items-center gap-3 px-2 py-2 hover:bg-accent text-[13.5px] font-medium text-muted-foreground hover:text-foreground rounded-md cursor-pointer transition-colors">
-                          <ListFilter className="w-4 h-4" />
-                          View all spaces
-                        </div>
+                      <Link
+                        to="/projects"
+                        onClick={onNavClick}
+                        className="flex items-center gap-3 px-2 py-1.5 hover:bg-accent text-[13.5px] font-medium text-muted-foreground hover:text-foreground rounded-md cursor-pointer transition-colors"
+                      >
+                        <ListFilter className="w-4 h-4" />
+                        View all spaces
                       </Link>
                     </div>
                   </PopoverContent>

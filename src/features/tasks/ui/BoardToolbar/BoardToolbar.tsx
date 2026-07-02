@@ -145,28 +145,30 @@ export function BoardToolbar({
           {/* Unassigned Option */}
           <div
             title="Unassigned"
-            className={`h-7 w-7 rounded-full border-2 cursor-pointer hover:-translate-y-0.5 transition-all flex items-center justify-center shrink-0 hover:z-10 ${
+            className={`h-8 w-8 rounded-full border-2 cursor-pointer hover:-translate-y-0.5 transition-all flex items-center justify-center shrink-0 hover:z-10 ${
               assigneeIds.includes("unassigned")
                 ? "border-background ring-2 ring-primary bg-muted/50 z-10"
                 : "border-dashed border-muted-foreground/40 bg-muted/20"
             }`}
             onClick={() => toggleAssignee("unassigned")}
           >
-            <UserIcon className="w-3.5 h-3.5 text-muted-foreground/80" />
+            <UserIcon className="w-4 h-4 text-muted-foreground/80" />
           </div>
           {mockUsers.slice(0, 5).map((user) => {
             const isActive = assigneeIds.includes(user.id);
             return (
               <Avatar
                 key={user.id}
-                className={`h-7 w-7 border-2 border-background cursor-pointer hover:-translate-y-0.5 transition-all hover:z-10 ${
+                className={`h-8 w-8 border-2 border-background cursor-pointer hover:-translate-y-0.5 transition-all hover:z-10 ${
                   isActive ? "ring-2 ring-primary z-10" : ""
                 }`}
                 onClick={() => toggleAssignee(user.id)}
                 title={user.name}
               >
                 <AvatarImage src={user.avatarUrl} />
-                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="text-xs">
+                  {user.name.charAt(0)}
+                </AvatarFallback>
               </Avatar>
             );
           })}

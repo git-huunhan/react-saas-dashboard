@@ -279,17 +279,21 @@ export default function ProjectsPage() {
                     </td>
                     <td className="p-3 px-4 align-middle">
                       <div className="flex items-center gap-3">
-                        {(() => {
-                          const currentAvatar = getSpaceAvatar(project.avatar);
-                          const Icon = currentAvatar.icon;
-                          return (
-                            <div
-                              className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${currentAvatar.bg} ${currentAvatar.text}`}
-                            >
-                              <Icon className="w-5 h-5" />
-                            </div>
-                          );
-                        })()}
+                        <Link to={`/projects/${project.id}`}>
+                          {(() => {
+                            const currentAvatar = getSpaceAvatar(
+                              project.avatar,
+                            );
+                            const Icon = currentAvatar.icon;
+                            return (
+                              <div
+                                className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${currentAvatar.bg} ${currentAvatar.text}`}
+                              >
+                                <Icon className="w-5 h-5" />
+                              </div>
+                            );
+                          })()}
+                        </Link>
                         <Link
                           to={`/projects/${project.id}`}
                           className="text-[13.5px] font-medium text-primary hover:underline"

@@ -325,6 +325,7 @@ function SortableTableRow({
   updateTask,
   isLastRow,
   onInlineCreate,
+  isInlineCreateOpen,
 }: any) {
   const {
     attributes,
@@ -371,7 +372,7 @@ function SortableTableRow({
           className={`absolute inset-0 pointer-events-none transition-colors ${isChecked ? "bg-primary/10 group-hover:bg-primary/20" : "bg-muted/20 group-hover:bg-muted/40"}`}
         />
         {/* Inline Create Trigger (Bottom of row) */}
-        {!isLastRow && (
+        {!isLastRow && !isInlineCreateOpen && (
           <div className="peer/inline-create absolute -bottom-[7px] left-0 w-[100vw] h-[14px] z-50 group/inline-create">
             <div className="absolute top-1/2 -translate-y-1/2 left-0 w-full h-[2px] bg-primary opacity-0 group-hover/inline-create:opacity-100 transition-opacity pointer-events-none" />
             <div
@@ -1441,6 +1442,9 @@ export function ListView({
                                         index === orderedRenderList.length - 1
                                       }
                                       onInlineCreate={setInlineCreateRowId}
+                                      isInlineCreateOpen={
+                                        inlineCreateRowId !== null
+                                      }
                                     />
                                     {inlineCreateRowId === task.id && (
                                       <QuickCreateInput
