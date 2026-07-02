@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import {
   ChevronDown,
-  ChevronRight,
   MoreHorizontal,
   Crown,
   ClipboardList,
@@ -307,7 +306,6 @@ function SortableTableRow({
   editDueDateValue,
   dueDateHiddenRefs,
   todayPlaceholder,
-  getUser,
   getPriorityLabel,
   getTypeIcon,
   getStatusClass,
@@ -927,18 +925,6 @@ export function ListView({
     year: "numeric",
   });
 
-  function parseDateInput(val: string): string {
-    // Accept MM/DD/YYYY or YYYY-MM-DD
-    if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
-    const parts = val.split("/");
-    if (parts.length === 3) {
-      const [m, d, y] = parts;
-      if (m && d && y && y.length === 4)
-        return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
-    }
-    return "";
-  }
-
   function formatDueDateDisplay(dateStr: string | undefined | null): string {
     if (!dateStr) return "";
     const d = new Date(dateStr + "T00:00:00");
@@ -992,7 +978,10 @@ export function ListView({
         return false;
       }
       // 6. Work Type filter
-      if (workTypes.length > 0 && !workTypes.includes(task.type)) {
+      if (
+        workTypes.length > 0 &&
+        (!task.type || !workTypes.includes(task.type))
+      ) {
         return false;
       }
       // 7. Labels filter
@@ -1249,7 +1238,7 @@ export function ListView({
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
-                          {getTypeIcon(task.type)}
+                          {getTypeIcon(task.type ?? "task")}
                           <span className="text-xs font-medium text-muted-foreground hover:underline">
                             {task.code}
                           </span>
@@ -1423,7 +1412,10 @@ export function ListView({
                                       onToggleCollapse={toggleCollapse}
                                       onSelectTask={handleSelectTask}
                                       onSelectTaskId={setSelectedTaskId}
-                                      onEditTitle={(id, title) => {
+                                      onEditTitle={(
+                                        id: string,
+                                        title: string,
+                                      ) => {
                                         setEditingTitleId(id);
                                         setEditTitleValue(title);
                                       }}

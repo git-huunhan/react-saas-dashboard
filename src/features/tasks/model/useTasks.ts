@@ -7,7 +7,8 @@ import {
   updateTask,
   updateTaskStatus,
 } from "../api/tasksApi";
-import type { Task, TaskStatus } from "./types";
+import { mockUsers } from "../../users/model/mockUsers";
+import type { Task, TaskStatus, TaskUpdateData } from "./types";
 import { commentKeys } from "./useComments";
 
 export const tasksKeys = {
@@ -85,11 +86,11 @@ export function useCreateTask() {
         code: `PRJ-${Math.floor(Math.random() * 1000)}`,
         projectId: newTaskData.projectId,
         title: newTaskData.title,
-        status: newTaskData.status as any,
+        status: newTaskData.status,
         type: newTaskData.type || "task",
         priority: newTaskData.priority || "medium",
-        assigneeId: newTaskData.assigneeId || null,
-        reporterId: "u1", // mock user
+        assigneeId: newTaskData.assigneeId || undefined,
+        reporterId: "user-1",
         dueDate: newTaskData.dueDate || undefined,
         description: undefined,
         createdAt: new Date().toISOString(),
@@ -105,7 +106,7 @@ export function useCreateTask() {
 
       return { previousTasks, projectId: newTaskData.projectId };
     },
-    onError: (err, newTaskData, context) => {
+    onError: (_err, _newTaskData, context) => {
       if (context?.previousTasks) {
         queryClient.setQueryData(
           tasksKeys.byProject(context.projectId),
@@ -113,7 +114,7 @@ export function useCreateTask() {
         );
       }
     },
-    onSettled: (newTask, err, variables, context) => {
+    onSettled: (_newTask, _err, _variables, context) => {
       queryClient.invalidateQueries({
         queryKey: tasksKeys.byProject(context?.projectId || ""),
       });
@@ -123,13 +124,8 @@ export function useCreateTask() {
 export function useUpdateTask() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      taskId,
-      data,
-    }: {
-      taskId: string;
-      data: Partial<Omit<Task, "id" | "createdAt" | "projectId">>;
-    }) => updateTask(taskId, data),
+    mutationFn: ({ taskId, data }: { taskId: string; data: TaskUpdateData }) =>
+      updateTask(taskId, data),
 
     onMutate: async ({ taskId, data }) => {
       await queryClient.cancelQueries({ queryKey: tasksKeys.all });
@@ -140,9 +136,52 @@ export function useUpdateTask() {
 
       queryClient.setQueriesData<Task[]>({ queryKey: tasksKeys.all }, (old) => {
         if (!old) return old;
-        return old.map((task) =>
-          task.id === taskId ? { ...task, ...data } : task,
-        );
+        return old.map((task) => {
+          if (task.id !== taskId) return task;
+
+          const { assigneeId, reporterId, parentId, ...taskFields } = data;
+          const assignee =
+            assigneeId === undefined
+              ? task.assignee
+              : assigneeId === null
+                ? undefined
+                : mockUsers.find((user) => user.id === assigneeId);
+          const reporter =
+            reporterId === undefined
+              ? task.reporter
+              : reporterId === null
+                ? undefined
+                : mockUsers.find((user) => user.id === reporterId);
+
+          return {
+            ...task,
+            ...taskFields,
+            assignee: assignee
+              ? {
+                  id: assignee.id,
+                  name: assignee.name,
+                  avatarUrl: assignee.avatarUrl || "",
+                }
+              : undefined,
+            assigneeId:
+              assigneeId === undefined
+                ? task.assigneeId
+                : (assigneeId ?? undefined),
+            reporter: reporter
+              ? {
+                  id: reporter.id,
+                  name: reporter.name,
+                  avatarUrl: reporter.avatarUrl || "",
+                }
+              : undefined,
+            reporterId:
+              reporterId === undefined
+                ? task.reporterId
+                : (reporterId ?? undefined),
+            parentId:
+              parentId === undefined ? task.parentId : (parentId ?? undefined),
+          };
+        });
       });
 
       return { previousData };
@@ -170,13 +209,8 @@ export function useUpdateTask() {
 export function useDeleteTask() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      taskId,
-      projectId,
-    }: {
-      taskId: string;
-      projectId: string;
-    }) => deleteTask(taskId),
+    mutationFn: ({ taskId }: { taskId: string; projectId: string }) =>
+      deleteTask(taskId),
     onSuccess: (_data, { projectId }) => {
       queryClient.invalidateQueries({
         queryKey: tasksKeys.byProject(projectId),

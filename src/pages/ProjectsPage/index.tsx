@@ -44,15 +44,7 @@ import {
   type Project,
 } from "@/features/projects";
 import { useUrlParams } from "@/shared/hooks/useUrlParams";
-import {
-  FolderKanban,
-  Pencil,
-  Trash2,
-  Search,
-  Star,
-  MoreHorizontal,
-  LayoutGrid,
-} from "lucide-react";
+import { FolderKanban, Search, Star, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -83,11 +75,7 @@ export default function ProjectsPage() {
     setStatus(getParam("status", "all"));
   }, [getParam]);
 
-  const { data, isLoading, isError, isPlaceholderData } = useProjects(
-    page,
-    5,
-    status,
-  );
+  const { data, isLoading, isError } = useProjects(page, 5, status);
 
   const handleFilterChange = (newStatus: string) => {
     setStatus(newStatus);
@@ -101,19 +89,6 @@ export default function ProjectsPage() {
       page: newPage.toString(),
       status: status !== "all" ? status : "",
     });
-  };
-
-  const getStatusVariant = (s: string) => {
-    switch (s) {
-      case "active":
-        return "info";
-      case "completed":
-        return "success";
-      case "planning":
-        return "warning";
-      default:
-        return "default";
-    }
   };
 
   const handleCreateProject = (data: any) => {

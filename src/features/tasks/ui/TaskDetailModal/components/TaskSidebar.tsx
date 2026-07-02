@@ -81,7 +81,6 @@ export function TaskSidebar({
 
   const { data: tasks = [] } = useTasksByProject(task.projectId);
   const parentTask = tasks.find((t) => t.id === task.parentId);
-  const subtasks = tasks.filter((t) => t.parentId === task.id);
   const potentialParents = tasks.filter(
     (t) => t.id !== task.id && t.type !== "task" && t.id !== task.parentId,
   );

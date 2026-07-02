@@ -1,9 +1,7 @@
 import {
   ChevronDown,
-  LineChart,
   MoreHorizontal,
   Search,
-  SlidersHorizontal,
   User as UserIcon,
   Layers,
   Table,
@@ -20,9 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { mockUsers } from "@/features/users/model/mockUsers";
-import { useMemo, useState, useRef, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { useTasksByProject } from "../../model/useTasks";
+import { useState } from "react";
 import type { FilterCategory } from "./AdvancedFilterPopover";
 import { AdvancedFilterPopover } from "./AdvancedFilterPopover";
 import { ViewSettingsPopover } from "./ViewSettingsPopover";
@@ -67,7 +63,6 @@ export function BoardToolbar({
   labels,
   setLabels,
   activeView = "board",
-  onViewChange,
   groupBy,
   setGroupBy,
   listLayout = "table",
@@ -84,21 +79,6 @@ export function BoardToolbar({
   const [pinnedCategories, setPinnedCategories] = useState<FilterCategory[]>(
     [],
   );
-
-  const { id } = useParams<{ id: string }>();
-  const { data: tasks = [] } = useTasksByProject(id || "");
-
-  const availableLabels = useMemo(() => {
-    const allLabels = tasks.flatMap((t) => t.labels || []);
-    return Array.from(new Set(allLabels)).sort();
-  }, [tasks]);
-
-  const parentTasks = useMemo(() => {
-    return tasks.filter(
-      (t) =>
-        t.type === "epic" || tasks.some((child) => child.parentId === t.id),
-    );
-  }, [tasks]);
 
   const toggleAssignee = (id: string) => {
     if (assigneeIds.includes(id)) {

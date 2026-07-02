@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import {
   ChevronDown,
   GitFork,
-  Link as LinkIcon,
   Paperclip,
   FileText,
   X,
@@ -16,7 +15,6 @@ import {
   CheckSquare,
   Globe,
   Video,
-  Zap,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -52,12 +50,14 @@ import {
 } from "../../../model/useTasks";
 import { useLogActivity } from "../../../model/useComments";
 import { mockUsers } from "@/features/users/model/mockUsers";
-import { Input } from "@/components/ui/input";
 import { PriorityIcon } from "../../PriorityIcon";
 
 interface TaskMainProps {
   task: Task;
-  handleUpdate: (field: "title" | "description", value: string) => void;
+  handleUpdate: (
+    field: "title" | "description" | "status",
+    value: string,
+  ) => void;
   onOpenTask?: (task: Task) => void;
   className?: string;
 }

@@ -29,6 +29,25 @@ export interface Task {
   createdAt: string;
 }
 
+export type TaskUpdateData = Partial<
+  Omit<
+    Task,
+    | "id"
+    | "createdAt"
+    | "projectId"
+    | "code"
+    | "assignee"
+    | "reporter"
+    | "assigneeId"
+    | "reporterId"
+    | "parentId"
+  >
+> & {
+  assigneeId?: string | null;
+  reporterId?: string | null;
+  parentId?: string | null;
+};
+
 export interface KanbanColumn {
   id: TaskStatus;
   title: string;

@@ -2,7 +2,6 @@ import {
   Calendar,
   ClipboardList,
   FileText,
-  FolderKanban,
   GanttChart,
   Globe,
   KanbanSquare,
@@ -33,6 +32,8 @@ import {
   getSpaceAvatar,
 } from "@/features/projects/model/avatars";
 
+type GroupBy = "None" | "Assignee" | "Epic" | "Subtask";
+
 function useFilters() {
   const [searchQuery, setSearchQuery] = useState("");
   const [parentIds, setParentIds] = useState<string[]>([]);
@@ -41,7 +42,7 @@ function useFilters() {
   const [statuses, setStatuses] = useState<string[]>([]);
   const [workTypes, setWorkTypes] = useState<string[]>([]);
   const [labels, setLabels] = useState<string[]>([]);
-  const [groupBy, setGroupBy] = useState<string>("None");
+  const [groupBy, setGroupBy] = useState<GroupBy>("None");
 
   return {
     searchQuery,

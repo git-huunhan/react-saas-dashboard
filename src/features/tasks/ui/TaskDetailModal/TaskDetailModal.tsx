@@ -1,5 +1,4 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useUpdateTask } from "@/features/tasks";
 
 import type { Task } from "../../model/types";
 import { TaskDetailPanel } from "./components/TaskDetailPanel";
@@ -17,7 +16,6 @@ export function TaskDetailModal({
   task,
   isOpen,
   onClose,
-  onEdit, // unused for now
   onDelete,
   onOpenTask,
 }: TaskDetailModalProps) {

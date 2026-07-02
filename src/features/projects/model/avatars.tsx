@@ -1,5 +1,3 @@
-import React from "react";
-
 export const SPACE_AVATARS = [
   {
     id: "1",

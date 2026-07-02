@@ -4,7 +4,6 @@ import { useSidebar } from "@/widgets/Sidebar/useSidebar";
 import {
   PanelLeftClose,
   PanelLeft,
-  Menu,
   Plus,
   HelpCircle,
   Settings,
@@ -16,8 +15,6 @@ import {
   Users,
   FolderKanban,
   CheckSquare,
-  Clock,
-  FileText,
   ClipboardList,
 } from "lucide-react";
 import { NotificationDropdown } from "./NotificationDropdown";

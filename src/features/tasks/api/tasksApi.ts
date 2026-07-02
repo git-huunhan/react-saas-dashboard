@@ -1,6 +1,6 @@
 import { getProjectKeySync } from "../../projects/api/projectsApi";
 import { mockUsers } from "../../users/model/mockUsers";
-import type { Task, TaskStatus } from "../model/types";
+import type { Task, TaskStatus, TaskUpdateData } from "../model/types";
 import { logActivity } from "./commentsApi";
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
@@ -130,9 +130,7 @@ export async function createTask(
 
 export async function updateTask(
   taskId: string,
-  data: Partial<
-    Omit<Task, "id" | "createdAt" | "projectId" | "code" | "assignee">
-  >,
+  data: TaskUpdateData,
 ): Promise<Task> {
   await delay(300);
   const taskIndex = tasksDb.findIndex((t) => t.id === taskId);
@@ -200,14 +198,21 @@ export async function updateTask(
     }
   }
 
-  const updatedTask = { ...task, ...data };
+  const {
+    assigneeId: nextAssigneeId,
+    reporterId: nextReporterId,
+    parentId: nextParentId,
+    ...taskFields
+  } = data;
+  const updatedTask: Task = { ...task, ...taskFields };
 
-  if (data.assigneeId !== undefined) {
-    if (data.assigneeId === null) {
+  if (nextAssigneeId !== undefined) {
+    if (nextAssigneeId === null) {
       updatedTask.assigneeId = undefined;
       updatedTask.assignee = undefined;
     } else {
-      const user = mockUsers.find((u) => u.id === data.assigneeId);
+      updatedTask.assigneeId = nextAssigneeId;
+      const user = mockUsers.find((u) => u.id === nextAssigneeId);
       if (user) {
         updatedTask.assignee = {
           id: user.id,
@@ -218,11 +223,13 @@ export async function updateTask(
     }
   }
 
-  if (data.reporterId !== undefined) {
-    if (data.reporterId === null) {
+  if (nextReporterId !== undefined) {
+    if (nextReporterId === null) {
+      updatedTask.reporterId = undefined;
       updatedTask.reporter = undefined;
     } else {
-      const user = mockUsers.find((u) => u.id === data.reporterId);
+      updatedTask.reporterId = nextReporterId;
+      const user = mockUsers.find((u) => u.id === nextReporterId);
       if (user) {
         updatedTask.reporter = {
           id: user.id,
@@ -231,6 +238,10 @@ export async function updateTask(
         };
       }
     }
+  }
+
+  if (nextParentId !== undefined) {
+    updatedTask.parentId = nextParentId ?? undefined;
   }
 
   tasksDb[taskIndex] = updatedTask;

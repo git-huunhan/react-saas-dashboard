@@ -35,7 +35,7 @@ export function BoardColumn({
   onTaskClick,
   onCreateTask,
 }: BoardColumnProps) {
-  const { setNodeRef, isOver } = useDroppable({
+  const { setNodeRef } = useDroppable({
     id: droppableId || columnId,
     data: {
       type: "Column",

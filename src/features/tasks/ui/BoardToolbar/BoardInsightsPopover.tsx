@@ -8,23 +8,15 @@ import {
 } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
   LineChart,
   X,
   RotateCcw,
   HelpCircle,
   ChevronDown,
   ChevronRight,
-  CalendarIcon,
   MessageSquare,
   AlertTriangle,
   ClipboardList,
-  Crown,
 } from "lucide-react";
 import { PriorityIcon } from "../PriorityIcon/PriorityIcon";
 import { useParams } from "react-router-dom";

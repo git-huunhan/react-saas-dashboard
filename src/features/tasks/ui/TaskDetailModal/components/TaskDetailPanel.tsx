@@ -1,5 +1,5 @@
 import { useUpdateTask } from "@/features/tasks";
-import type { Task } from "../../model/types";
+import type { Task } from "../../../model/types";
 import { TaskHeader } from "./TaskHeader";
 import { TaskMain } from "./TaskMain";
 import { TaskSidebar } from "./TaskSidebar";

@@ -27,7 +27,6 @@ import {
   PopoverClose,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { Link, useLocation } from "react-router-dom";
 import { getSpaceAvatar } from "@/features/projects/model/avatars";
 import { useProjects } from "@/features/projects";

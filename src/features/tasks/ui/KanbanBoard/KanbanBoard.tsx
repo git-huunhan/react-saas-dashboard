@@ -13,7 +13,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import {
   Bug,
   ChevronDown,
@@ -38,11 +38,14 @@ import {
   useUpdateTask,
   useUpdateTaskStatus,
 } from "@/features/tasks";
-import type { Task, TaskStatus } from "../../model/types";
+import type { Task, TaskStatus, TaskUpdateData } from "../../model/types";
 import { BoardColumn } from "../BoardColumn/BoardColumn";
 import { TaskCard } from "../TaskCard/TaskCard";
 import { TaskDetailModal } from "../TaskDetailModal/TaskDetailModal";
 import { TaskFormModal } from "../TaskFormModal/TaskFormModal";
+import type { TaskFormData } from "../TaskFormModal/TaskFormModal";
+
+type GroupBy = "None" | "Assignee" | "Epic" | "Subtask";
 
 interface KanbanBoardProps {
   projectId: string;
@@ -53,7 +56,7 @@ interface KanbanBoardProps {
   statuses?: string[];
   workTypes?: string[];
   labels?: string[];
-  groupBy?: string;
+  groupBy?: GroupBy;
   headerSlot?: React.ReactNode;
 }
 
@@ -171,14 +174,13 @@ export function KanbanBoard({
   groupBy = "None",
   headerSlot,
 }: KanbanBoardProps) {
-  const { data: serverTasks, isLoading } = useTasksByProject(projectId);
+  const { data: serverTasks = [], isLoading } = useTasksByProject(projectId);
   const [localTasks, setLocalTasks] = useState<Task[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const isDraggingRef = useRef(false); // ref syncs synchronously, unlike state
   const isMutating = useIsMutating();
 
   useEffect(() => {
-    if (!serverTasks) return;
     // If not yet initialized, set everything from server
     if (localTasks.length === 0) {
       setLocalTasks(serverTasks);
@@ -211,7 +213,7 @@ export function KanbanBoard({
 
       return merged;
     });
-  }, [serverTasks, isMutating]);
+  }, [serverTasks, isMutating, localTasks.length]);
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
@@ -234,7 +236,7 @@ export function KanbanBoard({
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const previousLocalTasksRef = useRef<Task[]>([]);
-  const draggingGroupsRef = useRef<{
+  const [draggingGroups, setDraggingGroups] = useState<{
     grouped: string[];
     hasUngrouped: boolean;
   }>({
@@ -276,10 +278,10 @@ export function KanbanBoard({
       }
     });
 
-    draggingGroupsRef.current = {
+    setDraggingGroups({
       grouped: Array.from(currentGroups),
       hasUngrouped: currentHasUngrouped,
-    };
+    });
   };
 
   const onDragOver = (event: DragOverEvent) => {
@@ -443,14 +445,12 @@ export function KanbanBoard({
     }
 
     const activeIdStr = active.id as string;
-    const overIdStr = over.id as string;
-
     const updatedTask = localTasks.find((t) => t.id === activeIdStr);
     if (updatedTask) {
       const originalTask = serverTasks.find((t) => t.id === activeIdStr);
       let statusChanged = false;
       let dataChanged = false;
-      const dataToUpdate: any = {};
+      const dataToUpdate: TaskUpdateData = {};
 
       if (originalTask) {
         if (originalTask.status !== updatedTask.status) {
@@ -497,13 +497,13 @@ export function KanbanBoard({
     type: "task" | "epic" | "bug";
     assigneeId: string | null;
     dueDate: string | null;
-    status: string;
+    status: TaskStatus;
   }) => {
     createTask.mutate(
       {
         title: data.title,
         type: data.type,
-        status: data.status as any,
+        status: data.status,
         priority: "medium",
         labels: [],
         assigneeId: data.assigneeId || undefined,
@@ -552,62 +552,53 @@ export function KanbanBoard({
     [activeId, localTasks],
   );
 
-  const filteredTasks = useMemo(() => {
-    return localTasks.filter((t) => {
-      // In Jira, Epics are not shown as cards on the Kanban board
-      if (t.type === "epic") return false;
+  const normalizedSearchQuery = searchQuery.toLowerCase();
+  const filteredTasks = localTasks.filter((t) => {
+    // In Jira, Epics are not shown as cards on the Kanban board
+    if (t.type === "epic") return false;
 
-      if (
-        searchQuery &&
-        !t.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !t.description?.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !t.code.toLowerCase().includes(searchQuery.toLowerCase())
-      ) {
+    if (
+      normalizedSearchQuery &&
+      !t.title.toLowerCase().includes(normalizedSearchQuery) &&
+      !t.description?.toLowerCase().includes(normalizedSearchQuery) &&
+      !t.code.toLowerCase().includes(normalizedSearchQuery)
+    ) {
+      return false;
+    }
+    if (parentIds.length > 0) {
+      if (parentIds.includes("no-parent") && !t.parentId) {
+        // keep
+      } else if (t.parentId && parentIds.includes(t.parentId)) {
+        // keep
+      } else {
         return false;
       }
-      if (parentIds.length > 0) {
-        if (parentIds.includes("no-parent") && !t.parentId) {
-          // keep
-        } else if (t.parentId && parentIds.includes(t.parentId)) {
-          // keep
-        } else {
-          return false;
-        }
-      }
-      if (assigneeIds.length > 0) {
-        if (assigneeIds.includes("unassigned") && !t.assigneeId) {
-          // keep
-        } else if (t.assigneeId && assigneeIds.includes(t.assigneeId)) {
-          // keep
-        } else {
-          return false;
-        }
-      }
-      if (priorities.length > 0 && !priorities.includes(t.priority)) {
+    }
+    if (assigneeIds.length > 0) {
+      if (assigneeIds.includes("unassigned") && !t.assigneeId) {
+        // keep
+      } else if (t.assigneeId && assigneeIds.includes(t.assigneeId)) {
+        // keep
+      } else {
         return false;
       }
-      if (statuses.length > 0 && !statuses.includes(t.status)) {
+    }
+    if (priorities.length > 0 && !priorities.includes(t.priority)) {
+      return false;
+    }
+    if (statuses.length > 0 && !statuses.includes(t.status)) {
+      return false;
+    }
+    if (workTypes.length > 0) {
+      if (!t.type || !workTypes.includes(t.type)) return false;
+    }
+    if (labels.length > 0) {
+      if (!t.labels || !labels.some((label) => t.labels?.includes(label))) {
         return false;
       }
-      if (workTypes.length > 0) {
-        if (!t.type || !workTypes.includes(t.type)) return false;
-      }
-      if (labels.length > 0) {
-        if (!t.labels || !labels.some((l) => t.labels!.includes(l)))
-          return false;
-      }
-      return true;
-    });
-  }, [
-    localTasks,
-    searchQuery,
-    parentIds,
-    assigneeIds,
-    priorities,
-    statuses,
-    workTypes,
-    labels,
-  ]);
+    }
+    return true;
+  });
 
   if (isLoading)
     return (
@@ -650,10 +641,10 @@ export function KanbanBoard({
 
                 // Pre-populate groups based on state before drag started to prevent them from disappearing
                 if (activeId !== null) {
-                  draggingGroupsRef.current.grouped.forEach((groupId) => {
+                  draggingGroups.grouped.forEach((groupId) => {
                     grouped.set(groupId, []);
                   });
-                  hasUngroupedInServer = draggingGroupsRef.current.hasUngrouped;
+                  hasUngroupedInServer = draggingGroups.hasUngrouped;
                 }
 
                 filteredTasks.forEach((t) => {
@@ -695,26 +686,45 @@ export function KanbanBoard({
                 return (
                   <>
                     {Array.from(grouped.entries()).map(([groupId, tasks]) => {
-                      let title = groupId;
-                      let avatar = undefined;
-                      let parentTask: Task | undefined = undefined;
-
                       if (groupBy === "Assignee") {
                         const user = mockUsers.find((u) => u.id === groupId);
-                        title = user?.name || groupId;
-                        avatar = user?.avatarUrl;
-                      } else {
-                        parentTask = serverTasks.find(
-                          (pt) => pt.id === groupId,
+                        return (
+                          <SwimlaneGroup
+                            key={groupId}
+                            title={user?.name || groupId}
+                            avatar={user?.avatarUrl}
+                            taskCount={tasks.length}
+                          >
+                            {KANBAN_COLUMNS.map((col, index) => {
+                              const columnTasks = tasks.filter(
+                                (t) => t.status === col.id,
+                              );
+                              return (
+                                <BoardColumn
+                                  key={`${col.id}___${groupId}`}
+                                  columnId={col.id}
+                                  droppableId={`${col.id}___${groupId}`}
+                                  groupId={groupId}
+                                  title={col.title}
+                                  tasks={columnTasks}
+                                  onTaskClick={setSelectedTask}
+                                  isFirstColumn={index === 0}
+                                  onCreateTask={handleCreate}
+                                />
+                              );
+                            })}
+                          </SwimlaneGroup>
                         );
-                        title = parentTask?.title || groupId;
                       }
+
+                      const parentTask = serverTasks.find(
+                        (pt) => pt.id === groupId,
+                      );
 
                       return (
                         <SwimlaneGroup
                           key={groupId}
-                          title={title}
-                          avatar={avatar}
+                          title={parentTask?.title || groupId}
                           parentTask={parentTask}
                           taskCount={tasks.length}
                         >
