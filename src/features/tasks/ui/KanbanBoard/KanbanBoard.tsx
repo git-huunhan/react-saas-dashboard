@@ -54,6 +54,7 @@ interface KanbanBoardProps {
   workTypes?: string[];
   labels?: string[];
   groupBy?: string;
+  headerSlot?: React.ReactNode;
 }
 
 import { useViewSettingsStore } from "../../model/useViewSettingsStore";
@@ -168,6 +169,7 @@ export function KanbanBoard({
   workTypes = [],
   labels = [],
   groupBy = "None",
+  headerSlot,
 }: KanbanBoardProps) {
   const { data: serverTasks, isLoading } = useTasksByProject(projectId);
   const [localTasks, setLocalTasks] = useState<Task[]>([]);
@@ -610,6 +612,7 @@ export function KanbanBoard({
   if (isLoading)
     return (
       <div className="flex flex-col h-full overflow-hidden pt-0">
+        {headerSlot}
         <div className="flex flex-col flex-1 overflow-auto px-6 md:px-8 pb-4 items-start">
           <div className="flex gap-4 h-fit max-h-full min-h-0 animate-pulse">
             {[1, 2, 3, 4].map((i) => (
@@ -626,6 +629,7 @@ export function KanbanBoard({
 
   return (
     <div className="flex flex-col h-full overflow-hidden pt-0">
+      {headerSlot}
       <DndContext
         sensors={sensors}
         collisionDetection={pointerWithin}

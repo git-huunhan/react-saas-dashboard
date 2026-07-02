@@ -88,6 +88,36 @@ export default function ProjectDetailPage() {
       <div className="p-10 text-center text-red-500">Project not found</div>
     );
 
+  const toolbarNode =
+    activeTab === "board" || activeTab === "list" ? (
+      <div className="px-6 py-2 border-b border-border bg-background shrink-0">
+        <div className="overflow-hidden w-full flex-1">
+          <BoardToolbar
+            searchQuery={currentFilters.searchQuery}
+            setSearchQuery={currentFilters.setSearchQuery}
+            parentIds={currentFilters.parentIds}
+            setParentIds={currentFilters.setParentIds}
+            assigneeIds={currentFilters.assigneeIds}
+            setAssigneeIds={currentFilters.setAssigneeIds}
+            priorities={currentFilters.priorities}
+            setPriorities={currentFilters.setPriorities}
+            statuses={currentFilters.statuses}
+            setStatuses={currentFilters.setStatuses}
+            workTypes={currentFilters.workTypes}
+            setWorkTypes={currentFilters.setWorkTypes}
+            labels={currentFilters.labels}
+            setLabels={currentFilters.setLabels}
+            activeView={activeTab === "list" ? "list" : "board"}
+            onViewChange={(view) => setActiveTab(view)}
+            groupBy={currentFilters.groupBy}
+            setGroupBy={currentFilters.setGroupBy}
+            listLayout={listLayout}
+            onListLayoutChange={setListLayout}
+          />
+        </div>
+      </div>
+    ) : null;
+
   return (
     <Tabs
       value={activeTab}
@@ -112,7 +142,7 @@ export default function ProjectDetailPage() {
                       <div
                         className={`p-1.5 rounded-md shadow-sm ${currentAvatar.bg} ${currentAvatar.text}`}
                       >
-                        <Icon className="w-6 h-6 group-hover:opacity-10 transition-opacity" />
+                        <Icon className="w-7 h-7 group-hover:opacity-10 transition-opacity" />
                       </div>
                     );
                   })()}
@@ -142,7 +172,7 @@ export default function ProjectDetailPage() {
                           }}
                           className={`flex items-center justify-center aspect-square rounded cursor-pointer transition-all hover:ring-2 hover:ring-offset-2 hover:ring-offset-popover hover:ring-primary/50 focus:outline-none ${opt.bg} ${opt.text}`}
                         >
-                          <OptionIcon className="w-5 h-5" />
+                          <OptionIcon className="w-6 h-6" />
                         </button>
                       </PopoverClose>
                     );
@@ -259,50 +289,6 @@ export default function ProjectDetailPage() {
             </Button>
           </TabsList>
         </div>
-
-        {/* Row 4: Filters Toolbar */}
-        {activeTab === "board" || activeTab === "list" ? (
-          <BoardToolbar
-            searchQuery={currentFilters.searchQuery}
-            setSearchQuery={currentFilters.setSearchQuery}
-            parentIds={currentFilters.parentIds}
-            setParentIds={currentFilters.setParentIds}
-            assigneeIds={currentFilters.assigneeIds}
-            setAssigneeIds={currentFilters.setAssigneeIds}
-            priorities={currentFilters.priorities}
-            setPriorities={currentFilters.setPriorities}
-            statuses={currentFilters.statuses}
-            setStatuses={currentFilters.setStatuses}
-            workTypes={currentFilters.workTypes}
-            setWorkTypes={currentFilters.setWorkTypes}
-            labels={currentFilters.labels}
-            setLabels={currentFilters.setLabels}
-            activeView={activeTab === "list" ? "list" : "board"}
-            onViewChange={(view) => setActiveTab(view)}
-            groupBy={currentFilters.groupBy}
-            setGroupBy={currentFilters.setGroupBy}
-            listLayout={listLayout}
-            onListLayoutChange={setListLayout}
-          />
-        ) : (
-          <div className="flex items-center justify-between min-h-[40px] pb-1 mt-1 shrink-0 opacity-50 pointer-events-none">
-            <div className="flex items-center gap-3">
-              <div className="w-48 h-8 rounded-md bg-muted/50 border border-muted/50" />
-              <div className="flex -space-x-2">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="w-7 h-7 rounded-full bg-muted border-2 border-background"
-                  />
-                ))}
-              </div>
-              <div className="w-20 h-8 rounded-md bg-muted/50" />
-            </div>
-            <div className="text-xs text-muted-foreground font-medium px-4">
-              Filters unavailable in {activeTab} view
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="flex-1 overflow-hidden relative">
@@ -349,12 +335,13 @@ export default function ProjectDetailPage() {
             workTypes={listFilters.workTypes}
             labels={listFilters.labels}
             layout={listLayout}
+            headerSlot={toolbarNode}
           />
         </TabsContent>
 
         <TabsContent
           value="board"
-          className="h-full m-0 p-0 flex flex-col data-[state=active]:flex pt-4"
+          className="h-full m-0 p-0 flex flex-col data-[state=active]:flex pt-0"
         >
           <KanbanBoard
             projectId={project.id}
@@ -366,6 +353,7 @@ export default function ProjectDetailPage() {
             workTypes={boardFilters.workTypes}
             labels={boardFilters.labels}
             groupBy={boardFilters.groupBy}
+            headerSlot={toolbarNode}
           />
         </TabsContent>
       </div>

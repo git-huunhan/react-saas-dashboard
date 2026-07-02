@@ -287,12 +287,12 @@ export function Header() {
 
       <header className="flex h-14 items-center border-b bg-background shrink-0">
         {/* Left Area - Fixed width to match sidebar on desktop ONLY */}
-        <div className="flex items-center gap-2 md:gap-4 xl:w-64 px-2 md:px-4 shrink-0">
+        <div className="flex items-center gap-2 md:gap-4 lg:w-64 px-2 md:px-4 shrink-0">
           {/* Mobile toggle */}
           <button
             data-sidebar-toggle="true"
             onClick={toggleMobile}
-            className="xl:hidden h-8 w-8 flex items-center justify-center rounded hover:bg-accent text-muted-foreground transition-colors"
+            className="lg:hidden h-8 w-8 flex items-center justify-center rounded hover:bg-accent text-muted-foreground transition-colors"
           >
             {isMobileOpen ? (
               <PanelLeftClose className="h-5 w-5" />
@@ -304,7 +304,7 @@ export function Header() {
           <button
             data-sidebar-toggle="true"
             onClick={toggleDesktop}
-            className="hidden xl:flex h-8 w-8 items-center justify-center rounded hover:bg-accent text-muted-foreground transition-colors"
+            className="hidden lg:flex h-8 w-8 items-center justify-center rounded hover:bg-accent text-muted-foreground transition-colors"
           >
             {isDesktopClosed ? (
               <PanelLeft className="h-5 w-5" />

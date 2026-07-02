@@ -139,7 +139,7 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
                         <div
                           className={`w-5 h-5 rounded flex items-center justify-center shrink-0 ${avatar.bg} ${avatar.text}`}
                         >
-                          <Icon className="w-3.5 h-3.5" />
+                          <Icon className="w-4 h-4" />
                         </div>
                       );
                     }}
@@ -174,7 +174,7 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
                           <div
                             className={`w-5 h-5 rounded flex items-center justify-center shrink-0 ${avatar.bg} ${avatar.text}`}
                           >
-                            <Icon className="w-3.5 h-3.5" />
+                            <Icon className="w-4 h-4" />
                           </div>
                         );
                       }}
@@ -294,7 +294,7 @@ export function Sidebar() {
     <>
       {/* Desktop sidebar */}
       <aside
-        className={`hidden xl:flex flex-col h-full shrink-0 border-r bg-background transition-all duration-300 ${
+        className={`hidden lg:flex flex-col h-full shrink-0 border-r bg-background transition-all duration-300 ${
           isDesktopClosed
             ? "w-0 overflow-hidden border-none opacity-0"
             : "w-64 opacity-100"
@@ -308,7 +308,7 @@ export function Sidebar() {
       {/* Mobile absolute sidebar */}
       <aside
         ref={mobileSidebarRef}
-        className={`xl:hidden absolute top-0 left-0 h-full shrink-0 border-r bg-card z-50 transition-all duration-300 ${
+        className={`lg:hidden absolute top-0 left-0 h-full shrink-0 border-r bg-card z-50 transition-all duration-300 ${
           isMobileOpen
             ? "w-64 opacity-100 shadow-2xl"
             : "w-0 overflow-hidden border-none opacity-0"

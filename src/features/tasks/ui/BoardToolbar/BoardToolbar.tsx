@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { mockUsers } from "@/features/users/model/mockUsers";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useTasksByProject } from "../../model/useTasks";
 import type { FilterCategory } from "./AdvancedFilterPopover";

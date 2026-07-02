@@ -81,6 +81,7 @@ import { mockUsers } from "@/features/users/model/mockUsers";
 import { PriorityIcon } from "../PriorityIcon";
 import { TaskDetailModal } from "../TaskDetailModal/TaskDetailModal";
 import { TaskDetailPanel } from "../TaskDetailModal/components/TaskDetailPanel";
+import { BulkEditPanel } from "./components/BulkEditPanel";
 import type { Task } from "../../model/types";
 
 // ---------- InlineCreateRow ----------
@@ -839,6 +840,7 @@ interface ListViewProps {
   workTypes: string[];
   labels: string[];
   layout?: "table" | "split";
+  headerSlot?: React.ReactNode;
 }
 
 export function ListView({
@@ -851,6 +853,7 @@ export function ListView({
   workTypes,
   labels,
   layout = "table",
+  headerSlot,
 }: ListViewProps) {
   const { data: tasks = [] } = useTasksByProject(projectId);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -865,6 +868,40 @@ export function ListView({
   const createTaskMutation = useCreateTask();
 
   const [checkedTaskIds, setCheckedTaskIds] = useState<Set<string>>(new Set());
+  const [isBulkEditing, setIsBulkEditing] = useState(false);
+
+  // Custom resize state (replaces react-resizable-panels)
+  const panelGroupRef = useRef<HTMLDivElement>(null);
+  const [bulkPanelWidth, setBulkPanelWidth] = useState<number | null>(380);
+  const [isResizing, setIsResizing] = useState(false);
+
+  const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const container = panelGroupRef.current;
+    if (!container) return;
+    const containerWidth = container.getBoundingClientRect().width;
+    const minBulk = 320;
+    const maxBulk = Math.floor(containerWidth * 0.5);
+    setIsResizing(true);
+
+    const onMove = (mv: MouseEvent) => {
+      const rect = container.getBoundingClientRect();
+      const distFromRight = rect.right - mv.clientX;
+      const clamped = Math.max(minBulk, Math.min(maxBulk, distFromRight));
+      setBulkPanelWidth(clamped);
+    };
+    const onUp = () => {
+      setIsResizing(false);
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, []);
+
+  useEffect(() => {
+    if (checkedTaskIds.size === 0) setIsBulkEditing(false);
+  }, [checkedTaskIds.size]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -982,15 +1019,18 @@ export function ListView({
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
 
   const [containerWidth, setContainerWidth] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<ResizeObserver | null>(null);
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const observer = new ResizeObserver((entries) => {
-      setContainerWidth(entries[0].contentRect.width);
-    });
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
+  const containerRef = useCallback((node: HTMLDivElement | null) => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+    if (node) {
+      observerRef.current = new ResizeObserver((entries) => {
+        setContainerWidth(entries[0].contentRect.width);
+      });
+      observerRef.current.observe(node);
+    }
   }, []);
 
   const toggleCollapse = (id: string, e: React.MouseEvent) => {
@@ -1126,345 +1166,405 @@ export function ListView({
   return (
     <div className="flex flex-col h-full overflow-hidden text-sm relative">
       {layout === "split" ? (
-        <div className="flex flex-1 overflow-hidden">
-          {/* Left Sidebar List */}
-          <div className="w-[300px] flex-shrink-0 border-r border-border bg-background flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between p-3 border-b border-border bg-muted/10">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors -ml-2"
-                  >
-                    Custom field{" "}
-                    <ChevronDown className="w-3.5 h-3.5 ml-1 opacity-70" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48">
-                  <DropdownMenuItem>Custom field</DropdownMenuItem>
-                  <DropdownMenuItem>Issue Type</DropdownMenuItem>
-                  <DropdownMenuItem>Status</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <div className="flex items-center gap-0.5">
+        <>
+          {headerSlot}
+          <div className="flex flex-1 overflow-hidden">
+            {/* Left Sidebar List */}
+            <div className="w-[300px] flex-shrink-0 border-r border-border bg-background flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between p-3 border-b border-border bg-muted/10">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="w-7 h-7 hover:bg-muted text-muted-foreground transition-colors"
-                      title="Order work items by"
+                      size="sm"
+                      className="h-7 px-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors -ml-2"
                     >
-                      <ArrowDownWideNarrow className="w-3.5 h-3.5" />
+                      Custom field{" "}
+                      <ChevronDown className="w-3.5 h-3.5 ml-1 opacity-70" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                      Order work items by
-                    </div>
-                    <DropdownMenuItem>Created</DropdownMenuItem>
-                    <DropdownMenuItem>Key</DropdownMenuItem>
-                    <DropdownMenuItem>Last viewed</DropdownMenuItem>
-                    <DropdownMenuItem>Priority</DropdownMenuItem>
-                    <DropdownMenuItem>Resolved</DropdownMenuItem>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <DropdownMenuItem>Custom field</DropdownMenuItem>
+                    <DropdownMenuItem>Issue Type</DropdownMenuItem>
                     <DropdownMenuItem>Status</DropdownMenuItem>
-                    <DropdownMenuItem>Updated</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="w-7 h-7 hover:bg-muted text-muted-foreground transition-colors"
-                  title="Refresh"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            </div>
-            <div className="flex-1 overflow-y-auto overflow-x-hidden">
-              {filteredTasks.map((task) => {
-                const assignee = getUser(task.assigneeId);
-                const isSelected = selectedTaskId === task.id;
-
-                return (
-                  <div
-                    key={task.id}
-                    onClick={() => setSelectedTaskId(task.id)}
-                    className={`flex flex-col gap-1 p-3 cursor-pointer border-l-2 transition-colors ${
-                      isSelected
-                        ? "border-primary bg-primary/5"
-                        : "border-transparent hover:bg-muted/30"
-                    }`}
-                  >
-                    <div
-                      className={`font-medium truncate ${isSelected ? "text-primary" : "text-foreground"}`}
-                    >
-                      {task.title}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        {getTypeIcon(task.type)}
-                        <span className="text-xs font-medium text-muted-foreground hover:underline">
-                          {task.code}
-                        </span>
-                      </div>
-                      {assignee ? (
-                        <Avatar className="w-5 h-5">
-                          <AvatarImage src={assignee.avatarUrl} />
-                          <AvatarFallback className="text-[9px]">
-                            {assignee.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                      ) : (
-                        <div className="w-5 h-5 rounded-full border border-dashed border-muted-foreground/40 flex items-center justify-center bg-muted/20">
-                          <User className="w-3.5 h-3.5 text-muted-foreground/60" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Right Detail Panel */}
-          <div className="flex-1 overflow-hidden bg-background relative">
-            {selectedTask ? (
-              <div className="absolute inset-0">
-                <TaskDetailPanel
-                  task={selectedTask}
-                  onClose={() => setSelectedTaskId(null)}
-                />
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                Select a task to view details
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="flex-1 flex flex-col overflow-hidden px-6 pb-6 pt-4">
-          <div className="border border-border rounded-lg bg-background flex flex-col min-h-0 overflow-hidden">
-            <div
-              ref={containerRef}
-              className="overflow-auto custom-scrollbar table-scrollbar-offset min-h-0"
-            >
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <table
-                  className="text-left border-collapse whitespace-nowrap min-w-full"
-                  style={{ tableLayout: "auto" }}
-                >
-                  <colgroup>
-                    <col style={{ width: "24px", minWidth: "24px" }} />
-                    {/* drag handle */}
-                    <col className="w-10" />
-                    <col style={{ minWidth: "360px", width: "360px" }} />
-                    <col style={{ width: "180px", minWidth: "180px" }} />
-                    <col style={{ width: "180px", minWidth: "180px" }} />
-                    <col style={{ width: "128px", minWidth: "128px" }} />
-                    <col style={{ width: "160px", minWidth: "160px" }} />
-                    <col style={{ width: "128px", minWidth: "128px" }} />
-                    <col style={{ width: "192px", minWidth: "192px" }} />
-                    <col style={{ width: "192px", minWidth: "192px" }} />
-                    <col style={{ width: "220px", minWidth: "220px" }} />
-                    <col style={{ width: "48px", minWidth: "48px" }} />
-                  </colgroup>
-                  <thead className="sticky top-0 bg-background/95 backdrop-blur z-10">
-                    <tr className="border-b border-border text-muted-foreground">
-                      <th className="py-2 sticky left-0 bg-background/95 z-20 w-6 relative after:absolute after:inset-0 after:bg-muted/20 after:pointer-events-none"></th>
-                      <th className="py-2 px-3 font-medium">
-                        <Checkbox
-                          className="rounded-[4px] border-muted-foreground/40"
-                          checked={
-                            checkedTaskIds.size === 0
-                              ? false
-                              : checkedTaskIds.size === flatRenderList.length
-                                ? true
-                                : "indeterminate"
-                          }
-                          onCheckedChange={(checked) => {
-                            const isIndeterminate =
-                              checkedTaskIds.size > 0 &&
-                              checkedTaskIds.size < flatRenderList.length;
-                            if (isIndeterminate) {
-                              handleSelectAll(false);
-                            } else {
-                              handleSelectAll(checked as boolean);
-                            }
-                          }}
-                        />
-                      </th>
-                      <th className="py-2 px-3 font-medium">Work</th>
-                      <th className="py-2 px-3 font-medium">Assignee</th>
-                      <th className="py-2 px-3 font-medium">Reporter</th>
-                      <th className="py-2 px-3 font-medium">Priority</th>
-                      <th className="py-2 px-3 font-medium">Status</th>
-                      <th className="py-2 px-3 font-medium">Resolution</th>
-                      <th className="py-2 px-3 font-medium">Created</th>
-                      <th className="py-2 px-3 font-medium">Updated</th>
-                      <th className="py-2 px-3 font-medium">Due date</th>
-                      <th className="py-2 px-3 font-medium"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orderedRenderList.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={12}
-                          className="py-12 text-center text-muted-foreground"
-                        >
-                          No tasks found matching the filters.
-                        </td>
-                      </tr>
-                    ) : (
-                      <SortableContext
-                        items={orderedRenderList.map((i) => i.task.id)}
-                        strategy={verticalListSortingStrategy}
+                <div className="flex items-center gap-0.5">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="w-7 h-7 hover:bg-muted text-muted-foreground transition-colors"
+                        title="Order work items by"
                       >
-                        {orderedRenderList.map(
-                          ({ task, depth, hasChildren }, index) => {
-                            const assignee = getUser(task.assigneeId);
-                            const reporter =
-                              getUser(task.reporterId) || getUser("user-1"); // fallback
+                        <ArrowDownWideNarrow className="w-3.5 h-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                        Order work items by
+                      </div>
+                      <DropdownMenuItem>Created</DropdownMenuItem>
+                      <DropdownMenuItem>Key</DropdownMenuItem>
+                      <DropdownMenuItem>Last viewed</DropdownMenuItem>
+                      <DropdownMenuItem>Priority</DropdownMenuItem>
+                      <DropdownMenuItem>Resolved</DropdownMenuItem>
+                      <DropdownMenuItem>Status</DropdownMenuItem>
+                      <DropdownMenuItem>Updated</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
-                            return (
-                              <React.Fragment key={task.id}>
-                                <SortableTableRow
-                                  id={task.id}
-                                  isChecked={checkedTaskIds.has(task.id)}
-                                  depth={depth}
-                                  hasChildren={hasChildren}
-                                  hasAnyChildrenInList={hasAnyChildrenInList}
-                                  task={task}
-                                  assignee={assignee}
-                                  reporter={reporter}
-                                  collapsedIds={collapsedIds}
-                                  editingTitleId={editingTitleId}
-                                  editTitleValue={editTitleValue}
-                                  openAssigneeId={openAssigneeId}
-                                  openReporterId={openReporterId}
-                                  editingDueDateId={editingDueDateId}
-                                  editDueDateValue={editDueDateValue}
-                                  dueDateHiddenRefs={dueDateHiddenRefs}
-                                  todayPlaceholder={todayPlaceholder}
-                                  getUser={getUser}
-                                  getPriorityLabel={getPriorityLabel}
-                                  getTypeIcon={getTypeIcon}
-                                  getStatusClass={getStatusClass}
-                                  formatDueDateDisplay={formatDueDateDisplay}
-                                  onToggleCollapse={toggleCollapse}
-                                  onSelectTask={handleSelectTask}
-                                  onSelectTaskId={setSelectedTaskId}
-                                  onEditTitle={(id, title) => {
-                                    setEditingTitleId(id);
-                                    setEditTitleValue(title);
-                                  }}
-                                  onTitleSubmit={handleTitleSubmit}
-                                  onSetEditTitleValue={setEditTitleValue}
-                                  onSetOpenAssigneeId={setOpenAssigneeId}
-                                  onSetOpenReporterId={setOpenReporterId}
-                                  onSetEditingDueDateId={setEditingDueDateId}
-                                  onSetEditDueDateValue={setEditDueDateValue}
-                                  updateTask={updateTask}
-                                  isLastRow={
-                                    index === orderedRenderList.length - 1
-                                  }
-                                  onInlineCreate={setInlineCreateRowId}
-                                />
-                                {inlineCreateRowId === task.id && (
-                                  <QuickCreateInput
-                                    onClose={() => setInlineCreateRowId(null)}
-                                    containerWidth={containerWidth}
-                                    onCreate={(data) => {
-                                      createTaskMutation.mutate(
-                                        {
-                                          projectId,
-                                          parentId: task.parentId, // inherit the same parent, so it stays at the same level
-                                          afterTaskId: task.id, // insert after this task
-                                          title: data.title,
-                                          type: data.type,
-                                          assigneeId: data.assigneeId,
-                                          dueDate: data.dueDate,
-                                          status: "todo",
-                                          priority: "medium",
-                                        },
-                                        {
-                                          onSuccess: (newTask) => {
-                                            // move the inline create row under the newly created task
-                                            setInlineCreateRowId(newTask.id);
-                                          },
-                                        },
-                                      );
-                                    }}
-                                  />
-                                )}
-                              </React.Fragment>
-                            );
-                          },
-                        )}
-                      </SortableContext>
-                    )}
-                  </tbody>
-                </table>
-              </DndContext>
-            </div>
-            {/* Table Footer */}
-            {inlineCreateRowId === "bottom" ? (
-              <QuickCreateInput
-                asRow={false}
-                onClose={() => setInlineCreateRowId(null)}
-                onCreate={(data) => {
-                  createTaskMutation.mutate(
-                    {
-                      projectId,
-                      title: data.title,
-                      type: data.type,
-                      assigneeId: data.assigneeId,
-                      dueDate: data.dueDate,
-                      status: "todo",
-                      priority: "medium",
-                    },
-                    {
-                      onSuccess: () => {
-                        setInlineCreateRowId("bottom");
-                      },
-                    },
-                  );
-                }}
-              />
-            ) : (
-              <div className="flex items-center justify-between p-1.5 border-t border-border bg-muted/10 shrink-0">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 gap-1.5 text-muted-foreground hover:text-foreground"
-                  onClick={() => setInlineCreateRowId("bottom")}
-                >
-                  <Plus className="w-4 h-4" /> Create
-                </Button>
-                <div className="flex items-center gap-2 text-muted-foreground mr-2">
-                  <span className="text-[13px] font-medium">
-                    {flatRenderList.length} of {tasks.length}
-                  </span>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="w-6 h-6 hover:bg-muted/50 hover:text-foreground text-muted-foreground"
+                    className="w-7 h-7 hover:bg-muted text-muted-foreground transition-colors"
+                    title="Refresh"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                   </Button>
                 </div>
               </div>
-            )}
+              <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                {filteredTasks.map((task) => {
+                  const assignee = getUser(task.assigneeId);
+                  const isSelected = selectedTaskId === task.id;
+
+                  return (
+                    <div
+                      key={task.id}
+                      onClick={() => setSelectedTaskId(task.id)}
+                      className={`flex flex-col gap-1 p-3 cursor-pointer border-l-2 transition-colors ${
+                        isSelected
+                          ? "border-primary bg-primary/5"
+                          : "border-transparent hover:bg-muted/30"
+                      }`}
+                    >
+                      <div
+                        className={`font-medium truncate ${isSelected ? "text-primary" : "text-foreground"}`}
+                      >
+                        {task.title}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          {getTypeIcon(task.type)}
+                          <span className="text-xs font-medium text-muted-foreground hover:underline">
+                            {task.code}
+                          </span>
+                        </div>
+                        {assignee ? (
+                          <Avatar className="w-5 h-5">
+                            <AvatarImage src={assignee.avatarUrl} />
+                            <AvatarFallback className="text-[9px]">
+                              {assignee.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                        ) : (
+                          <div className="w-5 h-5 rounded-full border border-dashed border-muted-foreground/40 flex items-center justify-center bg-muted/20">
+                            <User className="w-3.5 h-3.5 text-muted-foreground/60" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Right Detail Panel */}
+            <div className="flex-1 overflow-hidden bg-background relative">
+              {selectedTask ? (
+                <div className="absolute inset-0">
+                  <TaskDetailPanel
+                    task={selectedTask}
+                    onClose={() => setSelectedTaskId(null)}
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  Select a task to view details
+                </div>
+              )}
+            </div>
           </div>
+        </>
+      ) : (
+        <div className="flex flex-1 overflow-hidden" ref={panelGroupRef}>
+          {/* Left panel */}
+          <div
+            className="flex flex-col overflow-hidden flex-shrink-0"
+            style={{
+              width: isBulkEditing
+                ? `calc(100% - ${bulkPanelWidth ?? 380}px - 2px)`
+                : "100%",
+            }}
+          >
+            {headerSlot}
+            <div className="flex-1 flex flex-col overflow-hidden px-6 pb-6 pt-4">
+              <div className="border border-border rounded-lg bg-background flex flex-col min-h-0 overflow-hidden">
+                <div
+                  ref={containerRef}
+                  className="overflow-auto custom-scrollbar table-scrollbar-offset min-h-0"
+                >
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <table
+                      className="text-left border-collapse whitespace-nowrap min-w-full"
+                      style={{ tableLayout: "fixed" }}
+                    >
+                      <colgroup>
+                        <col style={{ width: "24px", minWidth: "24px" }} />
+                        {/* drag handle */}
+                        <col className="w-10" />
+                        <col style={{ minWidth: "360px", width: "360px" }} />
+                        <col style={{ width: "180px", minWidth: "180px" }} />
+                        <col style={{ width: "180px", minWidth: "180px" }} />
+                        <col style={{ width: "128px", minWidth: "128px" }} />
+                        <col style={{ width: "160px", minWidth: "160px" }} />
+                        <col style={{ width: "128px", minWidth: "128px" }} />
+                        <col style={{ width: "192px", minWidth: "192px" }} />
+                        <col style={{ width: "192px", minWidth: "192px" }} />
+                        <col style={{ width: "220px", minWidth: "220px" }} />
+                        <col style={{ width: "48px", minWidth: "48px" }} />
+                      </colgroup>
+                      <thead className="sticky top-0 bg-background/95 backdrop-blur z-10">
+                        <tr className="border-b border-border text-muted-foreground">
+                          <th className="py-2 sticky left-0 bg-background/95 z-20 w-6 relative after:absolute after:inset-0 after:bg-muted/20 after:pointer-events-none"></th>
+                          <th className="py-2 px-3 font-medium">
+                            <Checkbox
+                              className="rounded-[4px] border-muted-foreground/40"
+                              checked={
+                                checkedTaskIds.size === 0
+                                  ? false
+                                  : checkedTaskIds.size ===
+                                      flatRenderList.length
+                                    ? true
+                                    : "indeterminate"
+                              }
+                              onCheckedChange={(checked) => {
+                                const isIndeterminate =
+                                  checkedTaskIds.size > 0 &&
+                                  checkedTaskIds.size < flatRenderList.length;
+                                if (isIndeterminate) {
+                                  handleSelectAll(false);
+                                } else {
+                                  handleSelectAll(checked as boolean);
+                                }
+                              }}
+                            />
+                          </th>
+                          <th className="py-2 px-3 font-medium">Work</th>
+                          <th className="py-2 px-3 font-medium">Assignee</th>
+                          <th className="py-2 px-3 font-medium">Reporter</th>
+                          <th className="py-2 px-3 font-medium">Priority</th>
+                          <th className="py-2 px-3 font-medium">Status</th>
+                          <th className="py-2 px-3 font-medium">Resolution</th>
+                          <th className="py-2 px-3 font-medium">Created</th>
+                          <th className="py-2 px-3 font-medium">Updated</th>
+                          <th className="py-2 px-3 font-medium">Due date</th>
+                          <th className="py-2 px-3 font-medium"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orderedRenderList.length === 0 ? (
+                          <tr>
+                            <td
+                              colSpan={12}
+                              className="py-12 text-center text-muted-foreground"
+                            >
+                              No tasks found matching the filters.
+                            </td>
+                          </tr>
+                        ) : (
+                          <SortableContext
+                            items={orderedRenderList.map((i) => i.task.id)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            {orderedRenderList.map(
+                              ({ task, depth, hasChildren }, index) => {
+                                const assignee = getUser(task.assigneeId);
+                                const reporter =
+                                  getUser(task.reporterId) || getUser("user-1"); // fallback
+
+                                return (
+                                  <React.Fragment key={task.id}>
+                                    <SortableTableRow
+                                      id={task.id}
+                                      isChecked={checkedTaskIds.has(task.id)}
+                                      depth={depth}
+                                      hasChildren={hasChildren}
+                                      hasAnyChildrenInList={
+                                        hasAnyChildrenInList
+                                      }
+                                      task={task}
+                                      assignee={assignee}
+                                      reporter={reporter}
+                                      collapsedIds={collapsedIds}
+                                      editingTitleId={editingTitleId}
+                                      editTitleValue={editTitleValue}
+                                      openAssigneeId={openAssigneeId}
+                                      openReporterId={openReporterId}
+                                      editingDueDateId={editingDueDateId}
+                                      editDueDateValue={editDueDateValue}
+                                      dueDateHiddenRefs={dueDateHiddenRefs}
+                                      todayPlaceholder={todayPlaceholder}
+                                      getUser={getUser}
+                                      getPriorityLabel={getPriorityLabel}
+                                      getTypeIcon={getTypeIcon}
+                                      getStatusClass={getStatusClass}
+                                      formatDueDateDisplay={
+                                        formatDueDateDisplay
+                                      }
+                                      onToggleCollapse={toggleCollapse}
+                                      onSelectTask={handleSelectTask}
+                                      onSelectTaskId={setSelectedTaskId}
+                                      onEditTitle={(id, title) => {
+                                        setEditingTitleId(id);
+                                        setEditTitleValue(title);
+                                      }}
+                                      onTitleSubmit={handleTitleSubmit}
+                                      onSetEditTitleValue={setEditTitleValue}
+                                      onSetOpenAssigneeId={setOpenAssigneeId}
+                                      onSetOpenReporterId={setOpenReporterId}
+                                      onSetEditingDueDateId={
+                                        setEditingDueDateId
+                                      }
+                                      onSetEditDueDateValue={
+                                        setEditDueDateValue
+                                      }
+                                      updateTask={updateTask}
+                                      isLastRow={
+                                        index === orderedRenderList.length - 1
+                                      }
+                                      onInlineCreate={setInlineCreateRowId}
+                                    />
+                                    {inlineCreateRowId === task.id && (
+                                      <QuickCreateInput
+                                        onClose={() =>
+                                          setInlineCreateRowId(null)
+                                        }
+                                        containerWidth={containerWidth}
+                                        onCreate={(data) => {
+                                          createTaskMutation.mutate(
+                                            {
+                                              projectId,
+                                              parentId: task.parentId, // inherit the same parent, so it stays at the same level
+                                              afterTaskId: task.id, // insert after this task
+                                              title: data.title,
+                                              type: data.type,
+                                              assigneeId: data.assigneeId,
+                                              dueDate: data.dueDate,
+                                              status: "todo",
+                                              priority: "medium",
+                                            },
+                                            {
+                                              onSuccess: (newTask) => {
+                                                // move the inline create row under the newly created task
+                                                setInlineCreateRowId(
+                                                  newTask.id,
+                                                );
+                                              },
+                                            },
+                                          );
+                                        }}
+                                      />
+                                    )}
+                                  </React.Fragment>
+                                );
+                              },
+                            )}
+                          </SortableContext>
+                        )}
+                      </tbody>
+                    </table>
+                  </DndContext>
+                </div>
+                {/* Table Footer */}
+                {inlineCreateRowId === "bottom" ? (
+                  <QuickCreateInput
+                    asRow={false}
+                    onClose={() => setInlineCreateRowId(null)}
+                    onCreate={(data) => {
+                      createTaskMutation.mutate(
+                        {
+                          projectId,
+                          title: data.title,
+                          type: data.type,
+                          assigneeId: data.assigneeId,
+                          dueDate: data.dueDate,
+                          status: "todo",
+                          priority: "medium",
+                        },
+                        {
+                          onSuccess: () => {
+                            setInlineCreateRowId("bottom");
+                          },
+                        },
+                      );
+                    }}
+                  />
+                ) : (
+                  <div className="flex items-center justify-between p-1.5 border-t border-border bg-muted/10 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 gap-1.5 text-muted-foreground hover:text-foreground"
+                      onClick={() => setInlineCreateRowId("bottom")}
+                    >
+                      <Plus className="w-4 h-4" /> Create
+                    </Button>
+                    <div className="flex items-center gap-2 text-muted-foreground mr-2">
+                      <span className="text-[13px] font-medium">
+                        {flatRenderList.length} of {tasks.length}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="w-6 h-6 hover:bg-muted/50 hover:text-foreground text-muted-foreground"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          {/* Resize handle + Bulk edit panel */}
+          {isBulkEditing && (
+            <>
+              {/* Drag handle */}
+              <div
+                onMouseDown={handleResizeMouseDown}
+                className="group relative flex-shrink-0 flex items-stretch justify-center cursor-col-resize z-50"
+                style={{ width: "2px" }}
+              >
+                {/* Wider invisible hit area */}
+                <div className="absolute inset-y-0 -left-[10px] -right-[10px] cursor-col-resize" />
+                <div
+                  className={`w-[2px] transition-colors duration-150 relative z-10 ${
+                    isResizing
+                      ? "bg-primary"
+                      : "bg-border/40 group-hover:bg-primary/80"
+                  }`}
+                />
+              </div>
+              {/* Right bulk edit panel */}
+              <div
+                className="flex-shrink-0 overflow-hidden bg-background flex flex-col"
+                style={{ width: `${bulkPanelWidth ?? 380}px` }}
+              >
+                <BulkEditPanel
+                  selectedCount={checkedTaskIds.size}
+                  onClose={() => setIsBulkEditing(false)}
+                />
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -1476,7 +1576,7 @@ export function ListView({
         />
       )}
 
-      {checkedTaskIds.size > 0 && layout !== "split" && (
+      {checkedTaskIds.size > 0 && layout !== "split" && !isBulkEditing && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-foreground border border-border shadow-[0_12px_40px_-10px_rgba(0,0,0,0.3)] rounded-xl px-5 py-3 z-50 animate-in slide-in-from-bottom-12 fade-in-0 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] fill-mode-both">
           <div className="flex items-center gap-2 mr-3">
             <span className="h-7 min-w-8 px-2.5 inline-flex items-center justify-center bg-background/20 text-background rounded-md text-[15px] font-bold tabular-nums">
@@ -1503,6 +1603,15 @@ export function ListView({
             variant="ghost"
             size="sm"
             className="h-9 text-background/80 hover:text-background hover:bg-background/10 dark:hover:bg-background/10 px-3 text-[14px]"
+            onClick={() => {
+              if (panelGroupRef.current) {
+                const containerWidth =
+                  panelGroupRef.current.getBoundingClientRect().width;
+                const maxAllowed = Math.floor(containerWidth * 0.5);
+                setBulkPanelWidth((prev) => Math.min(prev ?? 380, maxAllowed));
+              }
+              setIsBulkEditing(true);
+            }}
           >
             <SquarePen className="w-4.5 h-4.5 mr-2" />
             Edit fields

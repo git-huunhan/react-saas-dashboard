@@ -194,3 +194,18 @@
     0 10px 30px -10px rgba(0, 0, 0, 0.8),
     0 0 1px 1px var(--border);
 }
+
+/* Bulk edit panel resizer - target library's data attributes */
+.bulk-edit-separator > *,
+[data-panel-resize-handle-enabled].bulk-edit-separator > * {
+  background-color: hsl(var(--border) / 0.4);
+  transition: background-color 150ms ease;
+}
+.bulk-edit-separator:hover > *,
+[data-panel-resize-handle-enabled].bulk-edit-separator:hover > * {
+  background-color: hsl(var(--primary) / 0.8) !important;
+}
+.bulk-edit-separator:active > *,
+[data-panel-resize-handle-enabled].bulk-edit-separator:active > * {
+  background-color: hsl(var(--primary)) !important;
+}

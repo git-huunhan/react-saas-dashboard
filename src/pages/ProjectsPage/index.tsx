@@ -286,7 +286,7 @@ export default function ProjectsPage() {
                             <div
                               className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${currentAvatar.bg} ${currentAvatar.text}`}
                             >
-                              <Icon className="w-4 h-4" />
+                              <Icon className="w-5 h-5" />
                             </div>
                           );
                         })()}
